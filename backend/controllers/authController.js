@@ -78,8 +78,7 @@ class AuthController {
             !usuario_apellido ||
             !usuario_correo ||
             !usuario_contrasena ||
-            !usuario_telefono ||
-            !rol_id
+            !usuario_telefono
         ) {
             return res.status(400).json({
                 message: "Por favor completa todos los campos.",
@@ -95,20 +94,17 @@ class AuthController {
         }
 
         // Crear el usuario (solo si no existe)
-        const nuevoUsuario = await Auth.createUser({
+        const newUser= await Auth.createUser({
             usuario_nombre,
             usuario_apellido,
             usuario_correo,
             usuario_contrasena,
             usuario_telefono,
-            rol_id,
-            tienda_id,
-            empleado_especialidad,
         });
 
         return res.status(200).json({
             message: "Usuario registrado exitosamente.",
-            data: nuevoUsuario,
+            data: newUser,
         });
 
     } catch (error) {
