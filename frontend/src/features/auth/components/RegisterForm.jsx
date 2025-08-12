@@ -31,7 +31,6 @@ const RegisterForm = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-    rol: "",
   });
   const [error, setError] = useState("");
   const [errors, setErrors] = useState({});
@@ -81,9 +80,6 @@ const RegisterForm = () => {
           errorMsg = "Las contraseñas no coinciden";
         }
         break;
-      case "rol":
-        if (!value) errorMsg = "Seleccione un rol";
-        break;
       default:
         break;
     }
@@ -115,7 +111,6 @@ const RegisterForm = () => {
         usuario_correo: formData.email,
         usuario_contrasena: formData.password,
         usuario_telefono: formData.phone,
-        rol_id: Number(formData.rol),
       });
 
       if (res?.ok) {
@@ -330,39 +325,6 @@ const RegisterForm = () => {
                     </p>
                   )}
                 </div>
-              </div>
-            </div>
-
-            {/* Campo de rol */}
-            <div>
-              <label
-                htmlFor="rol"
-                className="block text-sm font-semibold text-gray-700 mb-2"
-              >
-                Rol
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <UserGroupIcon className="h-5 w-5 text-gray-400"/>
-                </div>
-                <select
-                  id="rol"
-                  value={formData.rol}
-                  onChange={handleChange}
-                  required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white appearance-none"
-                >
-                  <option value="">Seleccione un rol</option>
-                  <option value="4">Cliente</option>
-                  <option value="2">Propietario</option>
-                  <option value="3">Empleado</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                 <ChevronDownIcon className="h-5 w-5 text-gray-400"/>
-                </div>
-                {errors.rol && (
-                  <p className="text-red-500 text-sm absolute">{errors.rol}</p>
-                )}
               </div>
             </div>
 
