@@ -36,10 +36,7 @@ CREATE TABLE `usuarios` (
 -- Datos Usuarios
 INSERT INTO `usuarios` (`usuario_id`,`usuario_nombre`,`usuario_apellido`, `usuario_correo`,`usuario_telefono`,`usuario_contrasena`,`rol_id`) VALUES 
 (1,'Santiago','Hurtado','shurtado308@gmail.com','3108778515','1033702510',1),
-(2,'Ana', 'Sanchez', 'ana@gmail.com','3006547890', '1029384756', 1),
-(3,'Alejandro', 'Pedreros', 'alejo@hotmail.com', '3201234567', '1001122334', 2),
-(4,'Camilo','Peralta', 'cam@gmail.com', '3201239900', '1002355334', 3),
-(5,'Sharon','Rivera', 'sao@gmail.com', '3204561235', '1001120000', 4);
+(2,'Ana', 'Sanchez', 'ana@gmail.com','3006547890', '1029384756', 1)
 
 -- Tabla empleados
 CREATE TABLE `empleados` (
@@ -54,6 +51,18 @@ CREATE TABLE `empleados` (
 INSERT INTO `empleados` (`empleado_id`,`usuario_id`,`tienda_id`, `empleado_especialidad`) VALUES 
 (1,4,1,'Barbero');
 
+-- Tabla solicitud de propietario
+CREATE TABLE `solicitudes_propietario` (
+  `solicitud_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT NOT NULL,
+  `nombre_negocio` VARCHAR(150) NOT NULL,
+  `direccion_negocio` VARCHAR(200) NOT NULL,
+  `telefono_negocio` VARCHAR(15),
+  `correo_negocio` VARCHAR(150),
+  `descripcion_negocio` TEXT,
+  `estado` ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+  `fecha_solicitud` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 
 -- Tabla propietarios
@@ -66,6 +75,7 @@ CREATE TABLE `propietarios` (
 -- Datos Propietarios
 INSERT INTO `propietarios` (`propietario_id`,`usuario_id`) VALUES
 (1,3);
+
 
 -- Tabla negocios
 CREATE TABLE `negocios` (
@@ -203,6 +213,7 @@ ALTER TABLE `citas` ADD FOREIGN KEY (`servicio_id`) REFERENCES `servicios`(`serv
 ALTER TABLE `citas` ADD FOREIGN KEY (`horario_id`) REFERENCES `horarios`(`horario_id`);
 ALTER TABLE `citas` ADD FOREIGN KEY (`empleado_id`) REFERENCES `empleados`(`empleado_id`);
 ALTER TABLE `citas` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`);
+ALTER TABLE `solicitudes_propietario` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`)
 
 COMMIT;
 -- -- Fin de la transacción

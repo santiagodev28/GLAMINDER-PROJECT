@@ -25,11 +25,11 @@ class Auth {
             usuario_contrasena,
             usuario_telefono,
             rol_id,
-            tienda_id,
-            empleado_especialidad,
         } = user;
 
         const hashedPassword = bycript.hashSync(usuario_contrasena, 10);
+
+        const rolDefault = 4;
 
         return new Promise((resolve, reject) => {
             db.query(
@@ -40,7 +40,7 @@ class Auth {
                     usuario_correo,
                     hashedPassword,
                     usuario_telefono,
-                    rol_id,
+                    rolDefault
                 ],
                 (err, results) => {
                     if (err) return reject(err);
