@@ -24,6 +24,8 @@ class OwnerController {
         }
     }
 
+
+
     static async deleteOwner(req, res) { // Función para eliminar un propietario
         try {
             const { propietario_id } = req.params;
@@ -35,3 +37,5 @@ class OwnerController {
         }
     }
 }
+
+export default OwnerController

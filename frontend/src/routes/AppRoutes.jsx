@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
+import ClientLayout from "../layouts/ClientLayout";
 
 // Importación de las páginas y componentes
 import Login from "../features/auth/pages/Login";
@@ -11,6 +12,7 @@ import StoresByBusinessTable from "../features/admin/components/StoresByBusiness
 import EmployeeList from "../features/admin/components/EmployeeList";
 import BusinessStats from "../features/admin/components/BusinessStats";
 import StatsAdmin from "../features/admin/pages/StatsAdmin";
+import RequestOwner from "../features/client/components/RequestOwner";
 
 const AppRoutes = () => {
   return (
@@ -25,11 +27,26 @@ const AppRoutes = () => {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/usuarios" element={<UserAdmin />} />
         <Route path="/admin/negocios" element={<BussinesAdmin />} />
-        <Route path="/admin/negocios/:negocio_id/tiendas"element={<StoresByBusinessTable />}/>
-        <Route path="/admin/negocios/:negocio_id/tiendas/:tienda_id/empleados"element={<EmployeeList />} />
-        <Route path="/admin/negocios/:negocio_id/estadisticas"element={<BusinessStats />}/>
+        <Route
+          path="/admin/negocios/:negocio_id/tiendas"
+          element={<StoresByBusinessTable />}
+        />
+        <Route
+          path="/admin/negocios/:negocio_id/tiendas/:tienda_id/empleados"
+          element={<EmployeeList />}
+        />
+        <Route
+          path="/admin/negocios/:negocio_id/estadisticas"
+          element={<BusinessStats />}
+        />
         <Route path="/admin/estadisticas" element={<StatsAdmin />} />
       </Route>
+
+      {/* Layout de Cliente */}
+      <Route path="/cliente" element={<ClientLayout />}>
+        
+      </Route>
+  
     </Routes>
   );
 };
