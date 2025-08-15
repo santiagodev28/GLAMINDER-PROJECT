@@ -36,7 +36,11 @@ CREATE TABLE `usuarios` (
 -- Datos Usuarios
 INSERT INTO `usuarios` (`usuario_id`,`usuario_nombre`,`usuario_apellido`, `usuario_correo`,`usuario_telefono`,`usuario_contrasena`,`rol_id`) VALUES 
 (1,'Santiago','Hurtado','shurtado308@gmail.com','3108778515','1033702510',1),
-(2,'Ana', 'Sanchez', 'ana@gmail.com','3006547890', '1029384756', 1)
+(2,'Ana', 'Sanchez', 'ana@gmail.com','3006547890', '1029384756', 1),
+(3,'Carlos','Perez','carlos@gmail','3006547890','1029384756',4),
+(4,'Juan','Gomez','juan@gmail','3006547890','1029384756',3),
+(5,'Maria','Lopez','maria@gmail','3006547890','1029384756',4),
+(6,'Pedro','Martinez','pedro@gmail','3006547890','1029384756',2);
 
 -- Tabla empleados
 CREATE TABLE `empleados` (
@@ -64,6 +68,9 @@ CREATE TABLE `solicitudes_propietario` (
   `fecha_solicitud` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Datos Solicitudes Propietario
+INSERT INTO `solicitudes_propietario` (`solicitud_id`,`usuario_id`,`nombre_negocio`,`direccion_negocio`,`telefono_negocio`,`correo_negocio`,`descripcion_negocio`) VALUES
+(1,3, 'Barberia Glam', 'Calle 123 #45-67', '3001234567', 'barberiaglam@gmail', 'Barberia Glam es una empresa dedicada al servicio de barberia.');
 
 -- Tabla propietarios
 CREATE TABLE `propietarios` (
@@ -213,7 +220,7 @@ ALTER TABLE `citas` ADD FOREIGN KEY (`servicio_id`) REFERENCES `servicios`(`serv
 ALTER TABLE `citas` ADD FOREIGN KEY (`horario_id`) REFERENCES `horarios`(`horario_id`);
 ALTER TABLE `citas` ADD FOREIGN KEY (`empleado_id`) REFERENCES `empleados`(`empleado_id`);
 ALTER TABLE `citas` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`);
-ALTER TABLE `solicitudes_propietario` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`)
+ALTER TABLE `solicitudes_propietario` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`);
 
 COMMIT;
 -- -- Fin de la transacción
