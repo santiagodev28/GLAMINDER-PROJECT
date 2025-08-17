@@ -1,6 +1,17 @@
-import api from "../../api/api";
+import api from "../api/api.js";
 
 // Servicios para obtener los datos a mostrar en las tablas
+
+export const getUsersByState = async () => {
+    const token = localStorage.getItem("token");
+    const state = showDeletedUsers ? 0 : 1;
+    const res = await api.get(`/usuarios?usuario_estado=${state}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return res.data;
+};
 
 export const fetchTopEmployees = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -10,7 +21,7 @@ export const fetchTopEmployees = async (negocio_id) => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchTopServices = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -20,7 +31,7 @@ export const fetchTopServices = async (negocio_id) => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchTopStores = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -30,7 +41,7 @@ export const fetchTopStores = async (negocio_id) => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchTopBusiness = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -40,7 +51,7 @@ export const fetchTopBusiness = async (negocio_id) => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchAppointmentsTrends = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -50,7 +61,7 @@ export const fetchAppointmentsTrends = async (negocio_id) => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchBusinesses = async () => {
     const token = localStorage.getItem("token");
@@ -60,7 +71,7 @@ export const fetchBusinesses = async () => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchEmployeesByStore = async (tienda_id) => {
     const token = localStorage.getItem("token");
@@ -70,7 +81,7 @@ export const fetchEmployeesByStore = async (tienda_id) => {
         },
     });
     return res.data;
-}
+};
 
 export const fetchBusinessById = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -80,7 +91,7 @@ export const fetchBusinessById = async (negocio_id) => {
         },
     });
     return res.json();
-}
+};
 
 export const fetchStoresByBusiness = async (negocio_id) => {
     const token = localStorage.getItem("token");
@@ -90,11 +101,11 @@ export const fetchStoresByBusiness = async (negocio_id) => {
         },
     });
     return res.data;
-}
+};
 export const deleteBusiness = async (negocio_id) => {
     try {
         const token = localStorage.getItem("token");
-        
+
         const res = await api.put(
             `/negocios/desactivar/${negocio_id}`,
             { negocio_estado: 0 }, // ← cuerpo de la petición
@@ -105,8 +116,7 @@ export const deleteBusiness = async (negocio_id) => {
             }
         );
 
-        return res; 
-
+        return res;
     } catch (error) {
         console.error("Error en deleteBusiness:", error);
         throw error; // ← importante lanzar el error para manejarlo en el componente
@@ -115,26 +125,30 @@ export const deleteBusiness = async (negocio_id) => {
 
 export const reactivateBusiness = async (negocio_id) => {
     const token = localStorage.getItem("token");
-    const res = await api.put(`/negocios/activar/${negocio_id}`, 
-        {negocio_estado: 1},
+    const res = await api.put(
+        `/negocios/activar/${negocio_id}`,
+        { negocio_estado: 1 },
         {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
     return res;
-
-}
+};
 
 export const fetchUserPerMonth = async (usuario_fecha_registro) => {
     const token = localStorage.getItem("token");
-    const res = await api.get(`/reportes/usuarios-mes/${usuario_fecha_registro}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const res = await api.get(
+        `/reportes/usuarios-mes/${usuario_fecha_registro}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
     return res;
-}   
+};
 
 export const fetchStatsOverview = async () => {
     const token = localStorage.getItem("token");
@@ -144,7 +158,7 @@ export const fetchStatsOverview = async () => {
         },
     });
     return res.data;
-}
+};
 
 export const rolToString = (rol) => {
     switch (rol) {
@@ -157,4 +171,4 @@ export const rolToString = (rol) => {
         case 4:
             return "Cliente";
     }
-}
+};

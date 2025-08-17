@@ -4,7 +4,7 @@ import {
   ArrowPathIcon,
   BuildingStorefrontIcon,
 } from "@heroicons/react/24/solid";
-import { requestOwner } from "../clientService";
+import { requestOwner } from "../../../services/clientService.js";
 
 const RequestOwner = () => {
   const [business, setBusiness] = useState({

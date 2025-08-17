@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
-
-import { fetchTopEmployees, fetchTopServices, fetchTopStores, fetchAppointmentsTrends } from "../adminService";
+import { fetchTopEmployees, fetchTopServices, fetchTopStores, fetchAppointmentsTrends } from "../../../services/adminService.js";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 // Componente para mostrar las estadísticas de un negocio

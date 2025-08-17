@@ -3,7 +3,7 @@ import {
   fetchBusinesses,
   deleteBusiness,
   reactivateBusiness,
-} from "../adminService.js";
+} from "../../../services/adminService.js";
 import { Link } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
 
