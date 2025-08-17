@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../authService";
+import { registerUser } from "../../../services/authService.js";
 import { Link } from "react-router-dom";
 import logo from "../../../assets/images/logo-2.png";
 import {

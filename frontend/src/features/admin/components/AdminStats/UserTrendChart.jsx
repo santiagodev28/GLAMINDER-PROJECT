@@ -1,6 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
-import { fetchUserPerMonth } from "../../adminService";
+import { fetchUserPerMonth } from "../../../../services/adminService.js";
 
 // Componente para mostrar los usuarios registrados por mes
 const UserTrendChart = () => {

@@ -63,6 +63,33 @@ class User {
         });
     }
 
+    static async resetChangeRole(usuario_id) {
+        return new Promise((resolve, reject) => {
+            db.query(
+                "UPDATE usuarios SET rol_cambiado = 0 WHERE usuario_id = ?",
+                [usuario_id],
+                (err, results) => {
+                    if (err) return reject(err);
+                    resolve(results);
+                }
+            );
+        });
+    }
+
+    static async updateUserRole(usuario_id, rol_id) {
+        const [result] = await db.query(
+            `UPDATE usuarios SET rol_id = ? WHERE usuario_id = ?`,
+            [rol_id, usuario_id]
+        );
+        if (result.affectedRows === 0) {
+            throw new Error("No se encontró el usuario.");
+        }
+        return {
+            message: "Estado de la solicitud actualizado correctamente.",
+            affected: result.affectedRows,
+        };
+    }
+
     static async deleteUser(usuario_id) {
         return new Promise((resolve, reject) => {
             db.query(

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Award } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { fetchTopEmployees } from "../../adminService";
+import { fetchTopEmployees } from "../../../../services/adminService.js";
 
 // Componente para mostrar los empleados más agendados por negocio
 const TopEmployees = () => {

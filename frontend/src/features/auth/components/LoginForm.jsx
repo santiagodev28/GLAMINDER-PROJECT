@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../authService";
+import { loginUser } from "../../../services/authService.js";
 import { Link } from "react-router-dom";
 import SuccessMessage from "./SuccessMessage";
 import logo from "../../../assets/images/logo-2.png";
@@ -47,7 +47,8 @@ const LoginForm = () => {
       }
 
       const { token, usuario } = data;
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("usuario", JSON.stringify(data.usuario));
       localStorage.setItem("usuario_nombre", usuario.usuario_nombre);
       localStorage.setItem("usuario_apellido", usuario.usuario_apellido);
       localStorage.setItem("rol_id", usuario.rol_id);

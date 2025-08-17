@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Building2 } from "lucide-react";
-import { fetchTopBusiness } from "../../adminService.js";
+import { fetchTopBusiness } from "../../../../services/adminService.js";
 
 // Componente para mostrar los negocios con más calificaciones
 const TopBusinesses = () => {

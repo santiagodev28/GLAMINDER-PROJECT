@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchEmployeesByStore} from "../adminService.js";
+import { fetchEmployeesByStore} from "../../../services/adminService.js";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";

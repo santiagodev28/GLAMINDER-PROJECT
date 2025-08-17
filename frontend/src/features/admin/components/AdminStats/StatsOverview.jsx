@@ -1,7 +1,7 @@
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Users, Building2, UserCheck, Group } from "lucide-react";
 import { useState, useEffect } from "react";
-import { fetchStatsOverview } from "../../adminService";
+import { fetchStatsOverview } from "../../../../services/adminService.js";
 
 // Mapeo de íconos para las estadísticas
 const iconMap = {

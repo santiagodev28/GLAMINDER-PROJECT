@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchStoresByBusiness } from "../adminService";
+import { fetchStoresByBusiness } from "../../../services/adminService.js";
 import { useParams, Link } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
 // Componente para mostrar las tiendas de un negocio
