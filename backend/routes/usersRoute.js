@@ -3,15 +3,36 @@ import { verifyToken } from '../middlewares/verifyToken.js';
 import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 import UserController from '../controllers/userController.js';
 
-
-
 const userRoutes = Router();
-// Rutas
-userRoutes.put('/rolCambiado/:usuario_id', verifyToken, authorizeRoles(1,2,4), UserController.changeRole);
+
+// Obtener todos los usuarios
+userRoutes.get('/', verifyToken, authorizeRoles(1), UserController.getAllUsers);
+
+// Obtener usuario por ID
+userRoutes.get('/:usuario_id', verifyToken, authorizeRoles(1,2), UserController.getUserById);
+
+// Obtener usuario por correo
+userRoutes.get('/correo/:usuario_correo', verifyToken, authorizeRoles(1,2), UserController.getUserByEmail);
+
+// Crear usuario
+userRoutes.post('/', verifyToken, authorizeRoles(1), UserController.createUser);
+
+// Actualizar usuario
+userRoutes.put('/:usuario_id', verifyToken, authorizeRoles(1,2), UserController.updateUser);
+
+// Actualizar rol del usuario
+userRoutes.put('/:usuario_id/rol', verifyToken, authorizeRoles(1), UserController.updateUserRole);
+
+// Resetear cambio de rol
+userRoutes.put('/:usuario_id/reset-rol', verifyToken, authorizeRoles(1), UserController.resetChangeRole);
+
+// Eliminar usuario (soft delete)
 userRoutes.put('/desactivar/:usuario_id', verifyToken, authorizeRoles(1), UserController.deleteUser);
 
-userRoutes.get('/', verifyToken, authorizeRoles(1), UserController.getAllUsers);
-userRoutes.get('/:usuario_id', verifyToken, authorizeRoles(1,2), UserController.getUserById);
-userRoutes.put('/:usuario_id',  verifyToken, authorizeRoles(1,2), UserController.updateUser);
+// Activar usuario
+userRoutes.put('/activar/:usuario_id', verifyToken, authorizeRoles(1), UserController.activateUser);
+
+// Contar usuarios por estado
+userRoutes.get('/count', verifyToken, authorizeRoles(1), UserController.countUsersByStatus);
 
 export default userRoutes;

@@ -1,38 +1,24 @@
 import Auth from "../models/Auth.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
- 
-// Controlador de autenticacion
+
+// Controlador de autenticación
 class AuthController {
-    static async userLogin(req, res) { // Función para iniciar sesión
+    static async userLogin(req, res) {
         const { usuario_correo, usuario_contrasena } = req.body;
 
         if (!usuario_correo || !usuario_contrasena) {
-            return res
-                .status(400)
-                .json({ message: "Por favor completa los campos." });
+            return res.status(400).json({ message: "Por favor completa los campos." });
         }
 
         try {
-            const user = await Auth.findUserByEmail(usuario_correo);
+            const result = await Auth.verifyCredentials(usuario_correo, usuario_contrasena);
 
-            if (!user) {
-                return res
-                    .status(401)
-                    .json({ message: "Credenciales incorrectas." });
+            if (!result.success) {
+                return res.status(401).json({ message: result.message });
             }
 
-            const isPasswordValid = await bcrypt.compare(
-                usuario_contrasena,
-                user.usuario_contrasena
-            );
-
-            if (!isPasswordValid) {
-                return res
-                    .status(401)
-                    .json({ message: "Credenciales incorrectas." });
-            }
-
+            const user = result.user;
             const token = jwt.sign(
                 { usuario_id: user.usuario_id, rol: user.rol_id },
                 process.env.JWT_SECRET,
@@ -40,88 +26,105 @@ class AuthController {
             );
 
             res.status(200).json({
-                message: "Inicio de sesión exitoso.",
+                message: "Inicio de sesión exitoso.",
                 token,
-                usuario: {
-                    usuario_id: user.usuario_id,
-                    usuario_nombre: user.usuario_nombre,
-                    usuario_apellido: user.usuario_apellido,
-                    usuario_correo: user.usuario_correo,
-                    usuario_telefono: user.usuario_telefono,
-                    rol_id: user.rol_id,
-                },
+                usuario: user,
             });
-        } catch {
-            console.error("Error al iniciar sesión:", error);
-            return res
-                .status(500)
-                .json({ message: "Error al iniciar sesión." });
+        } catch (error) {
+            console.error("Error al iniciar sesión:", error.message);
+            return res.status(500).json({ message: "Error al iniciar sesión." });
         }
     }
 
     static async userRegister(req, res) {
-    try {
-        const {
-            usuario_nombre,
-            usuario_apellido,
-            usuario_correo,
-            usuario_contrasena,
-            usuario_telefono,
-            rol_id,
-            tienda_id,
-            empleado_especialidad,
-        } = req.body;
+        try {
+            const {
+                usuario_nombre,
+                usuario_apellido,
+                usuario_correo,
+                usuario_contrasena,
+                usuario_telefono,
+                rol_id,
+                tienda_id,
+                empleado_especialidad,
+            } = req.body;
 
-        // Validar campos obligatorios
-        if (
-            !usuario_nombre ||
-            !usuario_apellido ||
-            !usuario_correo ||
-            !usuario_contrasena ||
-            !usuario_telefono
-        ) {
-            return res.status(400).json({
-                message: "Por favor completa todos los campos.",
+            // Validar campos obligatorios
+            if (
+                !usuario_nombre ||
+                !usuario_apellido ||
+                !usuario_correo ||
+                !usuario_contrasena ||
+                !usuario_telefono
+            ) {
+                return res.status(400).json({
+                    message: "Por favor completa todos los campos.",
+                });
+            }
+
+            // Crear el usuario
+            const result = await Auth.createUser({
+                usuario_nombre,
+                usuario_apellido,
+                usuario_correo,
+                usuario_contrasena,
+                usuario_telefono,
+                rol_id,
+                tienda_id,
+                empleado_especialidad,
             });
-        }
 
-        // Verificar si el correo ya existe
-        const existingUser = await Auth.findUserByEmail(usuario_correo);
-        if (existingUser) {
-            return res.status(400).json({
-                message: "El correo ya está registrado.",
+            res.status(201).json({
+                message: "Usuario registrado exitosamente.",
+                data: result.data,
             });
+        } catch (error) {
+            if (error.message.includes("registrado")) {
+                return res.status(400).json({ message: error.message });
+            }
+            console.error("Error al registrar el usuario:", error.message);
+            return res.status(500).json({ message: "Error al registrar el usuario." });
         }
+    }
 
-        // Crear el usuario (solo si no existe)
-        const newUser= await Auth.createUser({
-            usuario_nombre,
-            usuario_apellido,
-            usuario_correo,
-            usuario_contrasena,
-            usuario_telefono,
-        });
+    static async changePassword(req, res) {
+        try {
+            const { usuario_id } = req.params;
+            const { currentPassword, newPassword } = req.body;
 
-        return res.status(200).json({
-            message: "Usuario registrado exitosamente.",
-            data: newUser,
-        });
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ message: "Debes proporcionar la contraseña actual y la nueva." });
+            }
 
-    } catch (error) {
-        console.error("Error al registrar el usuario:", error);
-        return res.status(500).json({
-            message: "Error al registrar el usuario.",
-        });
+            const result = await Auth.changePassword(usuario_id, currentPassword, newPassword);
+            res.json({ message: result.message });
+        } catch (error) {
+            if (error.message === "Usuario no encontrado" || error.message === "Contraseña actual incorrecta") {
+                return res.status(400).json({ message: error.message });
+            }
+            console.error("Error al cambiar contraseña:", error.message);
+            res.status(500).json({ message: "Error al cambiar contraseña." });
+        }
+    }
+
+    static async getUserWithRole(req, res) {
+        try {
+            const { usuario_id } = req.params;
+            const user = await Auth.getUserWithRole(usuario_id);
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado." });
+            }
+            res.json(user);
+        } catch (error) {
+            console.error("Error al obtener usuario:", error.message);
+            res.status(500).json({ message: "Error al obtener usuario." });
+        }
+    }
+
+    static async logout(req, res) {
+        req.session?.destroy?.();
+        res.json({ message: "Sesión cerrada exitosamente." });
     }
 }
 
-
-    static async logout (req, res) { // Función para cerrar sesión
-        req.session.destroy();
-        res.json({ message: "Sesion cerrada exitosamente." });
-    }
-}
-
-
-
-export default AuthController
+export default AuthController;
