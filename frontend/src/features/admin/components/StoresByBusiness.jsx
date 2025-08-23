@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchStoresByBusiness } from "../../../services/adminService.js";
+import AdminService from "../../../services/adminService.js";
 import { useParams, Link } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
 // Componente para mostrar las tiendas de un negocio
@@ -10,7 +10,7 @@ const StoresByBusinessTable = () => {
     useEffect(() => {
         const loadStores = async () => {
             try {
-                const stores = await fetchStoresByBusiness(negocio_id);
+                const stores = await AdminService.fetchStoresByBusiness(negocio_id);
                 setStores(stores);
             } catch (error) {
                 console.error("Error al obtener las tiendas:", error);

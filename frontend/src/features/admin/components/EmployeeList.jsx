@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchEmployeesByStore} from "../../../services/adminService.js";
+import AdminService from "../../../services/adminService.js";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
@@ -12,7 +12,7 @@ const EmployeeList = () => {
 
     const loadEmployees = async () => {
         try {
-            const data = await fetchEmployeesByStore(tienda_id);
+            const data = await AdminService.fetchEmployeesByStore(tienda_id);
             setEmployees(data);
         } catch (error) {
             console.error("Error al cargar empleados:", error);

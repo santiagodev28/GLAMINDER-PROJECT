@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Award } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { fetchTopEmployees } from "../../../../services/adminService.js";
+import AdminService from "../../../../services/adminService.js";
 
 // Componente para mostrar los empleados más agendados por negocio
 const TopEmployees = () => {
@@ -12,7 +12,8 @@ const TopEmployees = () => {
     useEffect(() => {
         const fetchTopEmployeesByBussines = async () => {
             try {
-                const response = await fetchTopEmployees(negocio_id);
+                const response = await AdminService.fetchTopEmployees();
+                console.log(response);
                 setEmpleados(response);
             } catch (error) {
                 console.error("Error al cargar los mejores empleados:", error);
@@ -22,7 +23,7 @@ const TopEmployees = () => {
         };
 
         fetchTopEmployeesByBussines();
-    }, [negocio_id]);
+    }, []);
 
     if (loading) return <div>Cargando mejores empleados...</div>;
 
@@ -34,7 +35,7 @@ const TopEmployees = () => {
             <ul className="space-y-2">
                 {empleados.map((emp, index) => (
                     <li key={emp.empleado_id} className="flex justify-between items-center">
-                        <span>{index + 1}. {emp.nombre} {emp.apellido}</span>
+                        <span>{index + 1}. {emp.empleado_nombre} {emp.empleado_apellido}</span>
                         <span className="text-blue-600 font-bold">{emp.total_citas} citas</span>
                     </li>
                 ))}

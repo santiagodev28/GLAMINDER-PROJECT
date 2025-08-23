@@ -1,7 +1,7 @@
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Users, Building2, UserCheck, Group } from "lucide-react";
 import { useState, useEffect } from "react";
-import { fetchStatsOverview } from "../../../../services/adminService.js";
+import  AdminService  from "../../../../services/adminService.js";
 
 // Mapeo de íconos para las estadísticas
 const iconMap = {
@@ -20,9 +20,9 @@ const StatsOverview = () => {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const data = await fetchStatsOverview();
+        const data = await AdminService.fetchStatsOverview();
         console.log(data);
-        setStats(data[0]);
+        setStats(data); 
       } catch (error) {
         setError("Error al cargar las estadísticas");
       } finally {
@@ -70,7 +70,9 @@ const StatsOverview = () => {
           <stat.icon className="w-6 h-6 text-blue-500" />
           <div>
             <p className="text-sm text-gray-500">{stat.title}</p>
-            <p className="text-2xl font-bold">{stats[stat.key]}</p>
+            <p className="text-2xl font-bold">
+              {stats ? <span>{stats[stat.key]}</span> : <span>Cargando...</span>}
+            </p>
             <p className="text-xs text-gray-400">{stat.description}</p>
           </div>
         </CardContent>

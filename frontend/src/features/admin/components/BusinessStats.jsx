@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
-import { fetchTopEmployees, fetchTopServices, fetchTopStores, fetchAppointmentsTrends } from "../../../services/adminService.js";
+import AdminService from "../../../services/adminService.js";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 // Componente para mostrar las estadísticas de un negocio
@@ -15,10 +15,10 @@ const BussinesStats = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const employees = await fetchTopEmployees(negocio_id);
-                const services = await fetchTopServices(negocio_id);
-                const stores = await fetchTopStores(negocio_id);
-                const trends = await fetchAppointmentsTrends(negocio_id);
+                const employees = await AdminService.fetchTopEmployees(negocio_id);
+                const services = await AdminService.fetchTopServices(negocio_id);
+                const stores = await AdminService.fetchTopStores(negocio_id);
+                const trends = await AdminService.fetchAppointmentsTrends(negocio_id);
 
                 setTopEmployees(employees);
                 setTopServices(services);

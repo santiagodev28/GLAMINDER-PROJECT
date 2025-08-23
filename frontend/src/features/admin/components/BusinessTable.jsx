@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  fetchBusinesses,
-  deleteBusiness,
-  reactivateBusiness,
-} from "../../../services/adminService.js";
+import AdminService from "../../../services/adminService.js";
 import { Link } from "react-router-dom";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
 
@@ -18,7 +14,7 @@ const BusinessTable = () => {
 
   const loadBusinesses = async () => {
     try {
-      const businesses = await fetchBusinesses();
+      const businesses = await AdminService.fetchBusinesses();
       setBusinesses(businesses);
     } catch (error) {
       console.error("Error al obtener negocios:", error);

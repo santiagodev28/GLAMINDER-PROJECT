@@ -449,7 +449,6 @@ class Store {
         u.usuario_apellido,
         u.usuario_correo,
         u.usuario_telefono,
-        u.usuario_fecha_nacimiento,
         COUNT(DISTINCT c.cita_id) as total_citas,
         COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) as citas_completadas
       FROM empleados e
