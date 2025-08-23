@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../../api/api";
+import AdminService from "../../../services/adminService.js";
 import RoleFilter from "./RoleFilter";
 import EditUserModal from "../../../components/modals/EditUserModal";
 import ButtonBack  from "../../../components/buttons/ButtonBack";
@@ -14,15 +14,9 @@ const UserAdmin = () => {
 
     const getUsers = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const state = showDeletedUsers ? 0 : 1;
-            const res = await api.get(`/usuarios?usuario_estado=${state}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            console.log("usuarios recibidos", res.data);
-            setUsers(res.data);
+            const users = await AdminService.getUsersByState(showDeletedUsers); 
+            console.log("usuarios recibidos", users);
+            setUsers(users);
         } catch (error) {
             console.error("Error al obtener usuarios:", error);
         }
@@ -53,22 +47,13 @@ const UserAdmin = () => {
         if (!confirmDelete) return;
 
         try {
-            const token = localStorage.getItem("token");
-            const res = await api.put(`/usuarios/desactivar/${usuario_id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                data: {
-                    usuario_estado: 0,
-                },
-            });
-            if (res.status === 200) {
+            const userDeleted = await AdminService.deleteUser(usuario_id);
+            console.log("Usuario eliminado:", userDeleted);
+           
                 alert("Usuario eliminado con éxito");
                 getUsers();
-            } else {
-                alert("No se pudo eliminar el usuario");
-            }
         } catch (error) {
+            alert("No se pudo eliminar el usuario");
             console.error("Error al eliminar el usuario:", error);
         }
     };

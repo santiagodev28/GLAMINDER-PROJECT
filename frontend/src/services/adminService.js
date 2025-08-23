@@ -1,166 +1,184 @@
 import api from "../api/api.js";
 
-// Servicios para obtener los datos a mostrar en las tablas
+const getAuthHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 
-export const getUsersByState = async () => {
-    const token = localStorage.getItem("token");
+// =======================
+// 📌 Usuarios
+// =======================
+const getUsersByState = async (showDeletedUsers = false) => {
     const state = showDeletedUsers ? 0 : 1;
     const res = await api.get(`/usuarios?usuario_estado=${state}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
     });
     return res.data;
 };
 
-export const fetchTopEmployees = async (negocio_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/reportes/top-empleados/${negocio_id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
+const deleteUser = async (usuario_id) => {
+    const res = await api.put(
+        `/usuarios/desactivar/${usuario_id}`,
+        {
+            usuario_estado: 0,
         },
-    });
+        {
+            headers: getAuthHeaders(),
+        }
+    );
     return res.data;
 };
 
-export const fetchTopServices = async (negocio_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/reportes/top-servicios/${negocio_id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-};
-
-export const fetchTopStores = async (negocio_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/reportes/top-tiendas/${negocio_id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-};
-
-export const fetchTopBusiness = async (negocio_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/reportes/top-negocios/${negocio_id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-};
-
-export const fetchAppointmentsTrends = async (negocio_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/reportes/tendencias-citas/${negocio_id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-};
-
-export const fetchBusinesses = async () => {
-    const token = localStorage.getItem("token");
+// =======================
+// 📌 Negocios y tiendas
+// =======================
+const fetchBusinesses = async () => {
     const res = await api.get("/negocios", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
     });
     return res.data;
 };
 
-export const fetchEmployeesByStore = async (tienda_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/tiendas/${tienda_id}/empleados`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data;
-};
-
-export const fetchBusinessById = async (negocio_id) => {
-    const token = localStorage.getItem("token");
+const fetchBusinessById = async (negocio_id) => {
     const res = await api.get(`/negocios/${negocio_id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.json();
-};
-
-export const fetchStoresByBusiness = async (negocio_id) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(`/negocios/${negocio_id}/tiendas`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
     });
     return res.data;
 };
-export const deleteBusiness = async (negocio_id) => {
-    try {
-        const token = localStorage.getItem("token");
 
-        const res = await api.put(
-            `/negocios/desactivar/${negocio_id}`,
-            { negocio_estado: 0 }, // ← cuerpo de la petición
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-
-        return res;
-    } catch (error) {
-        console.error("Error en deleteBusiness:", error);
-        throw error; // ← importante lanzar el error para manejarlo en el componente
-    }
+const fetchStoresByBusiness = async (negocio_id) => {
+    const res = await api.get(`/negocios/${negocio_id}/tiendas`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
 };
 
-export const reactivateBusiness = async (negocio_id) => {
-    const token = localStorage.getItem("token");
+const fetchEmployeesByStore = async (tienda_id) => {
+    const res = await api.get(`/tiendas/${tienda_id}/empleados`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+const deleteBusiness = async (negocio_id) => {
+    const res = await api.put(
+        `/negocios/desactivar/${negocio_id}`,
+        { negocio_estado: 0 },
+        { headers: getAuthHeaders() }
+    );
+    return res.data;
+};
+
+const reactivateBusiness = async (negocio_id) => {
     const res = await api.put(
         `/negocios/activar/${negocio_id}`,
         { negocio_estado: 1 },
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
+        { headers: getAuthHeaders() }
     );
-    return res;
+    return res.data;
 };
 
-export const fetchUserPerMonth = async (usuario_fecha_registro) => {
-    const token = localStorage.getItem("token");
-    const res = await api.get(
-        `/reportes/usuarios-mes/${usuario_fecha_registro}`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    );
-    return res;
-};
+// =======================
+// 📌 Reportes (según reportsRoute.js)
+// =======================
 
-export const fetchStatsOverview = async () => {
-    const token = localStorage.getItem("token");
-    const res = await api.get("/reportes/estadisticas-resumen", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+// Citas
+const fetchAppointmentsByState = async (cita_estado) => {
+    const res = await api.get(`/reportes/citas/estado/${cita_estado}`, {
+        headers: getAuthHeaders(),
     });
     return res.data;
 };
 
-export const rolToString = (rol) => {
+const fetchAppointmentsByDay = async (cita_fecha) => {
+    const res = await api.get(`/reportes/citas/dia/${cita_fecha}`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+const fetchAppointmentsTrends = async () => {
+    const res = await api.get(`/reportes/citas/tendencias`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Servicios
+const fetchTopServices = async () => {
+    const res = await api.get(`/reportes/servicios/mas-agendados`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Empleados
+const fetchTopEmployees = async () => {
+    const res = await api.get(`/reportes/empleados/mas-agendados`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Tiendas
+const fetchTopStores = async () => {
+    const res = await api.get(`/reportes/tiendas/top`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Negocios
+const fetchTopBusiness = async () => {
+    const res = await api.get(`/reportes/negocios/top`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Usuarios registrados por mes
+const fetchUserRegistrationTrends = async () => {
+    const res = await api.get(`/reportes/usuarios/tendencias`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Estadísticas generales
+const fetchStatsOverview = async () => {
+    const res = await api.get(`/reportes/estadisticas/resumen`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Rendimiento
+const fetchPerformanceReport = async () => {
+    const res = await api.get(`/reportes/rendimiento`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Satisfacción del cliente
+const fetchCustomerSatisfaction = async () => {
+    const res = await api.get(`/reportes/satisfaccion`, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// Reporte personalizado
+const fetchCustomReport = async (payload) => {
+    const res = await api.post(`/reportes/personalizado`, payload, {
+        headers: getAuthHeaders(),
+    });
+    return res.data;
+};
+
+// =======================
+// 📌 Utilidades
+// =======================
+const rolToString = (rol) => {
     switch (rol) {
         case 1:
             return "Administrador";
@@ -170,5 +188,36 @@ export const rolToString = (rol) => {
             return "Empleado";
         case 4:
             return "Cliente";
+        default:
+            return "Desconocido";
     }
 };
+
+// =======================
+// 📌 Exportar como objeto único
+// =======================
+const AdminService = {
+    getUsersByState,
+    deleteUser,
+    fetchBusinesses,
+    fetchBusinessById,
+    fetchStoresByBusiness,
+    fetchEmployeesByStore,
+    deleteBusiness,
+    reactivateBusiness,
+    fetchAppointmentsByState,
+    fetchAppointmentsByDay,
+    fetchAppointmentsTrends,
+    fetchTopServices,
+    fetchTopEmployees,
+    fetchTopStores,
+    fetchTopBusiness,
+    fetchUserRegistrationTrends,
+    fetchStatsOverview,
+    fetchPerformanceReport,
+    fetchCustomerSatisfaction,
+    fetchCustomReport,
+    rolToString,
+};
+
+export default AdminService;
