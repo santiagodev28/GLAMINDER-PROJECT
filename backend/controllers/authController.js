@@ -121,10 +121,6 @@ class AuthController {
         }
     }
 
-    static async logout(req, res) {
-        req.session?.destroy?.();
-        res.json({ message: "Sesión cerrada exitosamente." });
-    }
 }
 
 export default AuthController;

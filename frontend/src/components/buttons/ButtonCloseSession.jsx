@@ -1,19 +1,17 @@
-import api from "../../../api/api";
+import useAuth from "../../services/authService";
 
-const closeSession = async (token) => {
-    try {
-        const res = await api.post(
-            "/auth/cerrarSesion",
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-        return res.data;
-    } catch (error) {
-        console.error("Error al cerrar la sesión:", error);
-        return null;
-    }
+const ButtonCloseSession = ({ token, onClose }) => {
+
+    const { logout } = useAuth();
+
+    return (
+        <button
+            onClick={logout}
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+        >
+            Cerrar sesión
+        </button>
+    );
 };
+
+export default ButtonCloseSession;

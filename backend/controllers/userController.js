@@ -125,6 +125,21 @@ class UserController {
         }
     }
 
+    static async updateRoleChange(req, res) {
+        try {
+            const { usuario_id } = req.params;
+            const { rol_cambiado } = req.body;
+            const result = await User.updateRoleChange(usuario_id, rol_cambiado);
+            res.json(result);
+        } catch (error) {
+            if (error.message === "Usuario no encontrado") {
+                return res.status(404).json({ error: error.message });
+            }
+            console.error("Error al actualizar rol_cambiado:", error.message);
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     static async countUsersByStatus(req, res) {
         try {
             const estado = req.query.usuario_estado || 1;

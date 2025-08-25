@@ -6,19 +6,19 @@ import BusinessController from "../controllers/businessController.js";
 const businessRoutes = Router();
 
 // Crear nuevo negocio
-businessRoutes.post('/', verifyToken, authorizeRoles(1,2), BusinessController.createBusiness);
+businessRoutes.post('/', verifyToken, authorizeRoles(1,2,4), BusinessController.createBusiness);
 
 // Obtener todos los negocios (con filtro opcional por estado)
-businessRoutes.get('/', verifyToken, authorizeRoles(1,2), BusinessController.getAllBusiness);
+businessRoutes.get('/', verifyToken, authorizeRoles(1,2,4), BusinessController.getAllBusiness);
 
 // Obtener negocio por ID
-businessRoutes.get('/:negocio_id', verifyToken, authorizeRoles(1,2), BusinessController.getBusinessById);
+businessRoutes.get('/:negocio_id', verifyToken, authorizeRoles(1,2,4), BusinessController.getBusinessById);
 
 // Obtener negocio por correo
-businessRoutes.get('/correo/:negocio_correo', verifyToken, authorizeRoles(1,2), BusinessController.getBusinessByEmail);
+businessRoutes.get('/correo/:negocio_correo', verifyToken, authorizeRoles(1,2,4), BusinessController.getBusinessByEmail);
 
 // Obtener tiendas de un negocio
-businessRoutes.get('/:negocio_id/tiendas', verifyToken, authorizeRoles(1,2), BusinessController.getStoresByBusiness);
+businessRoutes.get('/:negocio_id/tiendas', verifyToken, authorizeRoles(1,2,4), BusinessController.getStoresByBusiness);
 
 // Actualizar negocio
 businessRoutes.put('/:negocio_id', verifyToken, authorizeRoles(1,2), BusinessController.updateBusiness);

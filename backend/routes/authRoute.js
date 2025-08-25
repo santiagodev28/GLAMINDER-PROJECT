@@ -16,7 +16,5 @@ authRoutes.put('/cambiar-contrasena/:usuario_id', AuthController.changePassword)
 // Obtener usuario con rol
 authRoutes.get('/usuario/:usuario_id', AuthController.getUserWithRole);
 
-// Cerrar sesión
-authRoutes.post('/cerrar-sesion', AuthController.logout);
 
 export default authRoutes;

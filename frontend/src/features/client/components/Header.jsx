@@ -1,5 +1,5 @@
-
-
+import ButtonCloseSession from "../../../components/buttons/ButtonCloseSession";
+import logo from "../../../assets/images/logo-2.png";
 const Header = () => {
 
     return(
@@ -48,15 +48,12 @@ const Header = () => {
                 </button>
               </div>
 
-              <Link
-                to="/"
-                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-              >
-                Cerrar sesión
-              </Link>
+              <ButtonCloseSession />
             </div>
           </div>
         </div>
       </header>
     )
 }
+
+export default Header;

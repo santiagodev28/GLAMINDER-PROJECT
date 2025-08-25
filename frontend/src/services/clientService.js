@@ -14,12 +14,12 @@ export const requestOwner = async(data,token) => {
     }
 }
 
-export const messageChangeRole = async( token, usuario_id) => {
+export const messageChangeRole = async( token, usuario_id, rol_cambiado) => {
     try {
         const res = await api.put(`/usuarios/rolCambiado/${usuario_id}`, {
-            rol_cambiado: 1
+            rol_cambiado
         },
-            {
+        {
             headers: {
                 Authorization: `Bearer ${token}`,
             }
@@ -30,4 +30,6 @@ export const messageChangeRole = async( token, usuario_id) => {
         return null
     }
 }
+
+
 

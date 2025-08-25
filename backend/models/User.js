@@ -223,6 +223,25 @@ class User {
         return await bcrypt.compare(plainPassword, hashedPassword);
     }
 
+    // Actualizar campo rol_cambiado
+    static async updateRoleChange(usuario_id, rol_cambiado) {
+        const query =
+            "UPDATE usuarios SET rol_cambiado = ? WHERE usuario_id = ?";
+        const result = await executeQuery(query, [rol_cambiado, usuario_id]);
+
+        if (!result.success) {
+            throw new Error(`Error al actualizar rol_cambiado: ${result.error}`);
+        }
+
+        if (result.data.affectedRows === 0) {
+            throw new Error("Usuario no encontrado");
+        }
+
+        return {
+            message: "Campo rol_cambiado actualizado exitosamente",
+            affectedRows: result.data.affectedRows,
+        };
+    }
     // Contar usuarios por estado
     static async countUsersByStatus(usuario_estado = 1) {
         const query =

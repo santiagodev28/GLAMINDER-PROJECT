@@ -5,7 +5,7 @@ const getAuthHeaders = () => ({
 });
 
 // =======================
-// 📌 Usuarios
+//  Usuarios
 // =======================
 const getUsersByState = async (showDeletedUsers = false) => {
     const state = showDeletedUsers ? 0 : 1;
@@ -29,7 +29,7 @@ const deleteUser = async (usuario_id) => {
 };
 
 // =======================
-// 📌 Negocios y tiendas
+// Negocios y tiendas
 // =======================
 const fetchBusinesses = async () => {
     const res = await api.get("/negocios", {
@@ -78,7 +78,7 @@ const reactivateBusiness = async (negocio_id) => {
 };
 
 // =======================
-// 📌 Reportes (según reportsRoute.js)
+// Reportes (según reportsRoute.js)
 // =======================
 
 // Citas
@@ -176,7 +176,7 @@ const fetchCustomReport = async (payload) => {
 };
 
 // =======================
-// 📌 Utilidades
+// Utilidades
 // =======================
 const rolToString = (rol) => {
     switch (rol) {
@@ -194,7 +194,7 @@ const rolToString = (rol) => {
 };
 
 // =======================
-// 📌 Exportar como objeto único
+// Exportar como objeto único
 // =======================
 const AdminService = {
     getUsersByState,

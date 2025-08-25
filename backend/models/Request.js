@@ -239,83 +239,106 @@ class Request {
 
   // Aprobar solicitud (transacción completa)
   static async approveRequest(solicitud_id, usuario_id, admin_id = null) {
-    const queries = [
-      // 1. Actualizar estado de la solicitud
-      {
-        query: `
-          UPDATE solicitudes_propietario 
-          SET estado = ?, fecha_procesamiento = NOW(), procesado_por = ?
-          WHERE solicitud_id = ?
-        `,
-        params: [this.STATES.APPROVED, admin_id, solicitud_id]
-      },
-      // 2. Crear registro de propietario
-      {
-        query: `
-          INSERT INTO propietarios (usuario_id, propietario_fecha_registro, propietario_estado)
-          VALUES (?, NOW(), 1)
-        `,
-        params: [usuario_id]
-      },
-      // 3. Actualizar rol del usuario
-      {
-        query: `
-          UPDATE usuarios 
-          SET rol_id = ?, rol_cambiado = 1
-          WHERE usuario_id = ?
-        `,
-        params: [this.USER_ROLES.OWNER, usuario_id]
-      }
-    ];
+  // 1. Obtén los datos de la solicitud para usarlos en el negocio
+  const solicitud = await this.getRequestById(solicitud_id);
 
-    try {
-      const result = await executeTransaction(queries);
-      
-      if (!result.success) {
-        throw new Error(`Error en transacción de aprobación: ${result.error}`);
-      }
-
-      return {
-        success: true,
-        message: 'Solicitud aprobada exitosamente. El usuario ahora es propietario.',
-        solicitud_id,
-        usuario_id,
-        estado: this.STATES.APPROVED,
-        propietario_id: result.data[1].insertId,
-        data: await this.getRequestById(solicitud_id)
-      };
-
-    } catch (error) {
-      throw new Error(`Error al aprobar solicitud: ${error.message}`);
+  const queries = [
+    // 1. Actualizar estado de la solicitud
+    {
+      query: `
+        UPDATE solicitudes_propietario 
+        SET estado = ?
+        WHERE solicitud_id = ?
+      `,
+      params: [this.STATES.APPROVED, solicitud_id]
+    },
+    // 2. Crear registro de propietario
+    {
+      query: `
+        INSERT INTO propietarios (usuario_id, propietario_estado)
+        VALUES (?, 1)
+      `,
+      params: [usuario_id]
+    },
+    // 3. Actualizar rol del usuario y marcar rol_cambiado = 1
+    {
+      query: `
+        UPDATE usuarios 
+        SET rol_id = ?, rol_cambiado = 1
+        WHERE usuario_id = ?
+      `,
+      params: [this.USER_ROLES.OWNER, usuario_id]
+    },
+    // 4. Crear el negocio con los datos de la solicitud
+    {
+      query: `
+        INSERT INTO negocios 
+        (propietario_id, negocio_nombre, negocio_telefono, negocio_correo, negocio_descripcion)
+        VALUES (LAST_INSERT_ID(), ?, ?, ?, ?)
+      `,
+      params: [
+        solicitud.nombre_negocio,
+        solicitud.telefono_negocio,
+        solicitud.correo_negocio,
+        solicitud.descripcion_negocio
+      ]
     }
-  }
+  ];
 
-  // Rechazar solicitud
-  static async rejectRequest(solicitud_id, admin_id = null) {
-    const query = `
-      UPDATE solicitudes_propietario 
-      SET estado = ?, fecha_procesamiento = NOW(), procesado_por = ?
-      WHERE solicitud_id = ?
-    `;
+  try {
+    const result = await executeTransaction(queries);
 
-    const result = await executeQuery(query, [this.STATES.REJECTED, admin_id, solicitud_id]);
-    
     if (!result.success) {
-      throw new Error(`Error al rechazar solicitud: ${result.error}`);
+      throw new Error(`Error en transacción de aprobación: ${result.error}`);
     }
 
-    if (result.data.affectedRows === 0) {
-      throw new Error('Solicitud no encontrada');
-    }
+    // El propietario_id es el insertId del segundo query
+    const propietarioInsert = Array.isArray(result.data) && result.data[1] ? result.data[1] : null;
+    // El negocio_id es el insertId del cuarto query
+    const negocioInsert = Array.isArray(result.data) && result.data[3] ? result.data[3] : null;
 
     return {
       success: true,
-      message: 'Solicitud rechazada exitosamente',
+      message: 'Solicitud aprobada exitosamente. El usuario ahora es propietario y el negocio ha sido creado.',
       solicitud_id,
-      estado: this.STATES.REJECTED,
+      usuario_id,
+      estado: this.STATES.APPROVED,
+      propietario_id: propietarioInsert ? propietarioInsert.insertId : null,
+      negocio_id: negocioInsert ? negocioInsert.insertId : null,
       data: await this.getRequestById(solicitud_id)
     };
+
+  } catch (error) {
+    throw new Error(`Error al aprobar solicitud: ${error.message}`);
   }
+}
+
+// También necesitas corregir el método rejectRequest
+static async rejectRequest(solicitud_id, admin_id = null) {
+  const query = `
+    UPDATE solicitudes_propietario 
+    SET estado = ?
+    WHERE solicitud_id = ?
+  `;
+
+  const result = await executeQuery(query, [this.STATES.REJECTED, solicitud_id]);
+  
+  if (!result.success) {
+    throw new Error(`Error al rechazar solicitud: ${result.error}`);
+  }
+
+  if (result.data.affectedRows === 0) {
+    throw new Error('Solicitud no encontrada');
+  }
+
+  return {
+    success: true,
+    message: 'Solicitud rechazada exitosamente',
+    solicitud_id,
+    estado: this.STATES.REJECTED,
+    data: await this.getRequestById(solicitud_id)
+  };
+}
 
   // ===== VALIDACIONES Y UTILIDADES =====
 

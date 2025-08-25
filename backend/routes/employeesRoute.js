@@ -6,13 +6,13 @@ import EmployeeController from "../controllers/employeeController.js";
 const employeeRoutes = Router();
 
 // Obtener todos los empleados (con filtros)
-employeeRoutes.get('/', verifyToken, authorizeRoles(1,2), EmployeeController.getAllEmployees);
+employeeRoutes.get('/', verifyToken, authorizeRoles(1,2,4), EmployeeController.getAllEmployees);
 
 // Obtener empleado por ID
-employeeRoutes.get('/:empleado_id', verifyToken, authorizeRoles(1,2), EmployeeController.getEmployeeById);
+employeeRoutes.get('/:empleado_id', verifyToken, authorizeRoles(1,2,4), EmployeeController.getEmployeeById);
 
 // Obtener empleado por usuario_id
-employeeRoutes.get('/usuario/:usuario_id', verifyToken, authorizeRoles(1,2), EmployeeController.getEmployeeByUserId);
+employeeRoutes.get('/usuario/:usuario_id', verifyToken, authorizeRoles(1,2,4), EmployeeController.getEmployeeByUserId);
 
 // Crear nuevo empleado
 employeeRoutes.post('/', verifyToken, authorizeRoles(1,2), EmployeeController.createEmployee);

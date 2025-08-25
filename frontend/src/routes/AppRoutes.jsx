@@ -14,6 +14,9 @@ import EmployeeList from "../features/admin/components/EmployeeList";
 import BusinessStats from "../features/admin/components/BusinessStats";
 import StatsAdmin from "../features/admin/pages/StatsAdmin";
 import RequestsAdmin from "../features/admin/pages/RequestsAdmin";
+import RequestOwner from "../features/client/components/RequestOwner";
+import BusinessList from "../features/client/components/Businesses/BusinessList";
+import BusinessDetail from "../features/client/components/Businesses/BusinessDetail";
 
 const AppRoutes = () => {
     return (
@@ -45,7 +48,12 @@ const AppRoutes = () => {
             </Route>
 
             {/* Layout de Cliente */}
-            <Route path="/cliente" element={<ClientLayout />}></Route>
+            <Route path="/cliente" element={<ClientLayout />}>
+                {/* Aquí puedes agregar rutas específicas para el cliente */}
+                <Route path="/cliente/propietario" element={<RequestOwner />} />
+                <Route path="/cliente/dashboard" element={<BusinessList/>} />
+                <Route path="/cliente/negocios/:id" element={<BusinessDetail/>} />
+            </Route>
 
             {/* Layout de Propietario */}
             <Route path="/propietario" element={<OwnerLayout />}></Route>

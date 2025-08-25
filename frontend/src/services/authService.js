@@ -1,4 +1,5 @@
 import api from "../api/api.js";
+import { useNavigate } from "react-router-dom";
 
 // Servicios para el login y registro
 
@@ -28,3 +29,24 @@ export const registerUser = async (userData) => {
         };
     }
 };
+
+
+
+function useAuth() {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    // Quitar el token del almacenamiento
+    localStorage.removeItem("token");
+
+    // limpiar info del usuario
+    localStorage.removeItem("user");
+
+    // Redirigir al login
+    navigate("/");
+  };
+
+  return { logout };
+}
+
+export default useAuth;

@@ -32,6 +32,9 @@ userRoutes.put('/desactivar/:usuario_id', verifyToken, authorizeRoles(1), UserCo
 // Activar usuario
 userRoutes.put('/activar/:usuario_id', verifyToken, authorizeRoles(1), UserController.activateUser);
 
+// Actualizar campo rol_cambiado
+userRoutes.put('/rolCambiado/:usuario_id', verifyToken, UserController.updateRoleChange);
+
 // Contar usuarios por estado
 userRoutes.get('/count', verifyToken, authorizeRoles(1), UserController.countUsersByStatus);
 

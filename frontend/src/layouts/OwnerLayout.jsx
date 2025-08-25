@@ -39,7 +39,7 @@ const LayoutOwner = ({ children }) => {
 
     const handleCloseModal = async () => {
         try {
-            await messageChangeRole(token, user.usuario_id);
+            await messageChangeRole(token, user.usuario_id, 0);
             const updatedUser = { ...user, rol_cambiado: 0 };
             localStorage.setItem("usuario", JSON.stringify(updatedUser));
             setUser(updatedUser);
