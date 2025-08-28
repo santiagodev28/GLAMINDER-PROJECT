@@ -1,30 +1,30 @@
-import { executeQuery, executeTransaction } from '../database/connectiondb.js';
+import { executeQuery, executeTransaction } from "../database/connectiondb.js";
 
 class Service {
   // Estados válidos para servicios
   static STATES = {
     ACTIVE: 1,
-    INACTIVE: 0
+    INACTIVE: 0,
   };
 
   // Tipos de servicio
   static TYPES = {
-    INDIVIDUAL: 'individual',
-    GRUPAL: 'grupal',
-    DOMICILIO: 'domicilio'
+    INDIVIDUAL: "individual",
+    GRUPAL: "grupal",
+    DOMICILIO: "domicilio",
   };
 
   // Categorías de servicio
   static CATEGORIES = {
-    CORTE: 'corte',
-    TINTE: 'tinte',
-    TRATAMIENTO: 'tratamiento',
-    PEINADO: 'peinado',
-    MANICURE: 'manicure',
-    PEDICURE: 'pedicure',
-    FACIAL: 'facial',
-    MASAJE: 'masaje',
-    OTROS: 'otros'
+    CORTE: "corte",
+    TINTE: "tinte",
+    TRATAMIENTO: "tratamiento",
+    PEINADO: "peinado",
+    MANICURE: "manicure",
+    PEDICURE: "pedicure",
+    FACIAL: "facial",
+    MASAJE: "masaje",
+    OTROS: "otros",
   };
 
   // ===== MÉTODOS CRUD BÁSICOS =====
@@ -52,62 +52,64 @@ class Service {
 
     // Aplicar filtros
     if (filters.servicio_estado !== undefined) {
-      conditions.push('s.servicio_estado = ?');
+      conditions.push("s.servicio_estado = ?");
       params.push(filters.servicio_estado);
     } else {
       // Por defecto, mostrar solo activos
-      conditions.push('s.servicio_estado = ?');
+      conditions.push("s.servicio_estado = ?");
       params.push(this.STATES.ACTIVE);
     }
 
     if (filters.tienda_id) {
-      conditions.push('s.tienda_id = ?');
+      conditions.push("s.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
     if (filters.negocio_id) {
-      conditions.push('n.negocio_id = ?');
+      conditions.push("n.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.servicio_categoria) {
-      conditions.push('s.servicio_categoria = ?');
+      conditions.push("s.servicio_categoria = ?");
       params.push(filters.servicio_categoria);
     }
 
     if (filters.servicio_tipo) {
-      conditions.push('s.servicio_tipo = ?');
+      conditions.push("s.servicio_tipo = ?");
       params.push(filters.servicio_tipo);
     }
 
     if (filters.precio_min) {
-      conditions.push('s.servicio_precio >= ?');
+      conditions.push("s.servicio_precio >= ?");
       params.push(filters.precio_min);
     }
 
     if (filters.precio_max) {
-      conditions.push('s.servicio_precio <= ?');
+      conditions.push("s.servicio_precio <= ?");
       params.push(filters.precio_max);
     }
 
     if (filters.duracion_min) {
-      conditions.push('s.servicio_duracion >= ?');
+      conditions.push("s.servicio_duracion >= ?");
       params.push(filters.duracion_min);
     }
 
     if (filters.duracion_max) {
-      conditions.push('s.servicio_duracion <= ?');
+      conditions.push("s.servicio_duracion <= ?");
       params.push(filters.duracion_max);
     }
 
     if (filters.search) {
-      conditions.push('(s.servicio_nombre LIKE ? OR s.servicio_descripcion LIKE ?)');
+      conditions.push(
+        "(s.servicio_nombre LIKE ? OR s.servicio_descripcion LIKE ?)"
+      );
       const searchTerm = `%${filters.search}%`;
       params.push(searchTerm, searchTerm);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     query += `
@@ -116,7 +118,7 @@ class Service {
     `;
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener servicios: ${result.error}`);
     }
@@ -149,12 +151,60 @@ class Service {
     `;
 
     const result = await executeQuery(query, [servicio_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener servicio: ${result.error}`);
     }
 
     return result.data[0] || null;
+  }
+
+  // Obtener servicios por tienda
+  static async getServicesByStore(tienda_id, includeInactive = false) {
+    try {
+      // Validar que la tienda existe
+      const storeValidation = await this.validateStore(tienda_id);
+      if (!storeValidation.isValid) {
+        throw new Error(storeValidation.message);
+      }
+
+      let query = `
+        SELECT 
+          s.*,
+          t.tienda_nombre,
+          t.tienda_direccion,
+          n.negocio_nombre,
+          n.negocio_id
+        FROM servicios s
+        LEFT JOIN tiendas t ON s.tienda_id = t.tienda_id
+        LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
+        WHERE s.tienda_id = ?
+      `;
+
+      const params = [tienda_id];
+
+      // Solo incluir servicios activos por defecto
+      if (!includeInactive) {
+        query += " AND s.servicio_estado = ?";
+        params.push(this.STATES.ACTIVE);
+      }
+
+      query += " ORDER BY s.servicio_categoria ASC, s.servicio_nombre ASC";
+
+      const result = await executeQuery(query, params);
+
+      if (!result.success) {
+        throw new Error(
+          `Error al obtener servicios de la tienda: ${result.error}`
+        );
+      }
+
+      return result.data;
+    } catch (error) {
+      throw new Error(
+        `Error al obtener servicios por tienda: ${error.message}`
+      );
+    }
   }
 
   // Crear nuevo servicio
@@ -167,32 +217,50 @@ class Service {
       servicio_duracion,
       servicio_categoria,
       servicio_tipo = this.TYPES.INDIVIDUAL,
-      servicio_capacidad_maxima = 1
+      servicio_capacidad_maxima = 1,
     } = serviceData;
 
     // Validaciones básicas
-    if (!tienda_id || !servicio_nombre || !servicio_precio || !servicio_duracion || !servicio_categoria) {
-      throw new Error('Los campos tienda_id, servicio_nombre, servicio_precio, servicio_duracion y servicio_categoria son obligatorios');
+    if (
+      !tienda_id ||
+      !servicio_nombre ||
+      !servicio_precio ||
+      !servicio_duracion ||
+      !servicio_categoria
+    ) {
+      throw new Error(
+        "Los campos tienda_id, servicio_nombre, servicio_precio, servicio_duracion y servicio_categoria son obligatorios"
+      );
     }
 
     // Validar precio
     if (servicio_precio <= 0) {
-      throw new Error('El precio del servicio debe ser mayor a 0');
+      throw new Error("El precio del servicio debe ser mayor a 0");
     }
 
     // Validar duración
     if (servicio_duracion <= 0) {
-      throw new Error('La duración del servicio debe ser mayor a 0 minutos');
+      throw new Error("La duración del servicio debe ser mayor a 0 minutos");
     }
 
     // Validar categoría
-    if (!Object.values(this.CATEGORIES).includes(servicio_categoria.toLowerCase())) {
-      throw new Error(`Categoría inválida: ${servicio_categoria}. Debe ser una de: ${Object.values(this.CATEGORIES).join(', ')}`);
+    if (
+      !Object.values(this.CATEGORIES).includes(servicio_categoria.toLowerCase())
+    ) {
+      throw new Error(
+        `Categoría inválida: ${servicio_categoria}. Debe ser una de: ${Object.values(
+          this.CATEGORIES
+        ).join(", ")}`
+      );
     }
 
     // Validar tipo
     if (!Object.values(this.TYPES).includes(servicio_tipo.toLowerCase())) {
-      throw new Error(`Tipo de servicio inválido: ${servicio_tipo}. Debe ser uno de: ${Object.values(this.TYPES).join(', ')}`);
+      throw new Error(
+        `Tipo de servicio inválido: ${servicio_tipo}. Debe ser uno de: ${Object.values(
+          this.TYPES
+        ).join(", ")}`
+      );
     }
 
     try {
@@ -203,9 +271,12 @@ class Service {
       }
 
       // Verificar que no existe un servicio con el mismo nombre en la tienda
-      const existingService = await this.checkDuplicateService(tienda_id, servicio_nombre);
+      const existingService = await this.checkDuplicateService(
+        tienda_id,
+        servicio_nombre
+      );
       if (existingService) {
-        throw new Error('Ya existe un servicio con ese nombre en esta tienda');
+        throw new Error("Ya existe un servicio con ese nombre en esta tienda");
       }
 
       const query = `
@@ -225,11 +296,11 @@ class Service {
         servicio_categoria.toLowerCase(),
         servicio_tipo.toLowerCase(),
         servicio_capacidad_maxima,
-        this.STATES.ACTIVE
+        this.STATES.ACTIVE,
       ];
 
       const result = await executeQuery(query, params);
-      
+
       if (!result.success) {
         throw new Error(`Error al crear servicio: ${result.error}`);
       }
@@ -237,10 +308,9 @@ class Service {
       return {
         success: true,
         servicio_id: result.data.insertId,
-        message: 'Servicio creado exitosamente',
-        data: await this.getServiceById(result.data.insertId)
+        message: "Servicio creado exitosamente",
+        data: await this.getServiceById(result.data.insertId),
       };
-
     } catch (error) {
       throw new Error(`Error al crear servicio: ${error.message}`);
     }
@@ -256,29 +326,35 @@ class Service {
       servicio_duracion,
       servicio_categoria,
       servicio_tipo,
-      servicio_capacidad_maxima
+      servicio_capacidad_maxima,
     } = updateData;
 
     // Verificar que el servicio existe
     const existingService = await this.getServiceById(servicio_id);
     if (!existingService) {
-      throw new Error('Servicio no encontrado');
+      throw new Error("Servicio no encontrado");
     }
 
     // Validaciones si se proporcionan nuevos valores
     if (servicio_precio !== undefined && servicio_precio <= 0) {
-      throw new Error('El precio del servicio debe ser mayor a 0');
+      throw new Error("El precio del servicio debe ser mayor a 0");
     }
 
     if (servicio_duracion !== undefined && servicio_duracion <= 0) {
-      throw new Error('La duración del servicio debe ser mayor a 0 minutos');
+      throw new Error("La duración del servicio debe ser mayor a 0 minutos");
     }
 
-    if (servicio_categoria && !Object.values(this.CATEGORIES).includes(servicio_categoria.toLowerCase())) {
+    if (
+      servicio_categoria &&
+      !Object.values(this.CATEGORIES).includes(servicio_categoria.toLowerCase())
+    ) {
       throw new Error(`Categoría inválida: ${servicio_categoria}`);
     }
 
-    if (servicio_tipo && !Object.values(this.TYPES).includes(servicio_tipo.toLowerCase())) {
+    if (
+      servicio_tipo &&
+      !Object.values(this.TYPES).includes(servicio_tipo.toLowerCase())
+    ) {
       throw new Error(`Tipo de servicio inválido: ${servicio_tipo}`);
     }
 
@@ -291,20 +367,34 @@ class Service {
     }
 
     // Verificar nombre duplicado si se cambia
-    if (servicio_nombre && servicio_nombre !== existingService.servicio_nombre) {
+    if (
+      servicio_nombre &&
+      servicio_nombre !== existingService.servicio_nombre
+    ) {
       const newTiendaId = tienda_id || existingService.tienda_id;
-      const existingDuplicate = await this.checkDuplicateService(newTiendaId, servicio_nombre, servicio_id);
+      const existingDuplicate = await this.checkDuplicateService(
+        newTiendaId,
+        servicio_nombre,
+        servicio_id
+      );
       if (existingDuplicate) {
-        throw new Error('Ya existe un servicio con ese nombre en esta tienda');
+        throw new Error("Ya existe un servicio con ese nombre en esta tienda");
       }
     }
 
     // Verificar si hay citas futuras antes de hacer cambios de precio o duración significativos
-    if ((servicio_precio && Math.abs(servicio_precio - existingService.servicio_precio) > existingService.servicio_precio * 0.2) ||
-        (servicio_duracion && Math.abs(servicio_duracion - existingService.servicio_duracion) > 15)) {
+    if (
+      (servicio_precio &&
+        Math.abs(servicio_precio - existingService.servicio_precio) >
+          existingService.servicio_precio * 0.2) ||
+      (servicio_duracion &&
+        Math.abs(servicio_duracion - existingService.servicio_duracion) > 15)
+    ) {
       const hasFutureCitas = await this.hasFutureAppointments(servicio_id);
       if (hasFutureCitas) {
-        console.warn('Servicio tiene citas futuras, los cambios pueden afectar las citas programadas');
+        console.warn(
+          "Servicio tiene citas futuras, los cambios pueden afectar las citas programadas"
+        );
       }
     }
 
@@ -331,24 +421,24 @@ class Service {
       servicio_categoria?.toLowerCase(),
       servicio_tipo?.toLowerCase(),
       servicio_capacidad_maxima,
-      servicio_id
+      servicio_id,
     ];
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al actualizar servicio: ${result.error}`);
     }
 
     if (result.data.affectedRows === 0) {
-      throw new Error('Servicio no encontrado');
+      throw new Error("Servicio no encontrado");
     }
 
     return {
       success: true,
-      message: 'Servicio actualizado exitosamente',
+      message: "Servicio actualizado exitosamente",
       affectedRows: result.data.affectedRows,
-      data: await this.getServiceById(servicio_id)
+      data: await this.getServiceById(servicio_id),
     };
   }
 
@@ -363,26 +453,30 @@ class Service {
     if (nuevo_estado === this.STATES.INACTIVE) {
       const hasFutureCitas = await this.hasFutureAppointments(servicio_id);
       if (hasFutureCitas) {
-        throw new Error('No se puede desactivar un servicio con citas programadas');
+        throw new Error(
+          "No se puede desactivar un servicio con citas programadas"
+        );
       }
     }
 
-    const query = 'UPDATE servicios SET servicio_estado = ?, fecha_modificacion = NOW() WHERE servicio_id = ?';
+    const query =
+      "UPDATE servicios SET servicio_estado = ?, fecha_modificacion = NOW() WHERE servicio_id = ?";
     const result = await executeQuery(query, [nuevo_estado, servicio_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al cambiar estado del servicio: ${result.error}`);
     }
 
     if (result.data.affectedRows === 0) {
-      throw new Error('Servicio no encontrado');
+      throw new Error("Servicio no encontrado");
     }
 
-    const estadoTexto = nuevo_estado === this.STATES.ACTIVE ? 'activado' : 'desactivado';
+    const estadoTexto =
+      nuevo_estado === this.STATES.ACTIVE ? "activado" : "desactivado";
     return {
       success: true,
       message: `Servicio ${estadoTexto} exitosamente`,
-      affectedRows: result.data.affectedRows
+      affectedRows: result.data.affectedRows,
     };
   }
 
@@ -391,26 +485,28 @@ class Service {
     // Verificar que el servicio existe
     const existingService = await this.getServiceById(servicio_id);
     if (!existingService) {
-      throw new Error('Servicio no encontrado');
+      throw new Error("Servicio no encontrado");
     }
 
     // Verificar si hay citas asociadas
     const hasCitas = await this.hasAnyAppointments(servicio_id);
     if (hasCitas) {
-      throw new Error('No se puede eliminar un servicio que tiene citas asociadas. Considera desactivarlo en su lugar.');
+      throw new Error(
+        "No se puede eliminar un servicio que tiene citas asociadas. Considera desactivarlo en su lugar."
+      );
     }
 
-    const query = 'DELETE FROM servicios WHERE servicio_id = ?';
+    const query = "DELETE FROM servicios WHERE servicio_id = ?";
     const result = await executeQuery(query, [servicio_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al eliminar servicio: ${result.error}`);
     }
 
     return {
       success: true,
-      message: 'Servicio eliminado exitosamente',
-      affectedRows: result.data.affectedRows
+      message: "Servicio eliminado exitosamente",
+      affectedRows: result.data.affectedRows,
     };
   }
 
@@ -427,7 +523,10 @@ class Service {
 
   // Obtener servicios por categoría
   static async getServicesByCategory(servicio_categoria, filters = {}) {
-    return await this.getAllServices({ ...filters, servicio_categoria: servicio_categoria.toLowerCase() });
+    return await this.getAllServices({
+      ...filters,
+      servicio_categoria: servicio_categoria.toLowerCase(),
+    });
   }
 
   // Obtener servicios por rango de precios
@@ -436,7 +535,11 @@ class Service {
   }
 
   // Obtener servicios por duración
-  static async getServicesByDuration(duracion_min, duracion_max = null, filters = {}) {
+  static async getServicesByDuration(
+    duracion_min,
+    duracion_max = null,
+    filters = {}
+  ) {
     const newFilters = { ...filters, duracion_min };
     if (duracion_max) {
       newFilters.duracion_max = duracion_max;
@@ -453,48 +556,54 @@ class Service {
 
   // Validar tienda
   static async validateStore(tienda_id) {
-    const query = 'SELECT tienda_id, tienda_estado FROM tiendas WHERE tienda_id = ?';
+    const query =
+      "SELECT tienda_id, tienda_estado FROM tiendas WHERE tienda_id = ?";
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       return {
         isValid: false,
-        message: 'Error al validar tienda'
+        message: "Error al validar tienda",
       };
     }
 
     if (result.data.length === 0) {
       return {
         isValid: false,
-        message: 'Tienda no encontrada'
+        message: "Tienda no encontrada",
       };
     }
 
     if (result.data[0].tienda_estado !== 1) {
       return {
         isValid: false,
-        message: 'La tienda está inactiva'
+        message: "La tienda está inactiva",
       };
     }
 
     return {
       isValid: true,
-      message: 'Tienda válida'
+      message: "Tienda válida",
     };
   }
 
   // Verificar servicio duplicado
-  static async checkDuplicateService(tienda_id, servicio_nombre, exclude_servicio_id = null) {
-    let query = 'SELECT servicio_id FROM servicios WHERE tienda_id = ? AND servicio_nombre = ?';
+  static async checkDuplicateService(
+    tienda_id,
+    servicio_nombre,
+    exclude_servicio_id = null
+  ) {
+    let query =
+      "SELECT servicio_id FROM servicios WHERE tienda_id = ? AND servicio_nombre = ?";
     const params = [tienda_id, servicio_nombre.trim()];
 
     if (exclude_servicio_id) {
-      query += ' AND servicio_id != ?';
+      query += " AND servicio_id != ?";
       params.push(exclude_servicio_id);
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar servicio duplicado: ${result.error}`);
     }
@@ -513,7 +622,7 @@ class Service {
     `;
 
     const result = await executeQuery(query, [servicio_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar citas futuras: ${result.error}`);
     }
@@ -523,9 +632,9 @@ class Service {
 
   // Verificar si tiene citas (cualquier fecha)
   static async hasAnyAppointments(servicio_id) {
-    const query = 'SELECT COUNT(*) as count FROM citas WHERE servicio_id = ?';
+    const query = "SELECT COUNT(*) as count FROM citas WHERE servicio_id = ?";
     const result = await executeQuery(query, [servicio_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar citas: ${result.error}`);
     }
@@ -556,24 +665,26 @@ class Service {
     const conditions = [];
 
     if (filters.tienda_id) {
-      conditions.push('s.tienda_id = ?');
+      conditions.push("s.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
     if (filters.negocio_id) {
-      query += ' LEFT JOIN tiendas t ON s.tienda_id = t.tienda_id';
-      conditions.push('t.negocio_id = ?');
+      query += " LEFT JOIN tiendas t ON s.tienda_id = t.tienda_id";
+      conditions.push("t.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener estadísticas de servicios: ${result.error}`);
+      throw new Error(
+        `Error al obtener estadísticas de servicios: ${result.error}`
+      );
     }
 
     return result.data[0];
@@ -598,17 +709,17 @@ class Service {
     const params = [];
 
     if (filters.fecha_desde) {
-      query += ' AND c.cita_fecha >= ?';
+      query += " AND c.cita_fecha >= ?";
       params.push(filters.fecha_desde);
     }
 
     if (filters.fecha_hasta) {
-      query += ' AND c.cita_fecha <= ?';
+      query += " AND c.cita_fecha <= ?";
       params.push(filters.fecha_hasta);
     }
 
     if (filters.tienda_id) {
-      query += ' AND s.tienda_id = ?';
+      query += " AND s.tienda_id = ?";
       params.push(filters.tienda_id);
     }
 
@@ -621,9 +732,11 @@ class Service {
     params.push(limit);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener servicios más solicitados: ${result.error}`);
+      throw new Error(
+        `Error al obtener servicios más solicitados: ${result.error}`
+      );
     }
 
     return result.data;
@@ -648,7 +761,7 @@ class Service {
     const params = [];
 
     if (categoria) {
-      query += ' WHERE s.servicio_categoria = ?';
+      query += " WHERE s.servicio_categoria = ?";
       params.push(categoria.toLowerCase());
     }
 
@@ -658,9 +771,11 @@ class Service {
     `;
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener servicios por categoría: ${result.error}`);
+      throw new Error(
+        `Error al obtener servicios por categoría: ${result.error}`
+      );
     }
 
     return result.data;
@@ -693,26 +808,28 @@ class Service {
     if (!service) return null;
 
     const precioPorMinuto = service.servicio_precio / service.servicio_duracion;
-    const categoriaCapitalizada = service.servicio_categoria.charAt(0).toUpperCase() + 
-                                 service.servicio_categoria.slice(1);
+    const categoriaCapitalizada =
+      service.servicio_categoria.charAt(0).toUpperCase() +
+      service.servicio_categoria.slice(1);
 
     return {
       ...service,
       servicio_categoria_display: categoriaCapitalizada,
       precio_por_minuto: Math.round(precioPorMinuto * 100) / 100,
-      duracion_horas: Math.round(service.servicio_duracion / 60 * 100) / 100,
+      duracion_horas: Math.round((service.servicio_duracion / 60) * 100) / 100,
       es_servicio_largo: service.servicio_duracion > 120, // Más de 2 horas
       es_servicio_premium: service.servicio_precio > 100000, // Precio alto (ajustar según moneda)
-      disponibilidad_estimada: service.servicio_capacidad_maxima > 1 ? 'grupal' : 'individual'
+      disponibilidad_estimada:
+        service.servicio_capacidad_maxima > 1 ? "grupal" : "individual",
     };
   }
 
   // Calcular precio con descuento
   static calculateDiscountedPrice(precio_original, porcentaje_descuento) {
     if (porcentaje_descuento < 0 || porcentaje_descuento > 100) {
-      throw new Error('El porcentaje de descuento debe estar entre 0 y 100');
+      throw new Error("El porcentaje de descuento debe estar entre 0 y 100");
     }
-    
+
     const descuento = (precio_original * porcentaje_descuento) / 100;
     return Math.round((precio_original - descuento) * 100) / 100;
   }

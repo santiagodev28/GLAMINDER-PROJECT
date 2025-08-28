@@ -174,14 +174,23 @@ CREATE TABLE `horarios` (
   `horario_id` INT AUTO_INCREMENT PRIMARY KEY,
   `tienda_id` INT,
   `empleado_id` INT,
-  `horario_dia` TINYINT,
+  `horario_dia` VARCHAR(20),
   `horario_inicio` TIME,
   `horario_fin` TIME,
-  `horario_activo` BOOLEAN
+  `horario_activo` BOOLEAN,
+  `horario_tipo` VARCHAR(20) DEFAULT 'cita',
+  `horario_estado` TINYINT DEFAULT 1,
+  `horario_hora_inicio` TIME,
+  `horario_hora_fin` TIME
 );
 -- Datos Horarios
-INSERT INTO `horarios` (`horario_id`,`tienda_id`,`empleado_id`,`horario_dia`,`horario_inicio`,`horario_fin`,`horario_activo`) VALUES
-(1, 1, 1, 1, '09:00:00', '17:00:00', true);
+INSERT INTO `horarios` (`horario_id`,`tienda_id`,`empleado_id`,`horario_dia`,`horario_inicio`,`horario_fin`,`horario_activo`,`horario_tipo`,`horario_estado`,`horario_hora_inicio`,`horario_hora_fin`) VALUES
+(1, 1, 1, 'lunes', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
+(2, 1, 1, 'martes', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
+(3, 1, 1, 'miércoles', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
+(4, 1, 1, 'jueves', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
+(5, 1, 1, 'viernes', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
+(6, 1, 1, 'sábado', '09:00:00', '12:00:00', true, 'cita', 1, '09:00:00', '12:00:00');
 
 -- Tabla citas
 CREATE TABLE `citas` (

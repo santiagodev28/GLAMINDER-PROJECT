@@ -15,7 +15,7 @@ const NavBar = () => {
             </Link>
 
             <Link
-              to="/cliente/citas"
+              to="/cliente/mis-citas"
               className="flex items-center px-4 py-4 text-gray-700 hover:text-yellow-600 border-b-2 border-transparent hover:border-yellow-500 transition-all duration-200 font-medium"
             >
               Mis Citas

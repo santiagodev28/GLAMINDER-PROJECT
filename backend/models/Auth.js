@@ -1,5 +1,3 @@
-import db from "../database/connectiondb.js";
-import bycript from "bcrypt";
 
 import { executeQuery, executeTransaction } from "../database/connectiondb.js";
 import bcrypt from "bcrypt";

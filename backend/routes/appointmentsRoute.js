@@ -6,42 +6,115 @@ import { authorizeRoles } from "../middlewares/authorizeRoles.js";
 const appointmentRoutes = Router();
 
 // Obtener todas las citas (con filtros)
-appointmentRoutes.get('/', verifyToken, authorizeRoles(1,2), AppointmentsController.getAllAppointments);
+appointmentRoutes.get(
+  "/",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.getAllAppointments
+);
 
 // Obtener cita por ID
-appointmentRoutes.get('/:cita_id', verifyToken, authorizeRoles(1,2), AppointmentsController.getAppointmentById);
+appointmentRoutes.get(
+  "/:cita_id",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.getAppointmentById
+);
 
 // Crear nueva cita
-appointmentRoutes.post('/', verifyToken, authorizeRoles(1,2), AppointmentsController.createAppointment);
+appointmentRoutes.post(
+  "/",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.createAppointment
+);
 
 // Actualizar cita
-appointmentRoutes.put('/:cita_id', verifyToken, authorizeRoles(1,2), AppointmentsController.updateAppointment);
+appointmentRoutes.put(
+  "/:cita_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.updateAppointment
+);
 
 // Cambiar estado de cita
-appointmentRoutes.put('/:cita_id/estado', verifyToken, authorizeRoles(1,2), AppointmentsController.changeStateAppointment);
+appointmentRoutes.put(
+  "/:cita_id/estado",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.changeStateAppointment
+);
 
 // Cancelar cita
-appointmentRoutes.put('/:cita_id/cancelar', verifyToken, authorizeRoles(1,2), AppointmentsController.cancelAppointment);
+appointmentRoutes.put(
+  "/:cita_id/cancelar",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.cancelAppointment
+);
 
 // Confirmar cita
-appointmentRoutes.put('/:cita_id/confirmar', verifyToken, authorizeRoles(1,2), AppointmentsController.confirmAppointment);
+appointmentRoutes.put(
+  "/:cita_id/confirmar",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.confirmAppointment
+);
 
 // Completar cita
-appointmentRoutes.put('/:cita_id/completar', verifyToken, authorizeRoles(1,2), AppointmentsController.completeAppointment);
+appointmentRoutes.put(
+  "/:cita_id/completar",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.completeAppointment
+);
 
 // Eliminar cita (solo si está pendiente)
-appointmentRoutes.delete('/:cita_id', verifyToken, authorizeRoles(1,2), AppointmentsController.deleteAppointment);
+appointmentRoutes.delete(
+  "/:cita_id",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.deleteAppointment
+);
+
+// Obtener mis citas (para clientes) - DEBE IR ANTES de /usuario/:usuario_id
+appointmentRoutes.get(
+  "/usuario/mis-citas",
+  verifyToken,
+  authorizeRoles(4),
+  AppointmentsController.getMyAppointments
+);
 
 // Obtener citas por usuario
-appointmentRoutes.get('/usuario/:usuario_id', verifyToken, authorizeRoles(1,2), AppointmentsController.getAppointmentsByUser);
+appointmentRoutes.get(
+  "/usuario/:usuario_id",
+  verifyToken,
+  authorizeRoles(1, 2, 4),
+  AppointmentsController.getAppointmentsByUser
+);
 
 // Obtener citas por empleado
-appointmentRoutes.get('/empleado/:empleado_id', verifyToken, authorizeRoles(1,2), AppointmentsController.getAppointmentsByEmployee);
+appointmentRoutes.get(
+  "/empleado/:empleado_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.getAppointmentsByEmployee
+);
 
 // Obtener horarios disponibles para un empleado en una fecha
-appointmentRoutes.get('/empleado/:empleado_id/horarios', verifyToken, authorizeRoles(1,2), AppointmentsController.getAvailableTimeSlots);
+appointmentRoutes.get(
+  "/empleado/:empleado_id/horarios",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.getAvailableTimeSlots
+);
 
 // Estadísticas de citas
-appointmentRoutes.get('/stats', verifyToken, authorizeRoles(1,2), AppointmentsController.getAppointmentStats);
+appointmentRoutes.get(
+  "/stats",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.getAppointmentStats
+);
 
 export default appointmentRoutes;

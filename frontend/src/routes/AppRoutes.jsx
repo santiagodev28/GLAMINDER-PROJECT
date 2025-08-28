@@ -17,48 +17,55 @@ import RequestsAdmin from "../features/admin/pages/RequestsAdmin";
 import RequestOwner from "../features/client/components/RequestOwner";
 import BusinessList from "../features/client/components/Businesses/BusinessList";
 import BusinessDetail from "../features/client/components/Businesses/BusinessDetail";
+import AppointmentBooking from "../features/client/components/Appointments/AppointmentBooking";
+import UserAppointments from "../features/client/components/Appointments/UserAppointments";
 
 const AppRoutes = () => {
-    return (
-        <Routes>
-            {/* Rutas públicas */}
-            <Route path="/" element={<Login />} />
-            <Route path="/ingresar" element={<Login />} />
-            <Route path="/registrar" element={<Register />} />
+  return (
+    <Routes>
+      {/* Rutas públicas */}
+      <Route path="/" element={<Login />} />
+      <Route path="/ingresar" element={<Login />} />
+      <Route path="/registrar" element={<Register />} />
 
-            {/* Layout de administrador */}
-            <Route path="/admin" element={<AdminLayout />}>
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/usuarios" element={<UserAdmin />} />
-                <Route path="/admin/negocios" element={<BussinesAdmin />} />
-                <Route path="/admin/solicitudes" element={<RequestsAdmin />} />
-                <Route
-                    path="/admin/negocios/:negocio_id/tiendas"
-                    element={<StoresByBusinessTable />}
-                />
-                <Route
-                    path="/admin/negocios/:negocio_id/tiendas/:tienda_id/empleados"
-                    element={<EmployeeList />}
-                />
-                <Route
-                    path="/admin/negocios/:negocio_id/estadisticas"
-                    element={<BusinessStats />}
-                />
-                <Route path="/admin/estadisticas" element={<StatsAdmin />} />
-            </Route>
+      {/* Layout de administrador */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/usuarios" element={<UserAdmin />} />
+        <Route path="/admin/negocios" element={<BussinesAdmin />} />
+        <Route path="/admin/solicitudes" element={<RequestsAdmin />} />
+        <Route
+          path="/admin/negocios/:negocio_id/tiendas"
+          element={<StoresByBusinessTable />}
+        />
+        <Route
+          path="/admin/negocios/:negocio_id/tiendas/:tienda_id/empleados"
+          element={<EmployeeList />}
+        />
+        <Route
+          path="/admin/negocios/:negocio_id/estadisticas"
+          element={<BusinessStats />}
+        />
+        <Route path="/admin/estadisticas" element={<StatsAdmin />} />
+      </Route>
 
-            {/* Layout de Cliente */}
-            <Route path="/cliente" element={<ClientLayout />}>
-                {/* Aquí puedes agregar rutas específicas para el cliente */}
-                <Route path="/cliente/propietario" element={<RequestOwner />} />
-                <Route path="/cliente/dashboard" element={<BusinessList/>} />
-                <Route path="/cliente/negocios/:id" element={<BusinessDetail/>} />
-            </Route>
+      {/* Layout de Cliente */}
+      <Route path="/cliente" element={<ClientLayout />}>
+        {/* Aquí puedes agregar rutas específicas para el cliente */}
+        <Route path="/cliente/propietario" element={<RequestOwner />} />
+        <Route path="/cliente/dashboard" element={<BusinessList />} />
+        <Route path="/cliente/negocios/:id" element={<BusinessDetail />} />
+        <Route
+          path="/cliente/agendar-cita/:businessId"
+          element={<AppointmentBooking />}
+        />
+        <Route path="/cliente/mis-citas" element={<UserAppointments />} />
+      </Route>
 
-            {/* Layout de Propietario */}
-            <Route path="/propietario" element={<OwnerLayout />}></Route>
-        </Routes>
-    );
+      {/* Layout de Propietario */}
+      <Route path="/propietario" element={<OwnerLayout />}></Route>
+    </Routes>
+  );
 };
 
 export default AppRoutes;
