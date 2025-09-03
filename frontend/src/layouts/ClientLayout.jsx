@@ -1,16 +1,11 @@
 import { Outlet } from "react-router-dom";
-import { Link } from "react-router-dom";
 import Header from "../features/client/components/Header";
-import NavBar from "../features/client/components/NavBar";
 
 const ClientLayout = () => {
   return (
-    <div className="min-h-screen bg-transparent">
-      {/* Header/Navbar principal */}
-      <Header/>
-
-      {/* Navegación horizontal */}
-      <NavBar />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header moderno con navegación integrada */}
+      <Header />
 
       {/* Contenido principal */}
       <main className="flex-1 p-6 overflow-y-auto">

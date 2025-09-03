@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../../services/authService.js";
 import { Link } from "react-router-dom";
@@ -17,13 +17,6 @@ import {
 
 // Componente para el formulario de registro
 const RegisterForm = () => {
-  const [name, setName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [rol, setRol] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     lastName: "",
@@ -32,8 +25,10 @@ const RegisterForm = () => {
     password: "",
     confirmPassword: "",
   });
-  const [error, setError] = useState("");
+
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,63 +42,143 @@ const RegisterForm = () => {
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/,
   };
 
-  const validateFields = (field, value) => {
+  // Validar un campo específico
+  const validateField = (field, value) => {
     let errorMsg = "";
+
     switch (field) {
       case "name":
-        if (!regex.name.test(value)) {
-          errorMsg = "Nombre inválido (Mínimo 3 letras)";
+        if (!value.trim()) {
+          errorMsg = "El nombre es requerido";
+        } else if (!regex.name.test(value)) {
+          errorMsg = "Nombre inválido (Mínimo 3 letras, solo letras)";
         }
         break;
+
       case "lastName":
-        if (!regex.name.test(value)) {
-          errorMsg = "Apellido inválido (Mínimo 3 letras)";
+        if (!value.trim()) {
+          errorMsg = "El apellido es requerido";
+        } else if (!regex.name.test(value)) {
+          errorMsg = "Apellido inválido (Mínimo 3 letras, solo letras)";
         }
         break;
+
       case "email":
-        if (!regex.email.test(value)) {
+        if (!value.trim()) {
+          errorMsg = "El correo es requerido";
+        } else if (!regex.email.test(value)) {
           errorMsg = "Correo inválido (ejemplo: usuario@dominio.com)";
         }
         break;
+
       case "phone":
-        if (!regex.phone.test(value)) {
+        if (!value.trim()) {
+          errorMsg = "El teléfono es requerido";
+        } else if (!regex.phone.test(value)) {
           errorMsg = "Teléfono inválido (Formato: 300-000-0000)";
         }
         break;
+
       case "password":
-        if (!regex.password.test(value)) {
-          errorMsg = "Incluya minimo (A,a,1,@)";
+        if (!value.trim()) {
+          errorMsg = "La contraseña es requerida";
+        } else if (value.length < 8) {
+          errorMsg = "La contraseña debe tener al menos 8 caracteres";
+        } else if (!regex.password.test(value)) {
+          errorMsg =
+            "Debe incluir mayúscula, minúscula, número y símbolo (@$!%*?&)";
         }
         break;
+
       case "confirmPassword":
-        if (value !== formData.password) {
+        if (!value.trim()) {
+          errorMsg = "Confirma tu contraseña";
+        } else if (value !== formData.password) {
           errorMsg = "Las contraseñas no coinciden";
         }
         break;
+
       default:
         break;
     }
-    setErrors((prev) => ({ ...prev, [field]: errorMsg }));
+
+    return errorMsg;
   };
 
+  // Validar todos los campos
+  const validateForm = () => {
+    const newErrors = {};
+
+    Object.keys(formData).forEach((field) => {
+      const errorMsg = validateField(field, formData[field]);
+      if (errorMsg) {
+        newErrors[field] = errorMsg;
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Manejar cambios en los campos
   const handleChange = (e) => {
     const { id, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [id]: value }));
-    validateFields(id, value);
+
+    // Solo validar si el campo ha sido tocado
+    if (touched[id]) {
+      const errorMsg = validateField(id, value);
+      setErrors((prev) => ({ ...prev, [id]: errorMsg }));
+    }
   };
+
+  // Manejar cuando un campo pierde el foco
+  const handleBlur = (e) => {
+    const { id } = e.target;
+
+    setTouched((prev) => ({ ...prev, [id]: true }));
+
+    const errorMsg = validateField(id, formData[id]);
+    setErrors((prev) => ({ ...prev, [id]: errorMsg }));
+  };
+
+  // Limpiar errores cuando se cambia un campo
+  const handleFocus = (e) => {
+    const { id } = e.target;
+    setErrors((prev) => ({ ...prev, [id]: "" }));
+  };
+
+  // Validar contraseña en tiempo real
+  useEffect(() => {
+    if (touched.confirmPassword && formData.confirmPassword) {
+      const errorMsg = validateField(
+        "confirmPassword",
+        formData.confirmPassword
+      );
+      setErrors((prev) => ({ ...prev, confirmPassword: errorMsg }));
+    }
+  }, [formData.password, formData.confirmPassword, touched.confirmPassword]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // Marcar todos los campos como tocados
+    const allTouched = {};
+    Object.keys(formData).forEach((field) => {
+      allTouched[field] = true;
+    });
+    setTouched(allTouched);
+
+    // Validar formulario
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
-    Object.keys(formData).forEach((field) =>
-      validateFields(field, formData[field])
-    );
-    if (Object.values(errors).some(Boolean)) return;
-
-    setIsLoading(false);
     try {
       const res = await registerUser({
         usuario_nombre: formData.name,
@@ -125,6 +200,36 @@ const RegisterForm = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Función para obtener la clase del borde del input
+  const getInputBorderClass = (fieldName) => {
+    if (!touched[fieldName]) {
+      return "border-gray-300";
+    }
+    if (errors[fieldName]) {
+      return "border-red-500 focus:border-red-500 focus:ring-red-500";
+    }
+    return "border-green-500 focus:border-green-500 focus:ring-green-500";
+  };
+
+  // Función para mostrar el icono de estado
+  const getStatusIcon = (fieldName) => {
+    if (!touched[fieldName]) return null;
+
+    if (errors[fieldName]) {
+      return (
+        <ExclamationCircleIcon className="h-5 w-5 text-red-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
+      );
+    }
+
+    if (formData[fieldName] && !errors[fieldName]) {
+      return (
+        <CheckCircleIcon className="h-5 w-5 text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -157,7 +262,7 @@ const RegisterForm = () => {
                   htmlFor="name"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Nombre
+                  Nombre *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -168,14 +273,20 @@ const RegisterForm = () => {
                     id="name"
                     value={formData.name}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
                     required
                     autoFocus
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                      "name"
+                    )}`}
                     placeholder="Ingresa tu nombre"
                   />
+                  {getStatusIcon("name")}
 
-                  {errors.name && (
-                    <p className="text-red-500 text-sm absolute">
+                  {errors.name && touched.name && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
                       {errors.name}
                     </p>
                   )}
@@ -187,7 +298,7 @@ const RegisterForm = () => {
                   htmlFor="lastName"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Apellido
+                  Apellido *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -198,12 +309,19 @@ const RegisterForm = () => {
                     id="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                      "lastName"
+                    )}`}
                     placeholder="Ingresa tu apellido"
                   />
-                  {errors.lastName && (
-                    <p className="text-red-500 text-sm absolute">
+                  {getStatusIcon("lastName")}
+
+                  {errors.lastName && touched.lastName && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
                       {errors.lastName}
                     </p>
                   )}
@@ -217,7 +335,7 @@ const RegisterForm = () => {
                 htmlFor="email"
                 className="block text-sm font-semibold text-gray-700 mb-2"
               >
-                Correo electrónico
+                Correo electrónico *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -228,12 +346,19 @@ const RegisterForm = () => {
                   id="email"
                   value={formData.email}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  onFocus={handleFocus}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                    "email"
+                  )}`}
                   placeholder="usuario@dominio.com"
                 />
-                {errors.email && (
-                  <p className="text-red-500 text-sm absolute">
+                {getStatusIcon("email")}
+
+                {errors.email && touched.email && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <ExclamationCircleIcon className="h-4 w-4 mr-1" />
                     {errors.email}
                   </p>
                 )}
@@ -246,7 +371,7 @@ const RegisterForm = () => {
                 htmlFor="phone"
                 className="block text-sm font-semibold text-gray-700 mb-2"
               >
-                Teléfono
+                Teléfono *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -257,12 +382,19 @@ const RegisterForm = () => {
                   id="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  onBlur={handleBlur}
+                  onFocus={handleFocus}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                    "phone"
+                  )}`}
                   placeholder="300-000-0000"
                 />
-                {errors.phone && (
-                  <p className="text-red-500 text-sm absolute">
+                {getStatusIcon("phone")}
+
+                {errors.phone && touched.phone && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <ExclamationCircleIcon className="h-4 w-4 mr-1" />
                     {errors.phone}
                   </p>
                 )}
@@ -270,13 +402,13 @@ const RegisterForm = () => {
             </div>
 
             {/* Campos de contraseña en fila */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label
                   htmlFor="password"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Contraseña
+                  Contraseña *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -287,12 +419,19 @@ const RegisterForm = () => {
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                      "password"
+                    )}`}
                     placeholder="Mínimo 8 caracteres"
                   />
-                  {errors.password && (
-                    <p className="text-red-500 text-sm absolute ">
+                  {getStatusIcon("password")}
+
+                  {errors.password && touched.password && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
                       {errors.password}
                     </p>
                   )}
@@ -304,7 +443,7 @@ const RegisterForm = () => {
                   htmlFor="confirmPassword"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Confirmar Contraseña
+                  Confirmar Contraseña *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -315,12 +454,19 @@ const RegisterForm = () => {
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    onFocus={handleFocus}
                     required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                      "confirmPassword"
+                    )}`}
                     placeholder="Repite tu contraseña"
                   />
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm absolute">
+                  {getStatusIcon("confirmPassword")}
+
+                  {errors.confirmPassword && touched.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
                       {errors.confirmPassword}
                     </p>
                   )}
@@ -332,7 +478,7 @@ const RegisterForm = () => {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                 <div className="flex">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 mr-2"/>
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 mr-2" />
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               </div>
@@ -341,7 +487,7 @@ const RegisterForm = () => {
             {success && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                 <div className="flex">
-                  <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2"/>
+                  <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
                   <p className="text-sm text-green-600">{success}</p>
                 </div>
               </div>
@@ -351,12 +497,14 @@ const RegisterForm = () => {
             <div className="space-y-4">
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={
+                  isLoading || Object.keys(errors).some((key) => errors[key])
+                }
                 className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold py-3 px-6 rounded-xl hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"/>
+                    <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                     Registrando...
                   </div>
                 ) : (
