@@ -65,41 +65,42 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 flex items-center justify-center min-h-screen ">
-      <div className="">
-        {/* Logo y título */}
-        <div className="text-center mb-2">
-          <div className="flex justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-[#181B20]">
+      <div className="w-full max-w-md">
+        <div className="bg-[#23262B] rounded-2xl shadow-2xl px-10 py-10 border border-[#23262B]/60">
+          {/* Logo y título */}
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-[#F5F5F5] mb-1">
+                Bienvenido
+              </h1>
+              <p className="text-[#B0B3B8] text-lg">
+                Inicie sesión en su cuenta
+              </p>
+            </div>
             <img
               src={logo}
               alt="Glaminder Logo"
-              className="h-40 w-auto drop-shadow-lg"
+              className="h-30 w-auto drop-shadow-lg"
             />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-            Bienvenido
-          </h1>
-          <p className="text-gray-600 text-lg">Inicia sesión en tu cuenta</p>
-        </div>
 
-        {/* Mensaje de éxito */}
-        {success && <SuccessMessage show={showSuccess} message={success} />}
+          {/* Mensaje de éxito */}
+          {success && <SuccessMessage show={showSuccess} message={success} />}
 
-        {/* Formulario */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+          {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Campo de email */}
-
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-2"
+                className="block text-sm font-semibold text-[#B0B3B8] mb-2"
               >
                 Correo electrónico
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <AtSymbolIcon className="h-5 w-5 text-gray-400" />
+                  <AtSymbolIcon className="h-5 w-5 text-[#B0B3B8]" />
                 </div>
                 <input
                   type="email"
@@ -108,8 +109,8 @@ const LoginForm = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoFocus
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                  placeholder="tu@email.com"
+                  className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
+                  placeholder="@gmail.com"
                 />
               </div>
             </div>
@@ -118,13 +119,13 @@ const LoginForm = () => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-gray-700 mb-2"
+                className="block text-sm font-semibold text-[#B0B3B8] mb-2"
               >
                 Contraseña
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <LockClosedIcon className="h-5 w-5 text-gray-400" />
+                  <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
                 </div>
                 <input
                   type="password"
@@ -132,7 +133,7 @@ const LoginForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
                 />
               </div>
@@ -152,11 +153,11 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold py-3 px-6 rounded-xl hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
+              className="w-full font-semibold py-3 px-6 rounded-xl bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
-                  <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"/>
+                  <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                   Iniciando sesión...
                 </div>
               ) : (
@@ -166,13 +167,13 @@ const LoginForm = () => {
 
             {/* Enlace de registro */}
             <div className="text-center pt-4">
-              <p className="text-gray-600">
+              <p className="text-[#B0B3B8]">
                 ¿No tienes una cuenta?{" "}
                 <Link
                   to="/registrar"
-                  className="font-semibold text-yellow-600 hover:text-yellow-700 transition-colors duration-200 underline decoration-2 underline-offset-2"
+                  className="font-semibold text-[#F5C76A] hover:text-[#D1A04D] transition-colors duration-200 underline decoration-2 underline-offset-2"
                 >
-                  Regístrate aquí
+                  Regístrese aquí
                 </Link>
               </p>
             </div>
@@ -181,7 +182,7 @@ const LoginForm = () => {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-gray-500 text-sm">
+          <p className="text-[#B0B3B8] text-sm">
             © 2024 Glaminder. Todos los derechos reservados.
           </p>
         </div>

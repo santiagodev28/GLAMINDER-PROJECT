@@ -17,6 +17,20 @@ export default {
           200: '#67E8F9', // Cyan claro
           100: '#CFFAFE', // El más claro
         },
+        dark: '#181B20',
+        card: '#23262B',
+        primary: {
+          DEFAULT: '#D1A04D',
+          dark: '#B47B1C',
+          light: '#F5C76A',
+        },
+        text: {
+          base: '#F5F5F5',
+          secondary: '#B0B3B8',
+        },
+      },
+      borderRadius: {
+        xl: '1rem',
       },
     },
   },

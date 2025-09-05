@@ -233,7 +233,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#181B20] p-4">
       <div className="max-w-2xl w-full">
         {/* Logo y título */}
         <div className="text-center mb-4">
@@ -241,32 +241,32 @@ const RegisterForm = () => {
             <img
               src={logo}
               alt="Glaminder Logo"
-              className="h-32 w-auto drop-shadow-lg"
+              className="h-28 w-auto drop-shadow-lg"
             />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">
+          <h1 className="text-4xl font-bold text-[#F5F5F5] mb-1">
             Crear cuenta
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-[#B0B3B8] text-lg">
             Únete a Glaminder y comienza tu experiencia
           </p>
         </div>
 
         {/* Formulario */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+        <div className="bg-[#23262B] rounded-2xl shadow-2xl p-8 border border-[#23262B]/60">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Campos de nombre y apellido en fila */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-[#B0B3B8] mb-2"
                 >
                   Nombre *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserIcon className="h-5 w-5 text-gray-400" />
+                    <UserIcon className="h-5 w-5 text-[#B0B3B8]" />
                   </div>
                   <input
                     type="text"
@@ -277,13 +277,12 @@ const RegisterForm = () => {
                     onFocus={handleFocus}
                     required
                     autoFocus
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "name"
                     )}`}
                     placeholder="Ingresa tu nombre"
                   />
                   {getStatusIcon("name")}
-
                   {errors.name && touched.name && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
                       <ExclamationCircleIcon className="h-4 w-4 mr-1" />
@@ -296,13 +295,13 @@ const RegisterForm = () => {
               <div>
                 <label
                   htmlFor="lastName"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-[#B0B3B8] mb-2"
                 >
                   Apellido *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserIcon className="h-5 w-5 text-gray-400" />
+                    <UserIcon className="h-5 w-5 text-[#B0B3B8]" />
                   </div>
                   <input
                     type="text"
@@ -312,13 +311,12 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "lastName"
                     )}`}
                     placeholder="Ingresa tu apellido"
                   />
                   {getStatusIcon("lastName")}
-
                   {errors.lastName && touched.lastName && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
                       <ExclamationCircleIcon className="h-4 w-4 mr-1" />
@@ -333,13 +331,13 @@ const RegisterForm = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-2"
+                className="block text-sm font-semibold text-[#B0B3B8] mb-2"
               >
                 Correo electrónico *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <AtSymbolIcon className="h-5 w-5 text-gray-400" />
+                  <AtSymbolIcon className="h-5 w-5 text-[#B0B3B8]" />
                 </div>
                 <input
                   type="email"
@@ -349,13 +347,12 @@ const RegisterForm = () => {
                   onBlur={handleBlur}
                   onFocus={handleFocus}
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                     "email"
                   )}`}
                   placeholder="usuario@dominio.com"
                 />
                 {getStatusIcon("email")}
-
                 {errors.email && touched.email && (
                   <p className="text-red-500 text-sm mt-1 flex items-center">
                     <ExclamationCircleIcon className="h-4 w-4 mr-1" />
@@ -369,13 +366,13 @@ const RegisterForm = () => {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-sm font-semibold text-gray-700 mb-2"
+                className="block text-sm font-semibold text-[#B0B3B8] mb-2"
               >
                 Teléfono *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <PhoneIcon className="h-5 w-5 text-gray-400" />
+                  <PhoneIcon className="h-5 w-5 text-[#B0B3B8]" />
                 </div>
                 <input
                   type="tel"
@@ -385,13 +382,12 @@ const RegisterForm = () => {
                   onBlur={handleBlur}
                   onFocus={handleFocus}
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                     "phone"
                   )}`}
                   placeholder="300-000-0000"
                 />
                 {getStatusIcon("phone")}
-
                 {errors.phone && touched.phone && (
                   <p className="text-red-500 text-sm mt-1 flex items-center">
                     <ExclamationCircleIcon className="h-4 w-4 mr-1" />
@@ -406,13 +402,13 @@ const RegisterForm = () => {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-[#B0B3B8] mb-2"
                 >
                   Contraseña *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LockClosedIcon className="h-5 w-5 text-gray-400" />
+                    <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
                   </div>
                   <input
                     type="password"
@@ -422,13 +418,12 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "password"
                     )}`}
                     placeholder="Mínimo 8 caracteres"
                   />
                   {getStatusIcon("password")}
-
                   {errors.password && touched.password && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
                       <ExclamationCircleIcon className="h-4 w-4 mr-1" />
@@ -441,13 +436,13 @@ const RegisterForm = () => {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-[#B0B3B8] mb-2"
                 >
                   Confirmar Contraseña *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LockClosedIcon className="h-5 w-5 text-gray-400" />
+                    <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
                   </div>
                   <input
                     type="password"
@@ -457,13 +452,12 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200 bg-gray-50 focus:bg-white ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "confirmPassword"
                     )}`}
                     placeholder="Repite tu contraseña"
                   />
                   {getStatusIcon("confirmPassword")}
-
                   {errors.confirmPassword && touched.confirmPassword && (
                     <p className="text-red-500 text-sm mt-1 flex items-center">
                       <ExclamationCircleIcon className="h-4 w-4 mr-1" />
@@ -500,7 +494,7 @@ const RegisterForm = () => {
                 disabled={
                   isLoading || Object.keys(errors).some((key) => errors[key])
                 }
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold py-3 px-6 rounded-xl hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -515,11 +509,11 @@ const RegisterForm = () => {
 
             {/* Enlace de login */}
             <div className="text-center pt-2">
-              <p className="text-gray-600">
+              <p className="text-[#B0B3B8]">
                 ¿Ya tienes una cuenta?{" "}
                 <Link
                   to="/ingresar"
-                  className="font-semibold text-yellow-600 hover:text-yellow-700 transition-colors duration-200 underline decoration-2 underline-offset-2"
+                  className="font-semibold text-[#F5C76A] hover:text-[#D1A04D] transition-colors duration-200 underline decoration-2 underline-offset-2"
                 >
                   Inicia sesión aquí
                 </Link>
@@ -530,7 +524,7 @@ const RegisterForm = () => {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-gray-500 text-sm">
+          <p className="text-[#B0B3B8] text-sm">
             © 2024 Glaminder. Todos los derechos reservados.
           </p>
         </div>
