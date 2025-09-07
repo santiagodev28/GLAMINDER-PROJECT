@@ -60,15 +60,15 @@ const TimeSlotSelector = ({
   const getTimeCategoryColor = (category) => {
     switch (category) {
       case "morning":
-        return "bg-yellow-50 border-yellow-200 text-yellow-800";
+        return "bg-yellow-500/10 border-yellow-500/20 text-yellow-400";
       case "afternoon":
-        return "bg-orange-50 border-orange-200 text-orange-800";
+        return "bg-orange-500/10 border-orange-500/20 text-orange-400";
       case "evening":
-        return "bg-red-50 border-red-200 text-red-800";
+        return "bg-red-500/10 border-red-500/20 text-red-400";
       case "night":
-        return "bg-purple-50 border-purple-200 text-purple-800";
+        return "bg-purple-500/10 border-purple-500/20 text-purple-400";
       default:
-        return "bg-gray-50 border-gray-200 text-gray-800";
+        return "bg-[#31343A]/50 border-[#31343A] text-[#B0B3B8]";
     }
   };
 
@@ -89,12 +89,14 @@ const TimeSlotSelector = ({
 
   if (!schedules || schedules.length === 0) {
     return (
-      <div className="text-center py-8">
-        <ClockIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div className="text-center py-12">
+        <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D]/20 to-[#B47B1C]/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <ClockIcon className="w-10 h-10 text-[#D1A04D]" />
+        </div>
+        <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
           No hay horarios disponibles
         </h3>
-        <p className="text-gray-500">
+        <p className="text-[#B0B3B8]">
           No hay horarios disponibles para {employeeName} en esta fecha
         </p>
       </div>
@@ -109,13 +111,13 @@ const TimeSlotSelector = ({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-xl font-semibold text-[#F5F5F5] mb-3">
           Horarios Disponibles
         </h3>
-        <p className="text-gray-600">
+        <p className="text-[#B0B3B8] text-lg">
           {employeeName} •{" "}
           {selectedDate ? new Date(selectedDate).toLocaleDateString() : ""}
         </p>
@@ -131,10 +133,10 @@ const TimeSlotSelector = ({
           if (categoryTimes.length === 0) return null;
 
           return (
-            <div key={category} className="space-y-3">
+            <div key={category} className="space-y-4">
               <div className="flex items-center">
                 <div
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getTimeCategoryColor(
+                  className={`px-4 py-2 rounded-full text-sm font-medium border ${getTimeCategoryColor(
                     category
                   )}`}
                 >
@@ -154,13 +156,13 @@ const TimeSlotSelector = ({
                       onClick={() => handleTimeSelect(time)}
                       disabled={!isAvailable}
                       className={`
-                        relative p-4 rounded-lg border-2 transition-all duration-200
+                        relative p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-lg
                         ${
                           isSelected
-                            ? "border-orange-500 bg-orange-500 text-white shadow-lg transform scale-105"
+                            ? "border-[#D1A04D] bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg transform scale-105"
                             : isAvailable
-                            ? "border-gray-200 hover:border-orange-300 hover:bg-orange-50 cursor-pointer"
-                            : "border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed"
+                            ? "border-[#31343A] bg-[#1F1F1F]/50 text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70 cursor-pointer hover:scale-105"
+                            : "border-[#1F1F1F]/30 bg-[#1F1F1F]/20 text-[#B0B3B8]/50 cursor-not-allowed"
                         }
                       `}
                     >
@@ -179,7 +181,7 @@ const TimeSlotSelector = ({
                       </div>
 
                       {isSelected && (
-                        <div className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full p-1">
+                        <div className="absolute -top-2 -right-2 bg-[#D1A04D] text-white rounded-full p-1 shadow-lg">
                           <CheckIcon className="w-4 h-4" />
                         </div>
                       )}
@@ -194,14 +196,14 @@ const TimeSlotSelector = ({
 
       {/* Información adicional */}
       {selectedTime && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6">
           <div className="flex items-center">
-            <ClockIcon className="w-5 h-5 text-blue-500 mr-2" />
+            <ClockIcon className="w-6 h-6 text-blue-400 mr-3" />
             <div>
-              <p className="font-medium text-blue-800">
+              <p className="font-medium text-[#F5F5F5] text-lg">
                 Horario seleccionado: {formatTime(selectedTime)}
               </p>
-              <p className="text-sm text-blue-600">
+              <p className="text-sm text-[#B0B3B8]">
                 {employeeName} estará disponible en este horario
               </p>
             </div>
@@ -210,7 +212,7 @@ const TimeSlotSelector = ({
       )}
 
       {/* Notas */}
-      <div className="text-xs text-gray-500 text-center">
+      <div className="text-sm text-[#B0B3B8] text-center">
         <p>
           Los horarios mostrados están basados en la disponibilidad del empleado
         </p>

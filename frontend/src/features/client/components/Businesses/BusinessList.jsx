@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import AdminService from "../../../../services/adminService";
+import {
+  BuildingStorefrontIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  CalendarIcon,
+  StarIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline";
 
 const BusinessList = () => {
   const [businesses, setBusinesses] = useState([]);
@@ -22,72 +30,133 @@ const BusinessList = () => {
     loadBusinesses();
   }, []);
 
-  if (loading) return <p className="text-center mt-6">Cargando negocios...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#D1A04D]"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      {/* Header con botón de mis citas */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Negocios Disponibles
-          </h1>
-          <p className="text-gray-600">
-            Explora y agenda citas en los mejores negocios de belleza
-          </p>
-        </div>
-
-        <div className="mt-4 sm:mt-0">
-          <Link
-            to="/cliente/mis-citas"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <div className="space-y-8">
+      {/* Header del Dashboard */}
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
+              Negocios Disponibles
+            </h1>
+            <p className="text-[#B0B3B8] text-lg">
+              Explora y agenda citas en los mejores negocios de belleza
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <Link
+              to="/cliente/mis-citas"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            Mis Citas
-          </Link>
+              <CalendarIcon className="w-5 h-5 mr-2" />
+              Mis Citas
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Grid de negocios */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {businesses.map((biz) => (
           <div
             key={biz.negocio_id}
-            className="bg-white shadow-md rounded-2xl p-6 border hover:shadow-lg transition duration-300 flex flex-col justify-between"
+            className="group bg-[#23262B]/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-lg border border-[#31343A]/50 hover:shadow-2xl hover:scale-105 transition-all duration-300 h-[500px] flex flex-col"
           >
-            <h2 className="text-xl font-bold text-gray-800 mb-2">
-              {biz.negocio_nombre}
-            </h2>
-            <p className="text-gray-600 mb-2">{biz.negocio_descripcion}</p>
-            <p className="text-sm text-gray-500">{biz.negocio_telefono}</p>
-            <p className="text-sm text-gray-500">{biz.negocio_correo}</p>
-            <p className="text-xs text-gray-400 mt-2 mb-4">
-              Registrado el:{" "}
-              {new Date(biz.negocio_fecha_registro).toLocaleDateString()}
-            </p>
+            {/* Imagen placeholder */}
+            <div className="relative h-48 bg-gradient-to-br from-[#D1A04D]/20 to-[#B47B1C]/20 overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg">
+                  <BuildingStorefrontIcon className="w-10 h-10 text-white" />
+                </div>
+              </div>
+              {/* Overlay para efecto hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#23262B]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
 
-            <button
-              onClick={() => navigate(`/cliente/negocios/${biz.negocio_id}`)}
-              className="mt-auto bg-yellow-500 text-white font-semibold px-5 py-2 rounded-xl shadow-md 
-             hover:bg-yellow-600 hover:shadow-lg active:scale-95 transition-all duration-200"
-            >
-              Ver Negocio
-            </button>
+            {/* Contenido de la tarjeta */}
+            <div className="p-6 flex flex-col justify-between h-full">
+              <div>
+                <h3 className="text-xl font-bold text-[#F5F5F5] mb-2 group-hover:text-[#D1A04D] transition-colors duration-300">
+                  {biz.negocio_nombre}
+                </h3>
+                <p className="text-[#B0B3B8] text-sm leading-relaxed line-clamp-2">
+                  {biz.negocio_descripcion ||
+                    "Descubre los mejores servicios de belleza en este establecimiento."}
+                </p>
+
+                {/* Información de contacto */}
+                <div className="space-y-2 mt-4">
+                  <div className="flex items-center text-[#B0B3B8] text-sm">
+                    <PhoneIcon className="w-4 h-4 mr-2 text-[#D1A04D]" />
+                    <span className="truncate">
+                      {biz.negocio_telefono || "Sin teléfono"}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-[#B0B3B8] text-sm">
+                    <EnvelopeIcon className="w-4 h-4 mr-2 text-[#D1A04D]" />
+                    <span className="truncate">
+                      {biz.negocio_correo || "Sin email"}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-[#B0B3B8] text-xs">
+                    <CalendarIcon className="w-4 h-4 mr-2 text-[#D1A04D]" />
+                    <span>
+                      Registrado:{" "}
+                      {new Date(
+                        biz.negocio_fecha_registro
+                      ).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Rating placeholder */}
+                <div className="flex items-center mt-4">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon
+                        key={i}
+                        className="w-4 h-4 text-[#D1A04D] fill-current"
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[#B0B3B8] text-sm ml-2">(4.8)</span>
+                </div>
+              </div>
+
+              {/* Botón de acción - Siempre en la parte inferior */}
+              <button
+                onClick={() => navigate(`/cliente/negocios/${biz.negocio_id}`)}
+                className="mt-6 w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-4 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+              >
+                Ver Negocio
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Estado vacío */}
+      {businesses.length === 0 && (
+        <div className="text-center py-12">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <BuildingStorefrontIcon className="w-10 h-10 text-white" />
+          </div>
+          <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
+            No hay negocios disponibles
+          </h3>
+          <p className="text-[#B0B3B8]">
+            Pronto tendremos más opciones para ti
+          </p>
+        </div>
+      )}
     </div>
   );
 };

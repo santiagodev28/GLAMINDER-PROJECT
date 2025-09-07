@@ -1,17 +1,33 @@
 import ButtonCloseSession from "../../../components/buttons/ButtonCloseSession";
-import logo from "../../../assets/images/logo-2.png";
+import logo from "../../../assets/images/logo.png";
 import { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation();
 
   // Simular datos del usuario (esto debería venir de tu contexto de autenticación)
-  const name = localStorage.getItem("usuario_nombre"); // Reemplazar con el nombre real del usuario
+  const name = localStorage.getItem("usuario_nombre");
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  // Detectar scroll para cambiar el estilo del header
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   // Cerrar dropdown cuando se haga clic fuera
   useEffect(() => {
@@ -27,81 +43,114 @@ const Header = () => {
     };
   }, []);
 
-  return (
-    <>
-      {/* Top Teal Strip - Adaptado a naranja */}
-      <div className="h-1 bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500"></div>
+  // Función para determinar si un enlace está activo
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
-      {/* Main Header */}
-      <header className="bg-white shadow-lg border-b border-gray-100 rounded-b-lg mx-4">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 w-full flex justify-center pt-6 pb-4">
+      {/* Header Flotante */}
+      <header
+        className={`backdrop-blur-md rounded-2xl w-full max-w-6xl mx-4 transition-all duration-300 hover:shadow-3xl ${
+          isScrolled
+            ? "bg-[#23262B]/60 shadow-2xl "
+            : "bg-[#23262B]/20 shadow-lg"
+        }`}
+      >
+        <div className="px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Left Side - Logo/Brand */}
-            <div className="flex items-center">
-              <span className="ml-3 text-xl font-bold text-gray-800">
+            <div className="flex items-center transition-all duration-300 hover:scale-105">
+              <img
+                src={logo}
+                alt="Glaminder Logo"
+                className="h-20 w-auto drop-shadow-lg transition-all duration-300"
+              />
+
+              <span
+                className={`ml-4 text-2xl font-bold transition-all duration-300 ${
+                  isScrolled ? "text-gray-800" : "text-[#F5F5F5]"
+                }`}
+              >
                 Glaminder
               </span>
             </div>
 
             {/* Center - Navigation Links */}
             <nav className="hidden md:flex items-center space-x-8">
-              <a
-                href="/cliente/dashboard"
-                className="text-gray-700 hover:text-orange-600 font-medium transition-colors duration-200"
+              <Link
+                to="/cliente/dashboard"
+                className={`font-medium transition-all duration-300 px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
+                  isActive("/cliente/dashboard")
+                    ? isScrolled
+                      ? "text-white bg-[#D1A04D] border border-[#D1A04D] shadow-lg"
+                      : "text-[#F5F5F5] bg-[#D1A04D]/20 border border-[#D1A04D]/30 shadow-lg"
+                    : isScrolled
+                    ? "text-[#F5F5F5] hover:text-[#D1A04D] hover:bg-[#31343A]/50 hover:shadow-md"
+                    : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#31343A] hover:shadow-md"
+                }`}
               >
                 Inicio
-              </a>
-              <a
-                href="/cliente/negocios"
-                className="text-gray-700 hover:text-orange-600 font-medium transition-colors duration-200"
+              </Link>
+              <Link
+                to="/cliente/negocios"
+                className={`font-medium transition-all duration-300 px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
+                  isActive("/cliente/negocios")
+                    ? isScrolled
+                      ? "text-white bg-[#D1A04D] border border-[#D1A04D] shadow-lg"
+                      : "text-[#F5F5F5] bg-[#D1A04D]/20 border border-[#D1A04D]/30 shadow-lg"
+                    : isScrolled
+                    ? "text-[#F5F5F5] hover:text-[#D1A04D] hover:bg-[#31343A]/50 hover:shadow-md"
+                    : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#31343A] hover:shadow-md"
+                }`}
               >
                 Negocios
-              </a>
-              <a
-                href="/cliente/mis-citas"
-                className="text-gray-700 hover:text-orange-600 font-medium transition-colors duration-200"
+              </Link>
+              <Link
+                to="/cliente/mis-citas"
+                className={`font-medium transition-all duration-300 px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
+                  isActive("/cliente/mis-citas")
+                    ? isScrolled
+                      ? "text-white bg-[#D1A04D] border border-[#D1A04D] shadow-lg"
+                      : "text-[#F5F5F5] bg-[#D1A04D]/20 border border-[#D1A04D]/30 shadow-lg"
+                    : isScrolled
+                    ? "text-[#F5F5F5] hover:text-[#D1A04D] hover:bg-[#31343A]/50 hover:shadow-md"
+                    : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#31343A] hover:shadow-md"
+                }`}
               >
                 Mis Citas
-              </a>
+              </Link>
             </nav>
 
             {/* Right Side - Search and User */}
             <div className="flex items-center space-x-4">
               {/* Search Icon */}
-              <button className="p-2 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
 
               {/* User Dropdown */}
-              <div className="relative " ref={dropdownRef}>
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={toggleDropdown}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-orange-50 transition-all duration-200"
+                  className={`flex items-center space-x-3 p-2 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 hover:shadow-md ${
+                    isScrolled ? "hover:bg-gray-100" : "hover:bg-[#31343A]"
+                  }`}
                 >
-                  <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
                     <span className="text-white font-semibold text-sm">
-                      {name.charAt(0).toUpperCase()}
+                      {name?.charAt(0).toUpperCase() || "U"}
                     </span>
                   </div>
-                  <span className="hidden sm:block text-gray-700 font-medium">
-                    {name}
+                  <span
+                    className={`hidden sm:block font-medium transition-all duration-300 ${
+                      isScrolled ? "text-gray-700" : "text-[#F5F5F5]"
+                    }`}
+                  >
+                    {name || "Usuario"}
                   </span>
                   <svg
-                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`w-4 h-4 transition-all duration-300 ${
+                      isScrolled ? "text-gray-500" : "text-[#B0B3B8]"
+                    } ${isDropdownOpen ? "rotate-180" : ""}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -117,13 +166,24 @@ const Header = () => {
 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute flex flex-col right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50 items-center justify-center">
-                    <a
-                      href="/cliente/perfil"
-                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors duration-200"
+                  <div
+                    className={`absolute flex flex-col right-0 mt-2 w-48 backdrop-blur-md rounded-xl shadow-2xl py-2 z-50 transition-all duration-300 animate-in slide-in-from-top-2 ${
+                      isScrolled
+                        ? "bg-white/95 border border-gray-200/50"
+                        : "bg-[#23262B]/95 border border-[#31343A]"
+                    }`}
+                  >
+                    <Link
+                      to="/cliente/perfil"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 mx-2 focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
+                        isScrolled
+                          ? "text-gray-700 hover:bg-gray-100 hover:text-[#D1A04D]"
+                          : "text-[#B0B3B8] hover:bg-[#31343A] hover:text-[#F5F5F5]"
+                      }`}
+                      onClick={() => setIsDropdownOpen(false)}
                     >
                       <svg
-                        className="w-4 h-4 mr-3"
+                        className="w-4 h-4 mr-3 transition-all duration-300"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -136,9 +196,15 @@ const Header = () => {
                         />
                       </svg>
                       Ver mi perfil
-                    </a>
-                    <div className="border-t border-gray-100 w-full py-1"></div>
-                    <ButtonCloseSession />
+                    </Link>
+                    <div
+                      className={`border-t w-full my-1 transition-all duration-300 ${
+                        isScrolled ? "border-gray-200" : "border-[#31343A]"
+                      }`}
+                    ></div>
+                    <div className="mx-2">
+                      <ButtonCloseSession />
+                    </div>
                   </div>
                 )}
               </div>
@@ -146,7 +212,7 @@ const Header = () => {
           </div>
         </div>
       </header>
-    </>
+    </div>
   );
 };
 

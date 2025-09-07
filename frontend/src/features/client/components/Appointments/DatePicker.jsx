@@ -149,34 +149,34 @@ const DatePicker = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4">
+    <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 p-6">
       {/* Header del calendario */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={goToPreviousMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-3 hover:bg-[#31343A]/50 rounded-xl transition-all duration-300 text-[#B0B3B8] hover:text-[#F5F5F5]"
         >
-          <ChevronLeftIcon className="w-5 h-5" />
+          <ChevronLeftIcon className="w-6 h-6" />
         </button>
 
-        <h2 className="text-lg font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-[#F5F5F5]">
           {formatMonthYear(currentMonth)}
         </h2>
 
         <button
           onClick={goToNextMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-3 hover:bg-[#31343A]/50 rounded-xl transition-all duration-300 text-[#B0B3B8] hover:text-[#F5F5F5]"
         >
-          <ChevronRightIcon className="w-5 h-5" />
+          <ChevronRightIcon className="w-6 h-6" />
         </button>
       </div>
 
       {/* Días de la semana */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-2 mb-4">
         {[1, 2, 3, 4, 5, 6, 7].map((dayIndex) => (
           <div
             key={dayIndex}
-            className="text-center text-sm font-medium text-gray-500 py-2"
+            className="text-center text-sm font-medium text-[#B0B3B8] py-3"
           >
             {getDayName(dayIndex)}
           </div>
@@ -184,24 +184,24 @@ const DatePicker = ({
       </div>
 
       {/* Días del calendario */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-2">
         {calendarDays.map((day, index) => (
           <button
             key={index}
             onClick={() => handleDateClick(day)}
             disabled={day.isDisabled}
             className={`
-              p-3 text-sm rounded-lg transition-all
+              p-3 text-sm rounded-xl transition-all duration-300 font-medium
               ${
                 day.isCurrentMonth
                   ? day.isDisabled
-                    ? "text-gray-300 cursor-not-allowed"
+                    ? "text-[#B0B3B8]/50 cursor-not-allowed"
                     : day.isSelected
-                    ? "bg-orange-500 text-white font-semibold"
-                    : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                  : "text-gray-300 cursor-not-allowed"
+                    ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold shadow-lg transform scale-105"
+                    : "text-[#F5F5F5] hover:bg-[#31343A]/50 hover:text-[#D1A04D] hover:shadow-md hover:scale-105"
+                  : "text-[#B0B3B8]/30 cursor-not-allowed"
               }
-              ${day.isSelected ? "ring-2 ring-orange-300" : ""}
+              ${day.isSelected ? "ring-2 ring-[#D1A04D]/50" : ""}
             `}
           >
             {day.date.getDate()}
@@ -210,18 +210,18 @@ const DatePicker = ({
       </div>
 
       {/* Leyenda */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
+      <div className="mt-6 pt-6 border-t border-[#31343A]/50">
+        <div className="flex items-center justify-center space-x-6 text-sm text-[#B0B3B8]">
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+            <div className="w-3 h-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-full mr-2 shadow-sm"></div>
             <span>Seleccionada</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-gray-200 rounded-full mr-2"></div>
+            <div className="w-3 h-3 bg-[#31343A] rounded-full mr-2"></div>
             <span>Disponible</span>
           </div>
           <div className="flex items-center">
-            <div className="w-3 h-3 bg-gray-100 rounded-full mr-2"></div>
+            <div className="w-3 h-3 bg-[#1F1F1F]/50 rounded-full mr-2"></div>
             <span>No disponible</span>
           </div>
         </div>

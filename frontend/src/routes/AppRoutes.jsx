@@ -19,6 +19,7 @@ import BusinessList from "../features/client/components/Businesses/BusinessList"
 import BusinessDetail from "../features/client/components/Businesses/BusinessDetail";
 import AppointmentBooking from "../features/client/components/Appointments/AppointmentBooking";
 import UserAppointments from "../features/client/components/Appointments/UserAppointments";
+import DashboardClient from "../features/client/pages/DashboardClient";
 
 const AppRoutes = () => {
   return (
@@ -51,9 +52,11 @@ const AppRoutes = () => {
 
       {/* Layout de Cliente */}
       <Route path="/cliente" element={<ClientLayout />}>
-        {/* Aquí puedes agregar rutas específicas para el cliente */}
+        {/* Ruta por defecto - Dashboard */}
+        <Route index element={<DashboardClient />} />
         <Route path="/cliente/propietario" element={<RequestOwner />} />
-        <Route path="/cliente/dashboard" element={<BusinessList />} />
+        <Route path="/cliente/dashboard" element={<DashboardClient />} />
+        <Route path="/cliente/negocios" element={<BusinessList />} />
         <Route path="/cliente/negocios/:id" element={<BusinessDetail />} />
         <Route
           path="/cliente/agendar-cita/:businessId"

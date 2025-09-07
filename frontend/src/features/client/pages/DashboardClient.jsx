@@ -35,10 +35,12 @@ const DashboardClient = () => {
       // Calcular estadísticas
       const statsData = {
         total: data.length,
-        pending: data.filter((apt) => apt.status === "pendiente").length,
-        confirmed: data.filter((apt) => apt.status === "confirmada").length,
-        completed: data.filter((apt) => apt.status === "completada").length,
-        cancelled: data.filter((apt) => apt.status === "cancelada").length,
+        pending: data.filter((apt) => apt.cita_estado === "pendiente").length,
+        confirmed: data.filter((apt) => apt.cita_estado === "confirmada")
+          .length,
+        completed: data.filter((apt) => apt.cita_estado === "completada")
+          .length,
+        cancelled: data.filter((apt) => apt.cita_estado === "cancelada").length,
       };
       setStats(statsData);
     } catch (error) {
@@ -51,15 +53,15 @@ const DashboardClient = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "pendiente":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+        return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
       case "confirmada":
-        return "text-blue-600 bg-blue-50 border-blue-200";
+        return "text-blue-400 bg-blue-500/10 border-blue-500/20";
       case "completada":
-        return "text-green-600 bg-green-50 border-green-200";
+        return "text-green-400 bg-green-500/10 border-green-500/20";
       case "cancelada":
-        return "text-red-600 bg-red-50 border-red-200";
+        return "text-red-400 bg-red-500/10 border-red-500/20";
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
+        return "text-[#B0B3B8] bg-[#31343A]/50 border-[#31343A]";
     }
   };
 
@@ -81,7 +83,7 @@ const DashboardClient = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#D1A04D]"></div>
       </div>
     );
   }
@@ -89,90 +91,19 @@ const DashboardClient = () => {
   return (
     <div className="space-y-8">
       {/* Header del Dashboard */}
-      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-8 border border-orange-100">
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              ¡Bienvenido de vuelta! 👋
+            <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
+              ¡Bienvenido de vuelta!
             </h1>
-            <p className="text-gray-600 text-lg">
+            <p className="text-[#B0B3B8] text-lg">
               Gestiona tus citas y descubre nuevos negocios de belleza
             </p>
           </div>
           <div className="hidden md:block">
-            <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg">
               <UserIcon className="w-12 h-12 text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Citas</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-              <CalendarIcon className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Pendientes</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {stats.pending}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
-              <ClockIcon className="w-6 h-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Confirmadas</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {stats.confirmed}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-              <CalendarIcon className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Completadas</p>
-              <p className="text-2xl font-bold text-green-600">
-                {stats.completed}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-              <CalendarIcon className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Canceladas</p>
-              <p className="text-2xl font-bold text-red-600">
-                {stats.cancelled}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
-              <CalendarIcon className="w-6 h-6 text-red-600" />
             </div>
           </div>
         </div>
@@ -182,61 +113,67 @@ const DashboardClient = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Link
           to="/cliente/nueva-cita"
-          className="group bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl p-6 text-white hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 transform hover:scale-105"
+          className="group bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-xl p-6 text-white hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
           <div className="flex items-center justify-between">
             <div>
-              <PlusIcon className="w-8 h-8 mb-3" />
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-3">
+                <PlusIcon className="w-6 h-6 text-white" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">Nueva Cita</h3>
-              <p className="text-orange-100">Agenda tu próxima cita</p>
+              <p className="text-white/80">Agenda tu próxima cita</p>
             </div>
-            <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-200" />
+            <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
           </div>
         </Link>
 
         <Link
           to="/cliente/negocios"
-          className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+          className="group bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:border-[#D1A04D]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
         >
           <div className="flex items-center justify-between">
             <div>
-              <BuildingStorefrontIcon className="w-8 h-8 mb-3 text-orange-500" />
-              <h3 className="text-xl font-semibold mb-2 text-gray-900">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center mb-3">
+                <BuildingStorefrontIcon className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-[#F5F5F5]">
                 Explorar Negocios
               </h3>
-              <p className="text-gray-600">Descubre nuevos lugares</p>
+              <p className="text-[#B0B3B8]">Descubre nuevos lugares</p>
             </div>
-            <ArrowRightIcon className="w-6 h-6 text-gray-400 group-hover:translate-x-1 transition-transform duration-200" />
+            <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8] group-hover:translate-x-1 transition-transform duration-300" />
           </div>
         </Link>
 
         <Link
           to="/cliente/mis-citas"
-          className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+          className="group bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:border-[#D1A04D]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
         >
           <div className="flex items-center justify-between">
             <div>
-              <CalendarIcon className="w-8 h-8 mb-3 text-orange-500" />
-              <h3 className="text-xl font-semibold mb-2 text-gray-900">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center mb-3">
+                <CalendarIcon className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-[#F5F5F5]">
                 Mis Citas
               </h3>
-              <p className="text-gray-600">Gestiona tus reservas</p>
+              <p className="text-[#B0B3B8]">Gestiona tus reservas</p>
             </div>
-            <ArrowRightIcon className="w-6 h-6 text-gray-400 group-hover:translate-x-1 transition-transform duration-200" />
+            <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8] group-hover:translate-x-1 transition-transform duration-300" />
           </div>
         </Link>
       </div>
 
       {/* Próximas citas */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-100">
+      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl shadow-lg border border-[#31343A]/50">
+        <div className="p-6 border-b border-[#31343A]/50">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-[#F5F5F5]">
               Próximas Citas
             </h2>
             <Link
               to="/cliente/mis-citas"
-              className="text-orange-600 hover:text-orange-700 font-medium text-sm flex items-center gap-2"
+              className="text-[#D1A04D] hover:text-[#F5C76A] font-medium text-sm flex items-center gap-2 transition-colors duration-300"
             >
               Ver todas
               <ArrowRightIcon className="w-4 h-4" />
@@ -247,19 +184,21 @@ const DashboardClient = () => {
         <div className="p-6">
           {appointments.length === 0 ? (
             <div className="text-center py-12">
-              <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <CalendarIcon className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
                 No tienes citas programadas
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-[#B0B3B8] mb-6 max-w-md mx-auto">
                 ¡Agenda tu primera cita y comienza a disfrutar de nuestros
                 servicios!
               </p>
               <Link
                 to="/cliente/nueva-cita"
-                className="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <PlusIcon className="w-4 h-4 mr-2" />
+                <PlusIcon className="w-5 h-5 mr-2" />
                 Agendar Cita
               </Link>
             </div>
@@ -267,39 +206,41 @@ const DashboardClient = () => {
             <div className="space-y-4">
               {appointments.slice(0, 3).map((appointment) => (
                 <div
-                  key={appointment.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                  key={appointment.cita_id}
+                  className="flex items-center justify-between p-4 bg-[#1F1F1F]/50 backdrop-blur-sm rounded-lg hover:bg-[#1F1F1F]/70 transition-all duration-300 border border-[#31343A]/30 hover:border-[#D1A04D]/30"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <CalendarIcon className="w-6 h-6 text-orange-600" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow-md">
+                      <CalendarIcon className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">
-                        {appointment.serviceName}
+                      <h4 className="font-medium text-[#F5F5F5]">
+                        {appointment.servicio_nombre}
                       </h4>
-                      <p className="text-sm text-gray-600">
-                        {appointment.businessName}
+                      <p className="text-sm text-[#B0B3B8]">
+                        {appointment.tienda_nombre}
                       </p>
                       <div className="flex items-center space-x-4 mt-1">
-                        <span className="text-xs text-gray-500">
-                          {new Date(appointment.date).toLocaleDateString()}
+                        <span className="text-xs text-[#B0B3B8]">
+                          {new Date(
+                            appointment.cita_fecha
+                          ).toLocaleDateString()}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {appointment.time}
+                        <span className="text-xs text-[#B0B3B8]">
+                          {appointment.horario_hora_inicio}
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                        appointment.status
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-300 ${getStatusColor(
+                        appointment.cita_estado
                       )}`}
                     >
-                      {appointment.status}
+                      {appointment.cita_estado}
                     </span>
-                    <button className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <button className="text-[#B0B3B8] hover:text-[#F5F5F5] transition-colors duration-300 p-1 rounded-lg hover:bg-[#31343A]/50">
                       <svg
                         className="w-5 h-5"
                         fill="none"
@@ -323,21 +264,23 @@ const DashboardClient = () => {
       </div>
 
       {/* Recomendaciones */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+      <div className="bg-gradient-to-br from-[#23262B] to-[#1F1F1F] rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
         <div className="text-center">
-          <HeartIcon className="w-16 h-16 text-purple-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <HeartIcon className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#F5F5F5] mb-4">
             ¿Te gustó nuestro servicio?
           </h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+          <p className="text-[#B0B3B8] mb-8 max-w-2xl mx-auto text-lg">
             Comparte tu experiencia y ayuda a otros clientes a encontrar los
             mejores negocios de belleza
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium">
+            <button className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
               Dejar Reseña
             </button>
-            <button className="px-6 py-3 bg-white text-purple-600 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium border border-purple-200">
+            <button className="px-8 py-4 bg-[#23262B]/80 backdrop-blur-md text-[#D1A04D] rounded-lg hover:bg-[#31343A]/50 transition-all duration-300 font-medium border border-[#D1A04D]/30 hover:border-[#D1A04D]/50 shadow-lg hover:shadow-xl transform hover:scale-105">
               Compartir Experiencia
             </button>
           </div>

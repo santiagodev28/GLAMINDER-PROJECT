@@ -172,7 +172,7 @@ const AppointmentBooking = () => {
   const getMinDate = () => {
     const today = new Date();
     const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1 );
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split("T")[0];
   };
 
@@ -185,46 +185,65 @@ const AppointmentBooking = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#D1A04D]"></div>
       </div>
     );
   }
 
   if (!business) {
     return (
-      <div className="text-center mt-6">
-        <p className="text-red-600">No se encontró el negocio</p>
+      <div className="text-center py-12">
+        <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <BuildingStorefrontIcon className="w-10 h-10 text-white" />
+        </div>
+        <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
+          No se encontró el negocio
+        </h3>
+        <p className="text-[#B0B3B8]">
+          El negocio que buscas no está disponible
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Agendar Cita
-          </h1>
-          <p className="text-gray-600">{business.negocio_nombre}</p>
+    <div className="space-y-8">
+      {/* Header del Negocio */}
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg mr-4">
+              <CalendarIcon className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
+                Agendar Cita
+              </h1>
+              <p className="text-[#B0B3B8] text-lg">
+                {business.negocio_nombre}
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Progress Steps */}
-        <div className="flex justify-center mb-8">
+      {/* Progress Steps */}
+      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg">
+        <div className="flex justify-center">
           <div className="flex space-x-4">
             {[1, 2, 3, 4].map((stepNumber) => (
               <div
                 key={stepNumber}
                 className={`flex items-center ${
-                  step >= stepNumber ? "text-orange-500" : "text-gray-400"
+                  step >= stepNumber ? "text-[#D1A04D]" : "text-[#B0B3B8]"
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                  className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                     step >= stepNumber
-                      ? "border-orange-500 bg-orange-500 text-white"
-                      : "border-gray-300"
+                      ? "border-[#D1A04D] bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
+                      : "border-[#31343A] bg-[#1F1F1F]/50"
                   }`}
                 >
                   {step > stepNumber ? (
@@ -235,8 +254,10 @@ const AppointmentBooking = () => {
                 </div>
                 {stepNumber < 4 && (
                   <div
-                    className={`w-16 h-0.5 ${
-                      step > stepNumber ? "bg-orange-500" : "bg-gray-300"
+                    className={`w-16 h-0.5 transition-all duration-300 ${
+                      step > stepNumber
+                        ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C]"
+                        : "bg-[#31343A]"
                     }`}
                   />
                 )}
@@ -244,273 +265,326 @@ const AppointmentBooking = () => {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Error/Success Messages */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center">
-            <ExclamationCircleIcon className="w-5 h-5 mr-2" />
-            {error}
-          </div>
-        )}
+      {/* Error/Success Messages */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl backdrop-blur-sm flex items-center shadow-lg">
+          <ExclamationCircleIcon className="w-5 h-5 mr-3 text-red-400" />
+          {error}
+        </div>
+      )}
 
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center">
-            <CheckCircleIcon className="w-5 h-5 mr-2" />
-            {success}
-          </div>
-        )}
+      {success && (
+        <div className="bg-green-500/10 border border-green-500/20 text-green-400 px-6 py-4 rounded-xl backdrop-blur-sm flex items-center shadow-lg">
+          <CheckCircleIcon className="w-5 h-5 mr-3 text-green-400" />
+          {success}
+        </div>
+      )}
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-lg p-6"
-        >
-          {/* Step 1: Seleccionar Tienda */}
-          {step >= 1 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <BuildingStorefrontIcon className="w-6 h-6 mr-2 text-orange-500" />
-                Selecciona una Tienda
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {stores.map((store) => (
-                  <div
-                    key={store.tienda_id}
-                    onClick={() => setSelectedStore(store)}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      selectedStore?.tienda_id === store.tienda_id
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-gray-200 hover:border-orange-300"
-                    }`}
-                  >
-                    <h3 className="font-semibold text-gray-800">
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 p-8"
+      >
+        {/* Step 1: Seleccionar Tienda */}
+        {step >= 1 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-[#F5F5F5] mb-6 flex items-center">
+              <BuildingStorefrontIcon className="w-6 h-6 mr-3 text-[#D1A04D]" />
+              Selecciona una Tienda
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {stores.map((store) => (
+                <div
+                  key={store.tienda_id}
+                  onClick={() => setSelectedStore(store)}
+                  className={`p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                    selectedStore?.tienda_id === store.tienda_id
+                      ? "border-[#D1A04D] bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 shadow-lg"
+                      : "border-[#31343A] bg-[#1F1F1F]/50 hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                  }`}
+                >
+                  <div className="flex items-center mb-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow-lg mr-3">
+                      <BuildingStorefrontIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-[#F5F5F5] text-lg">
                       {store.tienda_nombre}
                     </h3>
-                    <p className="text-sm text-gray-600">
-                      {store.tienda_direccion}
-                    </p>
                   </div>
-                ))}
-              </div>
+                  <p className="text-[#B0B3B8] text-sm">
+                    {store.tienda_direccion}
+                  </p>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Step 2: Seleccionar Servicio */}
-          {step >= 2 && selectedStore && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <CheckCircleIcon className="w-6 h-6 mr-2 text-orange-500" />
-                Selecciona un Servicio
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {services.map((service) => (
-                  <div
-                    key={service.servicio_id}
-                    onClick={() => {
-                      setSelectedService(service);
-                      setStep(3);
-                    }}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      selectedService?.servicio_id === service.servicio_id
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-gray-200 hover:border-orange-300"
-                    }`}
-                  >
-                    <h3 className="font-semibold text-gray-800">
+        {/* Step 2: Seleccionar Servicio */}
+        {step >= 2 && selectedStore && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-[#F5F5F5] mb-6 flex items-center">
+              <CheckCircleIcon className="w-6 h-6 mr-3 text-[#D1A04D]" />
+              Selecciona un Servicio
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {services.map((service) => (
+                <div
+                  key={service.servicio_id}
+                  onClick={() => {
+                    setSelectedService(service);
+                    setStep(3);
+                  }}
+                  className={`p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                    selectedService?.servicio_id === service.servicio_id
+                      ? "border-[#D1A04D] bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 shadow-lg"
+                      : "border-[#31343A] bg-[#1F1F1F]/50 hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-[#F5F5F5] text-lg">
                       {service.servicio_nombre}
                     </h3>
-                    <p className="text-sm text-gray-600">
-                      {service.servicio_descripcion}
-                    </p>
-                    <p className="text-lg font-bold text-orange-600 mt-2">
-                      ${service.servicio_precio}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Duración: {service.servicio_duracion} min
-                    </p>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-[#D1A04D]">
+                        ${service.servicio_precio}
+                      </p>
+                      <p className="text-xs text-[#B0B3B8]">
+                        {service.servicio_duracion} min
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-[#B0B3B8] text-sm leading-relaxed">
+                    {service.servicio_descripcion}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Seleccionar Empleado y Fecha */}
+        {step >= 3 && selectedService && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-[#F5F5F5] mb-6 flex items-center">
+              <UserIcon className="w-6 h-6 mr-3 text-[#D1A04D]" />
+              Selecciona Empleado y Fecha
+            </h2>
+
+            {/* Empleados */}
+            <div className="mb-8">
+              <h3 className="font-medium text-[#F5F5F5] mb-4 text-lg">
+                Empleado:
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {employees.map((employee) => (
+                  <div
+                    key={employee.empleado_id}
+                    onClick={() => setSelectedEmployee(employee)}
+                    className={`p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                      selectedEmployee?.empleado_id === employee.empleado_id
+                        ? "border-[#D1A04D] bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 shadow-lg"
+                        : "border-[#31343A] bg-[#1F1F1F]/50 hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg mr-4">
+                        <span className="text-white font-semibold text-lg">
+                          {employee.usuario_nombre?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-[#F5F5F5] text-lg">
+                          {employee.usuario_nombre} {employee.usuario_apellido}
+                        </h4>
+                        <p className="text-[#B0B3B8] text-sm">
+                          {employee.empleado_especialidad}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Step 3: Seleccionar Empleado y Fecha */}
-          {step >= 3 && selectedService && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <UserIcon className="w-6 h-6 mr-2 text-orange-500" />
-                Selecciona Empleado y Fecha
-              </h2>
-
-              {/* Empleados */}
-              <div className="mb-6">
-                <h3 className="font-medium text-gray-700 mb-3">Empleado:</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {employees.map((employee) => (
-                    <div
-                      key={employee.empleado_id}
-                      onClick={() => setSelectedEmployee(employee)}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        selectedEmployee?.empleado_id === employee.empleado_id
-                          ? "border-orange-500 bg-orange-50"
-                          : "border-gray-200 hover:border-orange-300"
-                      }`}
-                    >
-                      <h4 className="font-semibold text-gray-800">
-                        {employee.usuario_nombre} {employee.usuario_apellido}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {employee.empleado_especialidad}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Fecha */}
-              <div>
-                <h3 className="font-medium text-gray-700 mb-3">Fecha:</h3>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={getMinDate()}
-                  max={getMaxDate()}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
-                />
-              </div>
+            {/* Fecha */}
+            <div>
+              <h3 className="font-medium text-[#F5F5F5] mb-4 text-lg">
+                Fecha:
+              </h3>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                min={getMinDate()}
+                max={getMaxDate()}
+                className="w-full p-4 bg-[#1F1F1F]/50 border border-[#31343A] rounded-xl text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
+                required
+              />
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Step 4: Seleccionar Horario */}
-          {step >= 4 && selectedEmployee && selectedDate && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <ClockIcon className="w-6 h-6 mr-2 text-orange-500" />
-                Selecciona un Horario
-              </h2>
+        {/* Step 4: Seleccionar Horario */}
+        {step >= 4 && selectedEmployee && selectedDate && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-[#F5F5F5] mb-6 flex items-center">
+              <ClockIcon className="w-6 h-6 mr-3 text-[#D1A04D]" />
+              Selecciona un Horario
+            </h2>
 
-              {schedules.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">
-                    No hay horarios disponibles para esta fecha
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDate("")}
-                    className="mt-4 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                  >
-                    Seleccionar otra fecha
-                  </button>
+            {schedules.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D]/20 to-[#B47B1C]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ClockIcon className="w-10 h-10 text-[#D1A04D]" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {schedules.map((schedule) => (
-                    <button
-                      key={schedule.horario_id}
-                      type="button"
-                      onClick={() => setSelectedSchedule(schedule)}
-                      className={`p-3 border-2 rounded-lg transition-all ${
-                        selectedSchedule?.horario_id === schedule.horario_id
-                          ? "border-orange-500 bg-orange-500 text-white"
-                          : "border-gray-200 hover:border-orange-300"
-                      }`}
-                    >
-                      {schedule.horario_hora_inicio}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Resumen de la cita */}
-          {selectedStore &&
-            selectedService &&
-            selectedEmployee &&
-            selectedDate &&
-            selectedSchedule && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-800 mb-3">
-                  Resumen de tu cita:
+                <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
+                  No hay horarios disponibles
                 </h3>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <span className="font-medium">Tienda:</span>{" "}
-                    {selectedStore.tienda_nombre}
-                  </p>
-                  <p>
-                    <span className="font-medium">Servicio:</span>{" "}
-                    {selectedService.servicio_nombre}
-                  </p>
-                  <p>
-                    <span className="font-medium">Empleado:</span>{" "}
-                    {selectedEmployee.usuario_nombre}{" "}
-                    {selectedEmployee.usuario_apellido}
-                  </p>
-                  <p>
-                    <span className="font-medium">Fecha:</span>{" "}
-                    {new Date(selectedDate).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <span className="font-medium">Hora:</span>{" "}
-                    {selectedSchedule.horario_hora_inicio}
-                  </p>
-                  <p>
-                    <span className="font-medium">Precio:</span> $
-                    {selectedService.servicio_precio}
-                  </p>
-                </div>
+                <p className="text-[#B0B3B8] mb-6">
+                  No hay horarios disponibles para esta fecha
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate("")}
+                  className="px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  Seleccionar otra fecha
+                </button>
               </div>
-            )}
-
-          {/* Botones de navegación */}
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={() => {
-                if (step > 1) setStep(step - 1);
-              }}
-              disabled={step === 1}
-              className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Anterior
-            </button>
-
-            {step === 4 && selectedSchedule ? (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Agendando...
-                  </>
-                ) : (
-                  "Confirmar Cita"
-                )}
-              </button>
             ) : (
-              <button
-                type="button"
-                onClick={() => setStep(step + 1)}
-                disabled={
-                  !selectedStore ||
-                  !selectedService ||
-                  !selectedEmployee ||
-                  !selectedDate
-                }
-                className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-              </button>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {schedules.map((schedule) => (
+                  <button
+                    key={schedule.horario_id}
+                    type="button"
+                    onClick={() => setSelectedSchedule(schedule)}
+                    className={`p-4 border-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 ${
+                      selectedSchedule?.horario_id === schedule.horario_id
+                        ? "border-[#D1A04D] bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
+                        : "border-[#31343A] bg-[#1F1F1F]/50 text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-semibold">
+                        {schedule.horario_hora_inicio}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-        </form>
-      </div>
+        )}
+
+        {/* Resumen de la cita */}
+        {selectedStore &&
+          selectedService &&
+          selectedEmployee &&
+          selectedDate &&
+          selectedSchedule && (
+            <div className="bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 rounded-xl p-6 mb-8 border border-[#D1A04D]/20">
+              <h3 className="font-semibold text-[#F5F5F5] mb-4 text-lg flex items-center">
+                <CheckCircleIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
+                Resumen de tu cita:
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="space-y-3">
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Tienda:</span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedStore.tienda_nombre}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">
+                      Servicio:
+                    </span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedService.servicio_nombre}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">
+                      Empleado:
+                    </span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedEmployee.usuario_nombre}{" "}
+                      {selectedEmployee.usuario_apellido}
+                    </span>
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Fecha:</span>
+                    <span className="text-[#F5F5F5]">
+                      {new Date(selectedDate).toLocaleDateString()}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Hora:</span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedSchedule.horario_hora_inicio}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Precio:</span>
+                    <span className="text-[#D1A04D] font-bold text-lg">
+                      ${selectedService.servicio_precio}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+        {/* Botones de navegación */}
+        <div className="flex justify-between">
+          <button
+            type="button"
+            onClick={() => {
+              if (step > 1) setStep(step - 1);
+            }}
+            disabled={step === 1}
+            className="px-8 py-4 bg-[#31343A] text-[#F5F5F5] rounded-xl hover:bg-[#2A2A2A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+          >
+            Anterior
+          </button>
+
+          {step === 4 && selectedSchedule ? (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                  Agendando...
+                </>
+              ) : (
+                "Confirmar Cita"
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setStep(step + 1)}
+              disabled={
+                !selectedStore ||
+                !selectedService ||
+                !selectedEmployee ||
+                !selectedDate
+              }
+              className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+            >
+              Siguiente
+            </button>
+          )}
+        </div>
+      </form>
     </div>
   );
 };
