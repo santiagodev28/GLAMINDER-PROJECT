@@ -1,12 +1,12 @@
-import { executeQuery, executeTransaction } from '../database/connectiondb.js';
+import { executeQuery, executeTransaction } from "../database/connectiondb.js";
 
 class Reports {
   // Estados válidos para reportes
   static APPOINTMENT_STATES = {
-    PENDING: 'pendiente',
-    CONFIRMED: 'confirmada',
-    COMPLETED: 'completada',
-    CANCELLED: 'cancelada'
+    PENDING: "pendiente",
+    CONFIRMED: "confirmada",
+    COMPLETED: "completada",
+    CANCELLED: "cancelada",
   };
 
   // Períodos válidos para reportes
@@ -15,7 +15,7 @@ class Reports {
     LAST_30_DAYS: 30,
     LAST_90_DAYS: 90,
     LAST_6_MONTHS: 180,
-    LAST_YEAR: 365
+    LAST_YEAR: 365,
   };
 
   // ===== REPORTES DE CITAS =====
@@ -33,12 +33,13 @@ class Reports {
         h.horario_inicio, h.horario_fin
       FROM citas c
       LEFT JOIN usuarios u ON c.usuario_id = u.usuario_id
-      LEFT JOIN empleados e ON c.empleado_id = e.empleado_id
+      LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id
+      LEFT JOIN empleados e ON fh.empleado_id = e.empleado_id
       LEFT JOIN usuarios ue ON e.usuario_id = ue.usuario_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
-      LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id
+      LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id
       LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
-      LEFT JOIN horarios h ON c.horario_id = h.horario_id
+      LEFT JOIN horarios h ON fh.horario_id = h.horario_id
       WHERE c.cita_estado = ?
     `;
 
@@ -47,33 +48,33 @@ class Reports {
 
     // Aplicar filtros adicionales
     if (filters.negocio_id) {
-      conditions.push('n.negocio_id = ?');
+      conditions.push("n.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.tienda_id) {
-      conditions.push('c.tienda_id = ?');
+      conditions.push("c.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
     if (filters.fecha_desde) {
-      conditions.push('c.cita_fecha >= ?');
+      conditions.push("c.cita_fecha >= ?");
       params.push(filters.fecha_desde);
     }
 
     if (filters.fecha_hasta) {
-      conditions.push('c.cita_fecha <= ?');
+      conditions.push("c.cita_fecha <= ?");
       params.push(filters.fecha_hasta);
     }
 
     if (conditions.length > 0) {
-      query += ' AND ' + conditions.join(' AND ');
+      query += " AND " + conditions.join(" AND ");
     }
 
-    query += ' ORDER BY c.cita_fecha DESC, h.horario_inicio ASC';
+    query += " ORDER BY c.cita_fecha DESC, h.horario_inicio ASC";
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener citas por estado: ${result.error}`);
     }
@@ -93,11 +94,12 @@ class Reports {
         h.horario_inicio, h.horario_fin
       FROM citas c
       LEFT JOIN usuarios u ON c.usuario_id = u.usuario_id
-      LEFT JOIN empleados e ON c.empleado_id = e.empleado_id
+      LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id
+      LEFT JOIN empleados e ON fh.empleado_id = e.empleado_id
       LEFT JOIN usuarios ue ON e.usuario_id = ue.usuario_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
-      LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id
-      LEFT JOIN horarios h ON c.horario_id = h.horario_id
+      LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id
+      LEFT JOIN horarios h ON fh.horario_id = h.horario_id
       WHERE DATE(c.cita_fecha) = ?
     `;
 
@@ -105,23 +107,23 @@ class Reports {
     const conditions = [];
 
     if (filters.tienda_id) {
-      conditions.push('c.tienda_id = ?');
+      conditions.push("c.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
     if (filters.cita_estado) {
-      conditions.push('c.cita_estado = ?');
+      conditions.push("c.cita_estado = ?");
       params.push(filters.cita_estado);
     }
 
     if (conditions.length > 0) {
-      query += ' AND ' + conditions.join(' AND ');
+      query += " AND " + conditions.join(" AND ");
     }
 
-    query += ' ORDER BY h.horario_inicio ASC';
+    query += " ORDER BY h.horario_inicio ASC";
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener citas por día: ${result.error}`);
     }
@@ -148,27 +150,27 @@ class Reports {
     `;
 
     const params = [];
-    const conditions = ['s.servicio_estado = 1'];
+    const conditions = ["s.servicio_estado = 1"];
 
     // Aplicar filtros
     if (filters.negocio_id) {
-      query += ' LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id';
-      conditions.push('t.negocio_id = ?');
+      query += " LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id";
+      conditions.push("t.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.fecha_desde) {
-      conditions.push('c.cita_fecha >= ?');
+      conditions.push("c.cita_fecha >= ?");
       params.push(filters.fecha_desde);
     }
 
     if (filters.fecha_hasta) {
-      conditions.push('c.cita_fecha <= ?');
+      conditions.push("c.cita_fecha <= ?");
       params.push(filters.fecha_hasta);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     query += `
@@ -180,9 +182,11 @@ class Reports {
     params.push(limit);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener servicios más agendados: ${result.error}`);
+      throw new Error(
+        `Error al obtener servicios más agendados: ${result.error}`
+      );
     }
 
     return result.data;
@@ -207,36 +211,37 @@ class Reports {
       FROM empleados e
       JOIN usuarios u ON e.usuario_id = u.usuario_id
       JOIN tiendas t ON e.tienda_id = t.tienda_id
-      LEFT JOIN citas c ON e.empleado_id = c.empleado_id
+      LEFT JOIN franjas_horarias fh ON e.empleado_id = fh.empleado_id
+      LEFT JOIN citas c ON fh.franja_id = c.franja_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
     `;
 
     const params = [];
-    const conditions = ['e.empleado_estado = 1'];
+    const conditions = ["e.empleado_estado = 1"];
 
     // Aplicar filtros
     if (filters.negocio_id) {
-      conditions.push('t.negocio_id = ?');
+      conditions.push("t.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.tienda_id) {
-      conditions.push('e.tienda_id = ?');
+      conditions.push("e.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
     if (filters.fecha_desde) {
-      conditions.push('c.cita_fecha >= ?');
+      conditions.push("c.cita_fecha >= ?");
       params.push(filters.fecha_desde);
     }
 
     if (filters.fecha_hasta) {
-      conditions.push('c.cita_fecha <= ?');
+      conditions.push("c.cita_fecha <= ?");
       params.push(filters.fecha_hasta);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     query += `
@@ -248,9 +253,11 @@ class Reports {
     params.push(limit);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener empleados más agendados: ${result.error}`);
+      throw new Error(
+        `Error al obtener empleados más agendados: ${result.error}`
+      );
     }
 
     return result.data;
@@ -279,25 +286,25 @@ class Reports {
     `;
 
     const params = [];
-    const conditions = ['t.tienda_estado = 1'];
+    const conditions = ["t.tienda_estado = 1"];
 
     if (negocio_id) {
-      conditions.push('t.negocio_id = ?');
+      conditions.push("t.negocio_id = ?");
       params.push(negocio_id);
     }
 
     if (filters.fecha_desde) {
-      conditions.push('c.cita_fecha >= ?');
+      conditions.push("c.cita_fecha >= ?");
       params.push(filters.fecha_desde);
     }
 
     if (filters.fecha_hasta) {
-      conditions.push('c.cita_fecha <= ?');
+      conditions.push("c.cita_fecha <= ?");
       params.push(filters.fecha_hasta);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     query += `
@@ -308,7 +315,7 @@ class Reports {
     params.push(limit);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener tiendas top: ${result.error}`);
     }
@@ -342,9 +349,11 @@ class Reports {
     `;
 
     const result = await executeQuery(query, [limit]);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener negocios top por calificación: ${result.error}`);
+      throw new Error(
+        `Error al obtener negocios top por calificación: ${result.error}`
+      );
     }
 
     return result.data;
@@ -369,13 +378,13 @@ class Reports {
     const conditions = [];
 
     if (negocio_id) {
-      query += ' JOIN tiendas t ON c.tienda_id = t.tienda_id';
-      conditions.push('t.negocio_id = ?');
+      query += " JOIN tiendas t ON c.tienda_id = t.tienda_id";
+      conditions.push("t.negocio_id = ?");
       params.push(negocio_id);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     query += `
@@ -386,7 +395,7 @@ class Reports {
     params.push(months);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener tendencias de citas: ${result.error}`);
     }
@@ -410,7 +419,7 @@ class Reports {
     const params = [];
 
     if (fecha_desde) {
-      query += ' AND usuario_fecha_registro >= ?';
+      query += " AND usuario_fecha_registro >= ?";
       params.push(fecha_desde);
     }
 
@@ -422,9 +431,11 @@ class Reports {
     params.push(months);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener tendencias de registro: ${result.error}`);
+      throw new Error(
+        `Error al obtener tendencias de registro: ${result.error}`
+      );
     }
 
     return result.data.reverse(); // Ordenar cronológicamente
@@ -456,11 +467,15 @@ class Reports {
       `;
     }
 
-    const params = negocio_id ? [negocio_id, negocio_id, negocio_id, negocio_id, negocio_id, negocio_id] : [];
+    const params = negocio_id
+      ? [negocio_id, negocio_id, negocio_id, negocio_id, negocio_id, negocio_id]
+      : [];
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener resumen de estadísticas: ${result.error}`);
+      throw new Error(
+        `Error al obtener resumen de estadísticas: ${result.error}`
+      );
     }
 
     return result.data[0];
@@ -469,7 +484,11 @@ class Reports {
   // ===== REPORTES AVANZADOS =====
 
   // Reporte de rendimiento por período
-  static async getPerformanceReport(negocio_id = null, fecha_desde, fecha_hasta) {
+  static async getPerformanceReport(
+    negocio_id = null,
+    fecha_desde,
+    fecha_hasta
+  ) {
     let query = `
       SELECT 
         COUNT(c.cita_id) as total_citas,
@@ -479,29 +498,32 @@ class Reports {
         SUM(CASE WHEN c.cita_estado = 'completada' THEN s.servicio_precio ELSE 0 END) as ingresos_periodo,
         ROUND(AVG(CASE WHEN c.cita_estado = 'completada' THEN s.servicio_precio END), 2) as ticket_promedio,
         COUNT(DISTINCT c.usuario_id) as clientes_unicos,
-        COUNT(DISTINCT c.empleado_id) as empleados_activos
+        COUNT(DISTINCT fh.empleado_id) as empleados_activos
       FROM citas c
+      LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
     `;
 
     const params = [];
-    const conditions = ['c.cita_fecha BETWEEN ? AND ?'];
+    const conditions = ["c.cita_fecha BETWEEN ? AND ?"];
     params.push(fecha_desde, fecha_hasta);
 
     if (negocio_id) {
-      query += ' JOIN tiendas t ON c.tienda_id = t.tienda_id';
-      conditions.push('t.negocio_id = ?');
+      query += " JOIN tiendas t ON c.tienda_id = t.tienda_id";
+      conditions.push("t.negocio_id = ?");
       params.push(negocio_id);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener reporte de rendimiento: ${result.error}`);
+      throw new Error(
+        `Error al obtener reporte de rendimiento: ${result.error}`
+      );
     }
 
     return result.data[0];
@@ -526,7 +548,7 @@ class Reports {
     const params = [];
 
     if (negocio_id) {
-      query += ' AND n.negocio_id = ?';
+      query += " AND n.negocio_id = ?";
       params.push(negocio_id);
     }
 
@@ -539,9 +561,11 @@ class Reports {
     params.push(limit);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener reporte de satisfacción: ${result.error}`);
+      throw new Error(
+        `Error al obtener reporte de satisfacción: ${result.error}`
+      );
     }
 
     return result.data;
@@ -554,10 +578,10 @@ class Reports {
     const today = new Date();
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - period);
-    
+
     return {
-      fecha_desde: startDate.toISOString().split('T')[0],
-      fecha_hasta: today.toISOString().split('T')[0]
+      fecha_desde: startDate.toISOString().split("T")[0],
+      fecha_hasta: today.toISOString().split("T")[0],
     };
   }
 
@@ -569,7 +593,7 @@ class Reports {
   // Obtener reporte personalizado
   static async getCustomReport(query, params = []) {
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error en reporte personalizado: ${result.error}`);
     }

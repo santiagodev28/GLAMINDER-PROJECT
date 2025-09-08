@@ -90,6 +90,7 @@ CREATE TABLE `negocios` (
   `negocio_id` INT AUTO_INCREMENT PRIMARY KEY,
   `propietario_id` INT,
   `negocio_nombre` VARCHAR(150),
+  `negocio_direccion` VARCHAR(200),
   `negocio_telefono` VARCHAR(15),
   `negocio_correo` VARCHAR(150),
   `negocio_descripcion` TEXT,
@@ -98,8 +99,8 @@ CREATE TABLE `negocios` (
 );
 
 -- Datos Negocios
-INSERT INTO `negocios` (`negocio_id`,`propietario_id`,`negocio_nombre`,`negocio_telefono`,`negocio_correo`,`negocio_descripcion`) VALUES
-(1,1,'Exclusivos','3213119804','exclusi@gmail.com','Empresa de belleza dedicada al servicio de barberia ubicada en la ciudad de bogota.');
+INSERT INTO `negocios` (`negocio_id`,`propietario_id`,`negocio_nombre`,`negocio_direccion`,`negocio_telefono`,`negocio_correo`,`negocio_descripcion`) VALUES
+(1,1,'Exclusivos','Calle 123 #45-67, Bogotá','3213119804','exclusi@gmail.com','Empresa de belleza dedicada al servicio de barberia ubicada en la ciudad de bogota.');
 
 
 -- Tabla tiendas
@@ -183,32 +184,58 @@ CREATE TABLE `horarios` (
   `horario_hora_inicio` TIME,
   `horario_hora_fin` TIME
 );
--- Datos Horarios
+-- Datos Horarios - Múltiples horarios por empleado por día
 INSERT INTO `horarios` (`horario_id`,`tienda_id`,`empleado_id`,`horario_dia`,`horario_inicio`,`horario_fin`,`horario_activo`,`horario_tipo`,`horario_estado`,`horario_hora_inicio`,`horario_hora_fin`) VALUES
-(1, 1, 1, 'lunes', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
-(2, 1, 1, 'martes', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
-(3, 1, 1, 'miércoles', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
-(4, 1, 1, 'jueves', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
-(5, 1, 1, 'viernes', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
-(6, 1, 1, 'sábado', '09:00:00', '12:00:00', true, 'cita', 1, '09:00:00', '12:00:00');
+-- Horarios del empleado 1 (Juan) - Lunes: Mañana y Tarde
+(1, 1, 1, 'lunes', '09:00:00', '12:00:00', true, 'cita', 1, '09:00:00', '12:00:00'),
+(2, 1, 1, 'lunes', '14:00:00', '17:00:00', true, 'cita', 1, '14:00:00', '17:00:00'),
+-- Martes: Solo mañana
+(3, 1, 1, 'martes', '09:00:00', '13:00:00', true, 'cita', 1, '09:00:00', '13:00:00'),
+-- Miércoles: Mañana y tarde
+(4, 1, 1, 'miércoles', '08:00:00', '12:00:00', true, 'cita', 1, '08:00:00', '12:00:00'),
+(5, 1, 1, 'miércoles', '15:00:00', '19:00:00', true, 'cita', 1, '15:00:00', '19:00:00'),
+-- Jueves: Jornada completa
+(6, 1, 1, 'jueves', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
+-- Viernes: Solo tarde
+(7, 1, 1, 'viernes', '13:00:00', '17:00:00', true, 'cita', 1, '13:00:00', '17:00:00'),
+-- Sábado: Solo mañana
+(8, 1, 1, 'sábado', '09:00:00', '12:00:00', true, 'cita', 1, '09:00:00', '12:00:00');
+
+-- Tabla franjas_horarias
+CREATE TABLE `franjas_horarias` (
+  `franja_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `horario_id` INT NOT NULL,
+  `empleado_id` INT NOT NULL,
+  `tienda_id` INT NOT NULL,
+  `franja_fecha` DATE NOT NULL,
+  `franja_hora_inicio` TIME NOT NULL,
+  `franja_hora_fin` TIME NOT NULL,
+  `franja_disponible` BOOLEAN DEFAULT 1,
+  `franja_duracion_minutos` INT DEFAULT 30,
+  `franja_estado` TINYINT DEFAULT 1
+);
+
+-- Datos Franjas Horarias
+INSERT INTO `franjas_horarias` (`franja_id`,`horario_id`,`empleado_id`,`tienda_id`,`franja_fecha`,`franja_hora_inicio`,`franja_hora_fin`,`franja_disponible`) VALUES
+(1, 1, 1, 1, '2025-05-23', '09:00:00', '17:00:00', true);
 
 -- Tabla citas
 CREATE TABLE `citas` (
   `cita_id` INT AUTO_INCREMENT PRIMARY KEY,
   `usuario_id` INT,
+  `franja_id` INT,
   `servicio_id` INT,
-  `horario_id` INT,
-  `empleado_id` INT,
-  `tienda_id` INT,
   `cita_fecha` DATE,
+  `slot_inicio` TIME,
+  `slot_fin` TIME,
   `cita_estado` ENUM('pendiente', 'confirmada', 'cancelada', 'completada'),
   `cita_motivo_cancelacion` TEXT,
   `cita_fecha_creacion` DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Datos Citas
-INSERT INTO `citas` (`cita_id`,`usuario_id`,`servicio_id`,`horario_id`, `empleado_id`, `tienda_id`, `cita_fecha`, `cita_estado`, `cita_motivo_cancelacion`) VALUES
-(1, 5, 1, 1, 1, 1, '2025-05-23', 'pendiente', '');
+INSERT INTO `citas` (`cita_id`,`usuario_id`,`servicio_id`,`franja_id`,`cita_fecha`, `cita_estado`, `cita_motivo_cancelacion`) VALUES
+(1, 5, 1, 1,'2025-05-23', 'pendiente', '');
 
 -- Claves foráneas
 ALTER TABLE `usuarios` ADD FOREIGN KEY (`rol_id`) REFERENCES `roles`(`rol_id`);
@@ -227,9 +254,11 @@ ALTER TABLE `horarios` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tiend
 ALTER TABLE `horarios` ADD FOREIGN KEY (`empleado_id`) REFERENCES `empleados`(`empleado_id`);
 ALTER TABLE `citas` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`);
 ALTER TABLE `citas` ADD FOREIGN KEY (`servicio_id`) REFERENCES `servicios`(`servicio_id`);
-ALTER TABLE `citas` ADD FOREIGN KEY (`horario_id`) REFERENCES `horarios`(`horario_id`);
-ALTER TABLE `citas` ADD FOREIGN KEY (`empleado_id`) REFERENCES `empleados`(`empleado_id`);
-ALTER TABLE `citas` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`);
+ALTER TABLE `citas` ADD FOREIGN KEY (`franja_id`) REFERENCES `franjas_horarias`(`franja_id`);
+ALTER TABLE `franjas_horarias` ADD FOREIGN KEY (`horario_id`) REFERENCES `horarios`(`horario_id`);
+ALTER TABLE `franjas_horarias` ADD FOREIGN KEY (`empleado_id`) REFERENCES `empleados`(`empleado_id`);
+ALTER TABLE `franjas_horarias` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`);
+
 ALTER TABLE `solicitudes_propietario` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`);
 
 COMMIT;

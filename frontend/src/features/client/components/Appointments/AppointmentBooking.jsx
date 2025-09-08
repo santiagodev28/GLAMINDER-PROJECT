@@ -48,12 +48,12 @@ const AppointmentBooking = () => {
     }
   }, [selectedStore]);
 
-  // Cargar horarios cuando cambie empleado o fecha
+  // Cargar horarios cuando cambie empleado, fecha o servicio
   useEffect(() => {
-    if (selectedEmployee && selectedDate) {
+    if (selectedEmployee && selectedDate && selectedService) {
       loadSchedules();
     }
-  }, [selectedEmployee, selectedDate]);
+  }, [selectedEmployee, selectedDate, selectedService]);
 
   const loadInitialData = async () => {
     try {
@@ -110,7 +110,8 @@ const AppointmentBooking = () => {
 
       const schedulesData = await appointmentService.getAvailableSchedules(
         selectedEmployee.empleado_id,
-        selectedDate
+        selectedDate,
+        selectedService?.servicio_duracion || 30
       );
       setSchedules(schedulesData);
       setStep(4);
@@ -146,8 +147,13 @@ const AppointmentBooking = () => {
         tienda_id: selectedStore.tienda_id,
         servicio_id: selectedService.servicio_id,
         cita_fecha: selectedDate,
-        horario_id: selectedSchedule.horario_id,
+        franja_id: selectedSchedule.franja_id, // franja_id real
+        slot_inicio: selectedSchedule.slot_inicio, // Hora de inicio del slot específico
+        slot_fin: selectedSchedule.slot_fin, // Hora de fin del slot específico
       };
+
+      console.log("🔍 Datos de la cita a enviar:", appointmentData);
+      console.log("🔍 selectedSchedule completo:", selectedSchedule);
 
       const result = await appointmentService.createAppointment(
         appointmentData
@@ -181,6 +187,34 @@ const AppointmentBooking = () => {
     const maxDate = new Date(today);
     maxDate.setDate(maxDate.getDate() + 30); // Máximo 30 días en adelante
     return maxDate.toISOString().split("T")[0];
+  };
+
+  // Generar días disponibles para el selector visual
+  const getAvailableDays = () => {
+    const days = [];
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Generar 14 días a partir de mañana
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(tomorrow);
+      date.setDate(tomorrow.getDate() + i);
+
+      const isSelected = selectedDate === date.toISOString().split("T")[0];
+      const isToday = i === 0;
+
+      days.push({
+        date: date.toISOString().split("T")[0],
+        day: date.getDate(),
+        month: date.toLocaleDateString("es-ES", { month: "short" }),
+        dayName: date.toLocaleDateString("es-ES", { weekday: "short" }),
+        isSelected,
+        isToday,
+      });
+    }
+
+    return days;
   };
 
   if (loading) {
@@ -283,10 +317,7 @@ const AppointmentBooking = () => {
       )}
 
       {/* Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 p-8"
-      >
+      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 p-8">
         {/* Step 1: Seleccionar Tienda */}
         {step >= 1 && (
           <div className="mb-8">
@@ -414,15 +445,65 @@ const AppointmentBooking = () => {
               <h3 className="font-medium text-[#F5F5F5] mb-4 text-lg">
                 Fecha:
               </h3>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                min={getMinDate()}
-                max={getMaxDate()}
-                className="w-full p-4 bg-[#1F1F1F]/50 border border-[#31343A] rounded-xl text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
-                required
-              />
+
+              {/* Selector de días mejorado */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(
+                    (day) => (
+                      <div
+                        key={day}
+                        className="text-center text-sm font-medium text-[#B0B3B8] py-2"
+                      >
+                        {day}
+                      </div>
+                    )
+                  )}
+                </div>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {getAvailableDays().map((day, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedDate(day.date);
+                      }}
+                      className={`
+                          p-3 rounded-lg text-center transition-all duration-300 hover:scale-105
+                          ${
+                            day.isSelected
+                              ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg transform scale-105"
+                              : day.isToday
+                              ? "bg-[#D1A04D]/20 border border-[#D1A04D]/50 text-[#D1A04D] hover:bg-[#D1A04D]/30"
+                              : "bg-[#1F1F1F]/50 border border-[#31343A] text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                          }
+                        `}
+                    >
+                      <div className="text-sm font-medium">{day.day}</div>
+                      <div className="text-xs opacity-75">{day.month}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Input de fecha como respaldo */}
+              <div className="mt-4">
+                <label className="block text-sm text-[#B0B3B8] mb-2">
+                  O selecciona una fecha específica:
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  min={getMinDate()}
+                  max={getMaxDate()}
+                  className="w-full p-3 bg-[#1F1F1F]/50 border border-[#31343A] rounded-lg text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
+                  required
+                />
+              </div>
             </div>
           </div>
         )}
@@ -456,13 +537,13 @@ const AppointmentBooking = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {schedules.map((schedule) => (
+                {schedules.map((schedule, index) => (
                   <button
-                    key={schedule.horario_id}
+                    key={`schedule-${schedule.franja_id}-${schedule.slot_id}-${index}`}
                     type="button"
                     onClick={() => setSelectedSchedule(schedule)}
                     className={`p-4 border-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 ${
-                      selectedSchedule?.horario_id === schedule.horario_id
+                      selectedSchedule?.slot_id === schedule.slot_id
                         ? "border-[#D1A04D] bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
                         : "border-[#31343A] bg-[#1F1F1F]/50 text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
                     }`}
@@ -554,20 +635,22 @@ const AppointmentBooking = () => {
           </button>
 
           {step === 4 && selectedSchedule ? (
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  Agendando...
-                </>
-              ) : (
-                "Confirmar Cita"
-              )}
-            </button>
+            <form onSubmit={handleSubmit}>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Agendando...
+                  </>
+                ) : (
+                  "Confirmar Cita"
+                )}
+              </button>
+            </form>
           ) : (
             <button
               type="button"
@@ -584,7 +667,7 @@ const AppointmentBooking = () => {
             </button>
           )}
         </div>
-      </form>
+      </div>
     </div>
   );
 };

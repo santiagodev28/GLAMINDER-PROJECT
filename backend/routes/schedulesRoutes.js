@@ -10,7 +10,7 @@ scheduleRoutes.get("/", SchedulesController.getAllSchedules);
 
 // Rutas específicas deben ir ANTES de las genéricas
 scheduleRoutes.get(
-  "/disponibles/:empleado_id/:fecha",
+  "/empleado/:empleado_id/:fecha",
   verifyToken,
   authorizeRoles(1, 2, 4),
   SchedulesController.getAvailableSchedules

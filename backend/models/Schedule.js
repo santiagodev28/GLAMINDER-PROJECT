@@ -443,136 +443,141 @@ class Schedule {
   }
 
   // Obtener horarios disponibles por empleado y fecha específica
-  static async getAvailableSchedulesByEmployee(empleado_id, fecha) {
+  static async getAvailableSchedulesByEmployee(
+    empleado_id,
+    fecha,
+    duracion_servicio = 30
+  ) {
     try {
       console.log("🚀 getAvailableSchedulesByEmployee iniciado");
       console.log("👤 empleado_id:", empleado_id);
       console.log("📅 fecha:", fecha);
+      console.log("⏱️ duracion_servicio:", duracion_servicio, "minutos");
 
-      // Obtener el día de la semana de la fecha
-      const fechaObj = new Date(fecha);
-      const diasSemana = [
-        "domingo",
-        "lunes",
-        "martes",
-        "miércoles",
-        "jueves",
-        "viernes",
-        "sábado",
-      ];
-      const diaSemana = diasSemana[fechaObj.getDay()];
+      // Importar FranjaHoraria dinámicamente para evitar dependencias circulares
+      const FranjaHoraria = (await import("./FranjaHoraria.js")).default;
 
-      // Obtener horarios del empleado para ese día (usando nombres de días)
-      let query = `
-        SELECT 
-          h.horario_id,
-          h.tienda_id,
-          h.empleado_id,
-          h.horario_dia,
-          h.horario_inicio,
-          h.horario_fin,
-          h.horario_activo,
-          h.horario_hora_inicio,
-          h.horario_hora_fin,
-          u.usuario_nombre,
-          u.usuario_apellido,
-          e.empleado_especialidad
-        FROM horarios h
-        LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
-        LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
-        WHERE h.empleado_id = ? 
-        AND h.horario_dia = ?
-        AND h.horario_activo = 1
-      `;
+      // Primero, generar franjas horarias para esta fecha si no existen
+      await this.ensureFranjasForDate(empleado_id, fecha);
 
-      // Usar el nombre del día de la semana
-      const params = [empleado_id, diaSemana];
+      // Obtener franjas horarias disponibles para esta fecha
+      const franjasDisponibles =
+        await FranjaHoraria.getAvailableFranjasByEmployee(empleado_id, fecha);
 
-      console.log("🔍 Query:", query);
-      console.log("📊 Parámetros:", params);
-      console.log("📅 Día de la semana calculado:", diaSemana);
-      console.log("📅 Fecha original:", fecha);
-
-      const result = await executeQuery(query, params);
-
-      if (!result.success) {
-        throw new Error(
-          `Error al obtener horarios del empleado: ${result.error}`
-        );
-      }
-
-      console.log("📅 Horarios encontrados en BD:", result.data.length);
-      console.log("📅 Datos de horarios:", result.data);
-
-      // Debug: Ver todas las citas existentes para este empleado y fecha
-      const debugQuery = `
-        SELECT cita_id, horario_id, cita_fecha, cita_estado
-        FROM citas 
-        WHERE empleado_id = ? 
-        AND cita_fecha = ?
-      `;
-      const debugResult = await executeQuery(debugQuery, [empleado_id, fecha]);
       console.log(
-        "🔍 Debug - Todas las citas para este empleado y fecha:",
-        debugResult.data
+        "📅 Franjas disponibles encontradas:",
+        franjasDisponibles.length
       );
 
-      // Filtrar horarios que no tengan citas programadas para esa fecha
+      // Convertir franjas a slots de 30 minutos para compatibilidad
       const horariosDisponibles = [];
 
-      for (const horario of result.data) {
-        console.log(
-          `🔍 Verificando disponibilidad para horario ${horario.horario_id}`
+      for (const franja of franjasDisponibles) {
+        // Generar slots según la duración del servicio
+        const slots = FranjaHoraria.generateTimeSlots(
+          franja.franja_hora_inicio,
+          franja.franja_hora_fin,
+          duracion_servicio // Duración del servicio seleccionado
         );
 
-        // Verificar si hay citas programadas para este horario en esta fecha
-        const citasQuery = `
-          SELECT COUNT(*) as total_citas
-          FROM citas 
-          WHERE empleado_id = ? 
-          AND horario_id = ? 
-          AND cita_fecha = ?
-          AND cita_estado NOT IN ('cancelada', 'completada')
-        `;
-
-        const citasParams = [empleado_id, horario.horario_id, fecha];
-        console.log(`📊 Parámetros de verificación de citas:`, citasParams);
-
-        const citasResult = await executeQuery(citasQuery, citasParams);
-
-        if (citasResult.success) {
-          const totalCitas = citasResult.data[0].total_citas;
+        // Crear un objeto de horario para cada slot
+        for (const slot of slots) {
+          const slotId = `${franja.franja_id}_${slot.slot_index}`;
           console.log(
-            `📅 Horario ${horario.horario_id}: ${totalCitas} citas encontradas`
+            `🔧 Creando slot: franja_id=${franja.franja_id}, slot_index=${slot.slot_index}, slot_id=${slotId}`
           );
 
-          if (totalCitas === 0) {
-            horariosDisponibles.push(horario);
-            console.log(
-              `✅ Horario ${horario.horario_id} marcado como disponible`
-            );
-          } else {
-            console.log(
-              `❌ Horario ${horario.horario_id} NO disponible (${totalCitas} citas)`
-            );
-          }
-        } else {
-          console.log(
-            `❌ Error verificando citas para horario ${horario.horario_id}:`,
-            citasResult.error
-          );
+          horariosDisponibles.push({
+            horario_id: franja.franja_id, // Usar el franja_id real
+            franja_id: franja.franja_id,
+            tienda_id: franja.tienda_id,
+            empleado_id: franja.empleado_id,
+            horario_dia: franja.horario_dia,
+            horario_inicio: slot.hora_inicio,
+            horario_fin: slot.hora_fin,
+            horario_hora_inicio: slot.hora_inicio,
+            horario_hora_fin: slot.hora_fin,
+            horario_activo: franja.franja_estado,
+            franja_disponible: franja.franja_disponible,
+            franja_duracion_minutos: duracion_servicio, // Duración del servicio seleccionado
+            empleado_nombre: franja.usuario_nombre,
+            empleado_apellido: franja.usuario_apellido,
+            empleado_especialidad: franja.empleado_especialidad,
+            // Información adicional para el frontend
+            slot_inicio: slot.hora_inicio,
+            slot_fin: slot.hora_fin,
+            es_slot_individual: true,
+            slot_id: slotId, // ID único usando el índice del slot
+          });
         }
       }
 
       console.log(
-        "Horarios disponibles después de filtrar citas:",
+        "📅 Horarios disponibles convertidos:",
         horariosDisponibles.length
       );
+
+      // Log detallado de los horarios generados
+      horariosDisponibles.forEach((horario, index) => {
+        console.log(`📅 Horario ${index}:`, {
+          slot_id: horario.slot_id,
+          franja_id: horario.franja_id,
+          horario_inicio: horario.horario_inicio,
+          horario_fin: horario.horario_fin,
+          slot_inicio: horario.slot_inicio,
+          slot_fin: horario.slot_fin,
+        });
+      });
+
       return horariosDisponibles;
     } catch (error) {
       throw new Error(
         `Error al obtener horarios disponibles por empleado: ${error.message}`
       );
+    }
+  }
+
+  // Asegurar que existan franjas horarias para una fecha específica
+  static async ensureFranjasForDate(empleado_id, fecha) {
+    try {
+      console.log("🔧 ensureFranjasForDate iniciado para:", {
+        empleado_id,
+        fecha,
+      });
+
+      // Importar FranjaHoraria dinámicamente
+      const FranjaHoraria = (await import("./FranjaHoraria.js")).default;
+
+      // Verificar si ya existen franjas para esta fecha
+      const franjasExistentes = await FranjaHoraria.getAllFranjas({
+        empleado_id: empleado_id,
+        franja_fecha: fecha,
+        franja_estado: 1,
+      });
+
+      console.log(
+        "📅 Franjas existentes para esta fecha:",
+        franjasExistentes.length
+      );
+
+      if (franjasExistentes.length === 0) {
+        console.log("🔧 No hay franjas para esta fecha, generando...");
+        // Generar franjas para esta fecha específica
+        const result = await FranjaHoraria.generateFranjasForDateRange(
+          empleado_id,
+          fecha,
+          fecha
+        );
+        console.log(
+          "✅ Franjas generadas para la fecha:",
+          result.total_franjas
+        );
+      } else {
+        console.log("✅ Ya existen franjas para esta fecha");
+      }
+    } catch (error) {
+      console.error("❌ Error en ensureFranjasForDate:", error);
+      throw error;
     }
   }
 

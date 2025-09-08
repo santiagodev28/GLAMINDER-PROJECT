@@ -55,6 +55,7 @@ const AppRoutes = () => {
         {/* Ruta por defecto - Dashboard */}
         <Route index element={<DashboardClient />} />
         <Route path="/cliente/propietario" element={<RequestOwner />} />
+        <Route path="/cliente/solicitar-propietario" element={<RequestOwner />} />
         <Route path="/cliente/dashboard" element={<DashboardClient />} />
         <Route path="/cliente/negocios" element={<BusinessList />} />
         <Route path="/cliente/negocios/:id" element={<BusinessDetail />} />

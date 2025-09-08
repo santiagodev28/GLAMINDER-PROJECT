@@ -63,16 +63,27 @@ class SchedulesController {
   static async getAvailableSchedules(req, res) {
     try {
       const { empleado_id, fecha } = req.params;
+      const { duracion_servicio } = req.query;
 
       console.log("🔍 getAvailableSchedules llamado con:", {
         empleado_id,
         fecha,
+        duracion_servicio,
       });
 
       // Validar que la fecha sea válida
       if (!fecha || !Date.parse(fecha)) {
         console.log("❌ Fecha inválida:", fecha);
         return res.status(400).json({ error: "Fecha inválida" });
+      }
+
+      // Validar duración del servicio
+      const duracion = duracion_servicio ? parseInt(duracion_servicio) : 30;
+      if (isNaN(duracion) || duracion <= 0) {
+        console.log("❌ Duración inválida:", duracion_servicio);
+        return res
+          .status(400)
+          .json({ error: "Duración del servicio inválida" });
       }
 
       console.log("✅ Fecha válida, obteniendo horarios...");
@@ -89,7 +100,8 @@ class SchedulesController {
 
       const schedules = await Schedule.getAvailableSchedulesByEmployee(
         empleado_id,
-        fecha
+        fecha,
+        duracion
       );
 
       console.log("📅 Horarios obtenidos:", schedules.length);

@@ -156,14 +156,6 @@ const BusinessDetail = () => {
                       </div>
                     </div>
                   </div>
-
-                  <Link
-                    to={`/cliente/agendar-cita/${business.negocio_id}`}
-                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-                  >
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    Agendar
-                  </Link>
                 </div>
               </div>
 

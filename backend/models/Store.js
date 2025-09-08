@@ -1,26 +1,26 @@
-import { executeQuery, executeTransaction } from '../database/connectiondb.js';
+import { executeQuery, executeTransaction } from "../database/connectiondb.js";
 
 class Store {
   // Estados válidos para tiendas
   static STATES = {
     ACTIVE: 1,
-    INACTIVE: 0
+    INACTIVE: 0,
   };
 
   // Tipos de tienda
   static TYPES = {
-    PRINCIPAL: 'principal',
-    SUCURSAL: 'sucursal',
-    POPUP: 'popup',
-    ONLINE: 'online'
+    PRINCIPAL: "principal",
+    SUCURSAL: "sucursal",
+    POPUP: "popup",
+    ONLINE: "online",
   };
 
   // Estados de operación
   static OPERATION_STATUS = {
-    ABIERTA: 'abierta',
-    CERRADA: 'cerrada',
-    MANTENIMIENTO: 'mantenimiento',
-    TEMPORAL: 'temporal'
+    ABIERTA: "abierta",
+    CERRADA: "cerrada",
+    MANTENIMIENTO: "mantenimiento",
+    TEMPORAL: "temporal",
   };
 
   // ===== MÉTODOS CRUD BÁSICOS =====
@@ -52,47 +52,49 @@ class Store {
 
     // Aplicar filtros
     if (filters.tienda_estado !== undefined) {
-      conditions.push('t.tienda_estado = ?');
+      conditions.push("t.tienda_estado = ?");
       params.push(filters.tienda_estado);
     } else {
       // Por defecto, mostrar solo activas
-      conditions.push('t.tienda_estado = ?');
+      conditions.push("t.tienda_estado = ?");
       params.push(this.STATES.ACTIVE);
     }
 
     if (filters.negocio_id) {
-      conditions.push('t.negocio_id = ?');
+      conditions.push("t.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.tienda_ciudad) {
-      conditions.push('t.tienda_ciudad LIKE ?');
+      conditions.push("t.tienda_ciudad LIKE ?");
       params.push(`%${filters.tienda_ciudad}%`);
     }
 
     if (filters.tienda_tipo) {
-      conditions.push('t.tienda_tipo = ?');
+      conditions.push("t.tienda_tipo = ?");
       params.push(filters.tienda_tipo);
     }
 
     if (filters.search) {
-      conditions.push('(t.tienda_nombre LIKE ? OR t.tienda_direccion LIKE ? OR t.tienda_ciudad LIKE ?)');
+      conditions.push(
+        "(t.tienda_nombre LIKE ? OR t.tienda_direccion LIKE ? OR t.tienda_ciudad LIKE ?)"
+      );
       const searchTerm = `%${filters.search}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
     if (filters.fecha_apertura_desde) {
-      conditions.push('t.tienda_fecha_apertura >= ?');
+      conditions.push("t.tienda_fecha_apertura >= ?");
       params.push(filters.fecha_apertura_desde);
     }
 
     if (filters.fecha_apertura_hasta) {
-      conditions.push('t.tienda_fecha_apertura <= ?');
+      conditions.push("t.tienda_fecha_apertura <= ?");
       params.push(filters.fecha_apertura_hasta);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     query += `
@@ -101,7 +103,7 @@ class Store {
     `;
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener tiendas: ${result.error}`);
     }
@@ -140,7 +142,7 @@ class Store {
     `;
 
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener tienda: ${result.error}`);
     }
@@ -161,33 +163,39 @@ class Store {
       tienda_tipo = this.TYPES.SUCURSAL,
       tienda_estado_operacion = this.OPERATION_STATUS.ABIERTA,
       tienda_capacidad_maxima = 10,
-      tienda_horario_apertura = '09:00',
-      tienda_horario_cierre = '18:00'
+      tienda_horario_apertura = "09:00",
+      tienda_horario_cierre = "18:00",
     } = storeData;
 
     // Validaciones básicas
     if (!negocio_id || !tienda_nombre || !tienda_direccion || !tienda_ciudad) {
-      throw new Error('Los campos negocio_id, tienda_nombre, tienda_direccion y tienda_ciudad son obligatorios');
+      throw new Error(
+        "Los campos negocio_id, tienda_nombre, tienda_direccion y tienda_ciudad son obligatorios"
+      );
     }
 
     // Validar email si se proporciona
     if (tienda_correo && !this.isValidEmail(tienda_correo)) {
-      throw new Error('Formato de correo electrónico inválido');
+      throw new Error("Formato de correo electrónico inválido");
     }
 
     // Validar teléfono si se proporciona
     if (tienda_telefono && !this.isValidPhone(tienda_telefono)) {
-      throw new Error('Formato de teléfono inválido');
+      throw new Error("Formato de teléfono inválido");
     }
 
     // Validar tipo de tienda
     if (!Object.values(this.TYPES).includes(tienda_tipo.toLowerCase())) {
-      throw new Error(`Tipo de tienda inválido: ${tienda_tipo}. Debe ser uno de: ${Object.values(this.TYPES).join(', ')}`);
+      throw new Error(
+        `Tipo de tienda inválido: ${tienda_tipo}. Debe ser uno de: ${Object.values(
+          this.TYPES
+        ).join(", ")}`
+      );
     }
 
     // Validar fecha de apertura
     if (tienda_fecha_apertura && new Date(tienda_fecha_apertura) > new Date()) {
-      console.warn('La fecha de apertura es futura');
+      console.warn("La fecha de apertura es futura");
     }
 
     try {
@@ -198,9 +206,15 @@ class Store {
       }
 
       // Verificar que no existe una tienda con el mismo nombre en la misma ciudad para el mismo negocio
-      const existingStore = await this.checkDuplicateStore(negocio_id, tienda_nombre, tienda_ciudad);
+      const existingStore = await this.checkDuplicateStore(
+        negocio_id,
+        tienda_nombre,
+        tienda_ciudad
+      );
       if (existingStore) {
-        throw new Error('Ya existe una tienda con ese nombre en esa ciudad para este negocio');
+        throw new Error(
+          "Ya existe una tienda con ese nombre en esa ciudad para este negocio"
+        );
       }
 
       const query = `
@@ -225,11 +239,11 @@ class Store {
         tienda_capacidad_maxima,
         tienda_horario_apertura,
         tienda_horario_cierre,
-        this.STATES.ACTIVE
+        this.STATES.ACTIVE,
       ];
 
       const result = await executeQuery(query, params);
-      
+
       if (!result.success) {
         throw new Error(`Error al crear tienda: ${result.error}`);
       }
@@ -237,10 +251,9 @@ class Store {
       return {
         success: true,
         tienda_id: result.data.insertId,
-        message: 'Tienda creada exitosamente',
-        data: await this.getStoreById(result.data.insertId)
+        message: "Tienda creada exitosamente",
+        data: await this.getStoreById(result.data.insertId),
       };
-
     } catch (error) {
       throw new Error(`Error al crear tienda: ${error.message}`);
     }
@@ -260,30 +273,40 @@ class Store {
       tienda_estado_operacion,
       tienda_capacidad_maxima,
       tienda_horario_apertura,
-      tienda_horario_cierre
+      tienda_horario_cierre,
     } = updateData;
 
     // Verificar que la tienda existe
     const existingStore = await this.getStoreById(tienda_id);
     if (!existingStore) {
-      throw new Error('Tienda no encontrada');
+      throw new Error("Tienda no encontrada");
     }
 
     // Validaciones si se proporcionan nuevos valores
     if (tienda_correo && !this.isValidEmail(tienda_correo)) {
-      throw new Error('Formato de correo electrónico inválido');
+      throw new Error("Formato de correo electrónico inválido");
     }
 
     if (tienda_telefono && !this.isValidPhone(tienda_telefono)) {
-      throw new Error('Formato de teléfono inválido');
+      throw new Error("Formato de teléfono inválido");
     }
 
-    if (tienda_tipo && !Object.values(this.TYPES).includes(tienda_tipo.toLowerCase())) {
+    if (
+      tienda_tipo &&
+      !Object.values(this.TYPES).includes(tienda_tipo.toLowerCase())
+    ) {
       throw new Error(`Tipo de tienda inválido: ${tienda_tipo}`);
     }
 
-    if (tienda_estado_operacion && !Object.values(this.OPERATION_STATUS).includes(tienda_estado_operacion.toLowerCase())) {
-      throw new Error(`Estado de operación inválido: ${tienda_estado_operacion}`);
+    if (
+      tienda_estado_operacion &&
+      !Object.values(this.OPERATION_STATUS).includes(
+        tienda_estado_operacion.toLowerCase()
+      )
+    ) {
+      throw new Error(
+        `Estado de operación inválido: ${tienda_estado_operacion}`
+      );
     }
 
     // Verificar negocio si se cambia
@@ -295,15 +318,24 @@ class Store {
     }
 
     // Verificar duplicado si se cambia nombre o ciudad
-    if ((tienda_nombre && tienda_nombre !== existingStore.tienda_nombre) ||
-        (tienda_ciudad && tienda_ciudad !== existingStore.tienda_ciudad)) {
+    if (
+      (tienda_nombre && tienda_nombre !== existingStore.tienda_nombre) ||
+      (tienda_ciudad && tienda_ciudad !== existingStore.tienda_ciudad)
+    ) {
       const newNegocioId = negocio_id || existingStore.negocio_id;
       const newNombre = tienda_nombre || existingStore.tienda_nombre;
       const newCiudad = tienda_ciudad || existingStore.tienda_ciudad;
-      
-      const existingDuplicate = await this.checkDuplicateStore(newNegocioId, newNombre, newCiudad, tienda_id);
+
+      const existingDuplicate = await this.checkDuplicateStore(
+        newNegocioId,
+        newNombre,
+        newCiudad,
+        tienda_id
+      );
       if (existingDuplicate) {
-        throw new Error('Ya existe una tienda con ese nombre en esa ciudad para este negocio');
+        throw new Error(
+          "Ya existe una tienda con ese nombre en esa ciudad para este negocio"
+        );
       }
     }
 
@@ -338,24 +370,24 @@ class Store {
       tienda_capacidad_maxima,
       tienda_horario_apertura,
       tienda_horario_cierre,
-      tienda_id
+      tienda_id,
     ];
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al actualizar tienda: ${result.error}`);
     }
 
     if (result.data.affectedRows === 0) {
-      throw new Error('Tienda no encontrada');
+      throw new Error("Tienda no encontrada");
     }
 
     return {
       success: true,
-      message: 'Tienda actualizada exitosamente',
+      message: "Tienda actualizada exitosamente",
       affectedRows: result.data.affectedRows,
-      data: await this.getStoreById(tienda_id)
+      data: await this.getStoreById(tienda_id),
     };
   }
 
@@ -370,31 +402,37 @@ class Store {
     if (nuevo_estado === this.STATES.INACTIVE) {
       const hasFutureCitas = await this.hasFutureAppointments(tienda_id);
       if (hasFutureCitas) {
-        throw new Error('No se puede desactivar una tienda con citas programadas');
+        throw new Error(
+          "No se puede desactivar una tienda con citas programadas"
+        );
       }
 
       const hasActiveEmployees = await this.hasActiveEmployees(tienda_id);
       if (hasActiveEmployees) {
-        console.warn('La tienda tiene empleados activos. Considera desactivar primero a los empleados.');
+        console.warn(
+          "La tienda tiene empleados activos. Considera desactivar primero a los empleados."
+        );
       }
     }
 
-    const query = 'UPDATE tiendas SET tienda_estado = ?, fecha_modificacion = NOW() WHERE tienda_id = ?';
+    const query =
+      "UPDATE tiendas SET tienda_estado = ?, fecha_modificacion = NOW() WHERE tienda_id = ?";
     const result = await executeQuery(query, [nuevo_estado, tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al cambiar estado de la tienda: ${result.error}`);
     }
 
     if (result.data.affectedRows === 0) {
-      throw new Error('Tienda no encontrada');
+      throw new Error("Tienda no encontrada");
     }
 
-    const estadoTexto = nuevo_estado === this.STATES.ACTIVE ? 'activada' : 'desactivada';
+    const estadoTexto =
+      nuevo_estado === this.STATES.ACTIVE ? "activada" : "desactivada";
     return {
       success: true,
       message: `Tienda ${estadoTexto} exitosamente`,
-      affectedRows: result.data.affectedRows
+      affectedRows: result.data.affectedRows,
     };
   }
 
@@ -403,7 +441,7 @@ class Store {
     // Verificar que la tienda existe
     const existingStore = await this.getStoreById(tienda_id);
     if (!existingStore) {
-      throw new Error('Tienda no encontrada');
+      throw new Error("Tienda no encontrada");
     }
 
     // Verificar si hay datos asociados que impidan la eliminación
@@ -412,20 +450,22 @@ class Store {
     const hasCitas = await this.hasAnyAppointments(tienda_id);
 
     if (hasEmployees || hasServices || hasCitas) {
-      throw new Error('No se puede eliminar una tienda que tiene empleados, servicios o citas asociadas. Considera desactivarla en su lugar.');
+      throw new Error(
+        "No se puede eliminar una tienda que tiene empleados, servicios o citas asociadas. Considera desactivarla en su lugar."
+      );
     }
 
-    const query = 'DELETE FROM tiendas WHERE tienda_id = ?';
+    const query = "DELETE FROM tiendas WHERE tienda_id = ?";
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al eliminar tienda: ${result.error}`);
     }
 
     return {
       success: true,
-      message: 'Tienda eliminada exitosamente',
-      affectedRows: result.data.affectedRows
+      message: "Tienda eliminada exitosamente",
+      affectedRows: result.data.affectedRows,
     };
   }
 
@@ -453,14 +493,15 @@ class Store {
         COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) as citas_completadas
       FROM empleados e
       INNER JOIN usuarios u ON e.usuario_id = u.usuario_id
-      LEFT JOIN citas c ON e.empleado_id = c.empleado_id
+      LEFT JOIN franjas_horarias fh ON e.empleado_id = fh.empleado_id
+      LEFT JOIN citas c ON fh.franja_id = c.franja_id
       WHERE e.tienda_id = ?
     `;
 
     const params = [tienda_id];
 
     if (!includeInactive) {
-      query += ' AND e.empleado_estado = 1';
+      query += " AND e.empleado_estado = 1";
     }
 
     query += `
@@ -469,9 +510,11 @@ class Store {
     `;
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener empleados de la tienda: ${result.error}`);
+      throw new Error(
+        `Error al obtener empleados de la tienda: ${result.error}`
+      );
     }
 
     return result.data;
@@ -493,7 +536,7 @@ class Store {
     const params = [tienda_id];
 
     if (!includeInactive) {
-      query += ' AND s.servicio_estado = 1';
+      query += " AND s.servicio_estado = 1";
     }
 
     query += `
@@ -502,9 +545,11 @@ class Store {
     `;
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener servicios de la tienda: ${result.error}`);
+      throw new Error(
+        `Error al obtener servicios de la tienda: ${result.error}`
+      );
     }
 
     return result.data;
@@ -524,48 +569,55 @@ class Store {
 
   // Validar negocio
   static async validateBusiness(negocio_id) {
-    const query = 'SELECT negocio_id, negocio_estado FROM negocios WHERE negocio_id = ?';
+    const query =
+      "SELECT negocio_id, negocio_estado FROM negocios WHERE negocio_id = ?";
     const result = await executeQuery(query, [negocio_id]);
-    
+
     if (!result.success) {
       return {
         isValid: false,
-        message: 'Error al validar negocio'
+        message: "Error al validar negocio",
       };
     }
 
     if (result.data.length === 0) {
       return {
         isValid: false,
-        message: 'Negocio no encontrado'
+        message: "Negocio no encontrado",
       };
     }
 
     if (result.data[0].negocio_estado !== 1) {
       return {
         isValid: false,
-        message: 'El negocio está inactivo'
+        message: "El negocio está inactivo",
       };
     }
 
     return {
       isValid: true,
-      message: 'Negocio válido'
+      message: "Negocio válido",
     };
   }
 
   // Verificar tienda duplicada
-  static async checkDuplicateStore(negocio_id, tienda_nombre, tienda_ciudad, exclude_tienda_id = null) {
-    let query = 'SELECT tienda_id FROM tiendas WHERE negocio_id = ? AND tienda_nombre = ? AND tienda_ciudad = ?';
+  static async checkDuplicateStore(
+    negocio_id,
+    tienda_nombre,
+    tienda_ciudad,
+    exclude_tienda_id = null
+  ) {
+    let query =
+      "SELECT tienda_id FROM tiendas WHERE negocio_id = ? AND tienda_nombre = ? AND tienda_ciudad = ?";
     const params = [negocio_id, tienda_nombre.trim(), tienda_ciudad.trim()];
 
     if (exclude_tienda_id) {
-      query += ' AND tienda_id != ?';
+      query += " AND tienda_id != ?";
       params.push(exclude_tienda_id);
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar tienda duplicada: ${result.error}`);
     }
@@ -585,7 +637,7 @@ class Store {
     `;
 
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar citas futuras: ${result.error}`);
     }
@@ -595,9 +647,10 @@ class Store {
 
   // Verificar si tiene empleados activos
   static async hasActiveEmployees(tienda_id) {
-    const query = 'SELECT COUNT(*) as count FROM empleados WHERE tienda_id = ? AND empleado_estado = 1';
+    const query =
+      "SELECT COUNT(*) as count FROM empleados WHERE tienda_id = ? AND empleado_estado = 1";
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar empleados activos: ${result.error}`);
     }
@@ -607,9 +660,9 @@ class Store {
 
   // Verificar si tiene empleados (cualquier estado)
   static async hasAnyEmployees(tienda_id) {
-    const query = 'SELECT COUNT(*) as count FROM empleados WHERE tienda_id = ?';
+    const query = "SELECT COUNT(*) as count FROM empleados WHERE tienda_id = ?";
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar empleados: ${result.error}`);
     }
@@ -619,9 +672,9 @@ class Store {
 
   // Verificar si tiene servicios
   static async hasAnyServices(tienda_id) {
-    const query = 'SELECT COUNT(*) as count FROM servicios WHERE tienda_id = ?';
+    const query = "SELECT COUNT(*) as count FROM servicios WHERE tienda_id = ?";
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar servicios: ${result.error}`);
     }
@@ -637,9 +690,9 @@ class Store {
       INNER JOIN servicios s ON c.servicio_id = s.servicio_id
       WHERE s.tienda_id = ?
     `;
-    
+
     const result = await executeQuery(query, [tienda_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar citas: ${result.error}`);
     }
@@ -679,23 +732,25 @@ class Store {
     const conditions = [];
 
     if (filters.negocio_id) {
-      conditions.push('t.negocio_id = ?');
+      conditions.push("t.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.tienda_ciudad) {
-      conditions.push('t.tienda_ciudad = ?');
+      conditions.push("t.tienda_ciudad = ?");
       params.push(filters.tienda_ciudad);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener estadísticas de tiendas: ${result.error}`);
+      throw new Error(
+        `Error al obtener estadísticas de tiendas: ${result.error}`
+      );
     }
 
     return result.data[0];
@@ -725,17 +780,17 @@ class Store {
     const params = [];
 
     if (filters.fecha_desde) {
-      query += ' AND c.cita_fecha >= ?';
+      query += " AND c.cita_fecha >= ?";
       params.push(filters.fecha_desde);
     }
 
     if (filters.fecha_hasta) {
-      query += ' AND c.cita_fecha <= ?';
+      query += " AND c.cita_fecha <= ?";
       params.push(filters.fecha_hasta);
     }
 
     if (filters.negocio_id) {
-      query += ' AND t.negocio_id = ?';
+      query += " AND t.negocio_id = ?";
       params.push(filters.negocio_id);
     }
 
@@ -748,9 +803,11 @@ class Store {
     params.push(limit);
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener tiendas con mejor rendimiento: ${result.error}`);
+      throw new Error(
+        `Error al obtener tiendas con mejor rendimiento: ${result.error}`
+      );
     }
 
     return result.data;
@@ -776,16 +833,22 @@ class Store {
     `;
 
     const result = await executeQuery(query);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener distribución de tiendas por ciudad: ${result.error}`);
+      throw new Error(
+        `Error al obtener distribución de tiendas por ciudad: ${result.error}`
+      );
     }
 
     return result.data;
   }
 
   // Obtener ocupación promedio de tiendas
-  static async getStoreOccupancyStats(tienda_id = null, fecha_desde = null, fecha_hasta = null) {
+  static async getStoreOccupancyStats(
+    tienda_id = null,
+    fecha_desde = null,
+    fecha_hasta = null
+  ) {
     let query = `
       SELECT 
         t.tienda_id,
@@ -816,17 +879,17 @@ class Store {
     const params = [];
 
     if (tienda_id) {
-      query += ' AND t.tienda_id = ?';
+      query += " AND t.tienda_id = ?";
       params.push(tienda_id);
     }
 
     if (fecha_desde) {
-      query += ' AND c.cita_fecha >= ?';
+      query += " AND c.cita_fecha >= ?";
       params.push(fecha_desde);
     }
 
     if (fecha_hasta) {
-      query += ' AND c.cita_fecha <= ?';
+      query += " AND c.cita_fecha <= ?";
       params.push(fecha_hasta);
     }
 
@@ -836,9 +899,11 @@ class Store {
     `;
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener estadísticas de ocupación: ${result.error}`);
+      throw new Error(
+        `Error al obtener estadísticas de ocupación: ${result.error}`
+      );
     }
 
     return result.data;
@@ -871,12 +936,14 @@ class Store {
     if (!store) return null;
 
     const fechaApertura = new Date(store.tienda_fecha_apertura);
-    const diasOperacion = Math.floor((new Date() - fechaApertura) / (1000 * 60 * 60 * 24));
+    const diasOperacion = Math.floor(
+      (new Date() - fechaApertura) / (1000 * 60 * 60 * 24)
+    );
     const añosOperacion = Math.floor(diasOperacion / 365);
-    
+
     // Calcular horarios
-    const horarioApertura = store.tienda_horario_apertura || '09:00';
-    const horarioCierre = store.tienda_horario_cierre || '18:00';
+    const horarioApertura = store.tienda_horario_apertura || "09:00";
+    const horarioCierre = store.tienda_horario_cierre || "18:00";
     const startTime = new Date(`1970-01-01T${horarioApertura}:00`);
     const endTime = new Date(`1970-01-01T${horarioCierre}:00`);
     const horasOperacion = (endTime - startTime) / (1000 * 60 * 60);
@@ -888,93 +955,122 @@ class Store {
       horas_operacion_diarias: horasOperacion,
       es_tienda_nueva: diasOperacion <= 90, // Menos de 3 meses
       es_tienda_establecida: diasOperacion >= 365, // Más de 1 año
-      tasa_ocupacion: store.tienda_capacidad_maxima > 0 ? 
-        Math.round((store.total_empleados / store.tienda_capacidad_maxima) * 100) : 0,
-      estado_operacion_display: store.tienda_estado_operacion?.charAt(0).toUpperCase() + 
-                               store.tienda_estado_operacion?.slice(1) || 'No definido',
-      tipo_display: store.tienda_tipo?.charAt(0).toUpperCase() + 
-                   store.tienda_tipo?.slice(1) || 'No definido',
+      tasa_ocupacion:
+        store.tienda_capacidad_maxima > 0
+          ? Math.round(
+              (store.total_empleados / store.tienda_capacidad_maxima) * 100
+            )
+          : 0,
+      estado_operacion_display:
+        store.tienda_estado_operacion?.charAt(0).toUpperCase() +
+          store.tienda_estado_operacion?.slice(1) || "No definido",
+      tipo_display:
+        store.tienda_tipo?.charAt(0).toUpperCase() +
+          store.tienda_tipo?.slice(1) || "No definido",
       contacto_completo: {
-        telefono: store.tienda_telefono || 'No disponible',
-        correo: store.tienda_correo || 'No disponible',
-        direccion_completa: `${store.tienda_direccion}, ${store.tienda_ciudad}`
-      }
+        telefono: store.tienda_telefono || "No disponible",
+        correo: store.tienda_correo || "No disponible",
+        direccion_completa: `${store.tienda_direccion}, ${store.tienda_ciudad}`,
+      },
     };
   }
 
   // Calcular distancia entre tiendas (aproximada usando coordenadas si las tienes)
   static calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Radio de la Tierra en km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return Math.round(distance * 100) / 100;
   }
 
   // Verificar si la tienda está abierta en un horario específico
   static isStoreOpenAt(store, hora) {
-    if (store.tienda_estado !== this.STATES.ACTIVE || 
-        store.tienda_estado_operacion !== this.OPERATION_STATUS.ABIERTA) {
+    if (
+      store.tienda_estado !== this.STATES.ACTIVE ||
+      store.tienda_estado_operacion !== this.OPERATION_STATUS.ABIERTA
+    ) {
       return false;
     }
 
     const horaConsulta = new Date(`1970-01-01T${hora}:00`);
-    const horaApertura = new Date(`1970-01-01T${store.tienda_horario_apertura || '09:00'}:00`);
-    const horaCierre = new Date(`1970-01-01T${store.tienda_horario_cierre || '18:00'}:00`);
+    const horaApertura = new Date(
+      `1970-01-01T${store.tienda_horario_apertura || "09:00"}:00`
+    );
+    const horaCierre = new Date(
+      `1970-01-01T${store.tienda_horario_cierre || "18:00"}:00`
+    );
 
     return horaConsulta >= horaApertura && horaConsulta <= horaCierre;
   }
 
   // Obtener horario de atención formateado
   static getFormattedSchedule(store) {
-    const apertura = store.tienda_horario_apertura || '09:00';
-    const cierre = store.tienda_horario_cierre || '18:00';
-    
+    const apertura = store.tienda_horario_apertura || "09:00";
+    const cierre = store.tienda_horario_cierre || "18:00";
+
     return {
       horario_completo: `${apertura} - ${cierre}`,
       apertura: apertura,
       cierre: cierre,
-      esta_abierta_ahora: this.isStoreOpenAt(store, new Date().toTimeString().slice(0, 5)),
+      esta_abierta_ahora: this.isStoreOpenAt(
+        store,
+        new Date().toTimeString().slice(0, 5)
+      ),
       proxima_apertura: apertura,
-      proxima_cierre: cierre
+      proxima_cierre: cierre,
     };
   }
 
   // Generar reporte de tienda
-  static async generateStoreReport(tienda_id, fecha_desde = null, fecha_hasta = null) {
+  static async generateStoreReport(
+    tienda_id,
+    fecha_desde = null,
+    fecha_hasta = null
+  ) {
     const store = await this.getStoreById(tienda_id);
     if (!store) {
-      throw new Error('Tienda no encontrada');
+      throw new Error("Tienda no encontrada");
     }
 
     const employees = await this.getEmployeesByStore(tienda_id);
     const services = await this.getServicesByStore(tienda_id);
-    const occupancyStats = await this.getStoreOccupancyStats(tienda_id, fecha_desde, fecha_hasta);
+    const occupancyStats = await this.getStoreOccupancyStats(
+      tienda_id,
+      fecha_desde,
+      fecha_hasta
+    );
 
     return {
       informacion_general: this.formatStoreResponse(store),
       estadisticas_ocupacion: occupancyStats[0] || null,
       empleados: {
         total: employees.length,
-        activos: employees.filter(emp => emp.empleado_estado === 1).length,
-        lista: employees
+        activos: employees.filter((emp) => emp.empleado_estado === 1).length,
+        lista: employees,
       },
       servicios: {
         total: services.length,
-        activos: services.filter(serv => serv.servicio_estado === 1).length,
-        ingresos_totales: services.reduce((sum, serv) => sum + (serv.ingresos_totales || 0), 0),
-        lista: services
+        activos: services.filter((serv) => serv.servicio_estado === 1).length,
+        ingresos_totales: services.reduce(
+          (sum, serv) => sum + (serv.ingresos_totales || 0),
+          0
+        ),
+        lista: services,
       },
       horarios: this.getFormattedSchedule(store),
       fecha_reporte: new Date().toISOString(),
       periodo_analizado: {
-        desde: fecha_desde || 'Todos los registros',
-        hasta: fecha_hasta || 'Presente'
-      }
+        desde: fecha_desde || "Todos los registros",
+        hasta: fecha_hasta || "Presente",
+      },
     };
   }
 }

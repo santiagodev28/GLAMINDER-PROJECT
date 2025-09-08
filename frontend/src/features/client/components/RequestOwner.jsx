@@ -55,29 +55,31 @@ const RequestOwner = () => {
       setIsLoading(false);
     }
   };
- 
+
   return (
-    <div className="bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 flex items-center justify-center min-h-screen">
+    <div className="bg-gradient-to-br from-[#1A1A1A] via-[#23262B] to-[#1F1F1F] flex items-center justify-center min-h-screen">
       <div className="w-full max-w-lg">
         {/* Logo y título */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-8">
           <img
             src={logo}
             alt="Glaminder Logo"
             className="h-32 mx-auto drop-shadow-lg"
           />
-          <h1 className="text-3xl font-bold text-gray-800">Panel de Cliente</h1>
-          <p className="text-gray-600">Solicita convertirte en propietario</p>
+          <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
+            Panel de Cliente
+          </h1>
+          <p className="text-[#B0B3B8]">Solicita convertirte en propietario</p>
         </div>
 
         {/* Mensajes */}
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4 text-green-700">
+          <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-4 mb-6 text-green-400 backdrop-blur-sm">
             {success}
           </div>
         )}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-red-600">
+          <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 mb-6 text-red-400 backdrop-blur-sm">
             {error}
           </div>
         )}
@@ -85,10 +87,10 @@ const RequestOwner = () => {
         {/* Formulario */}
         <form
           onSubmit={sendRequest}
-          className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 space-y-4"
+          className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-[#31343A]/50 space-y-6"
         >
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
               Nombre del negocio
             </label>
             <input
@@ -97,12 +99,13 @@ const RequestOwner = () => {
               value={business.nombre_negocio}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-xl p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              placeholder="Ingresa el nombre de tu negocio"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
               Dirección
             </label>
             <input
@@ -111,12 +114,13 @@ const RequestOwner = () => {
               value={business.direccion_negocio}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-xl p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              placeholder="Ingresa la dirección de tu negocio"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
               Teléfono
             </label>
             <input
@@ -124,12 +128,13 @@ const RequestOwner = () => {
               name="telefono_negocio"
               value={business.telefono_negocio}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              placeholder="Ingresa el teléfono de contacto"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
               Correo del negocio
             </label>
             <input
@@ -137,27 +142,29 @@ const RequestOwner = () => {
               name="correo_negocio"
               value={business.correo_negocio}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              placeholder="Ingresa el correo del negocio"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
               Descripción
             </label>
             <textarea
               name="descripcion_negocio"
               value={business.descripcion_negocio}
               onChange={handleChange}
-              rows="3"
-              className="w-full border border-gray-300 rounded-xl p-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              rows="4"
+              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300 resize-none"
+              placeholder="Describe tu negocio y los servicios que ofreces"
             ></textarea>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold py-3 px-6 rounded-xl hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 focus:ring-offset-[#23262B] transform transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
           >
             {isLoading ? (
               <>

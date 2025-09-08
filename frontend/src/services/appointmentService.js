@@ -73,24 +73,55 @@ const appointmentService = {
     }
   },
 
-  // Obtener horarios disponibles por empleado y fecha
-  getAvailableSchedules: async (empleado_id, fecha) => {
+  // Obtener horarios disponibles por empleado y fecha (usando el nuevo sistema de franjas)
+  getAvailableSchedules: async (empleado_id, fecha, duracion_servicio = 30) => {
     try {
       console.log(
         "Intentando obtener horarios para empleado:",
         empleado_id,
         "fecha:",
-        fecha
+        fecha,
+        "duracion:",
+        duracion_servicio
       );
-      console.log("URL:", `/citas/disponibles/${empleado_id}/${fecha}`);
+      console.log(
+        "URL:",
+        `/horarios/empleado/${empleado_id}/${fecha}?duracion_servicio=${duracion_servicio}`
+      );
       console.log("Headers enviados:", getAuthHeaders());
 
-      const res = await api.get(`/citas/disponibles/${empleado_id}/${fecha}`, {
+      const res = await api.get(`/horarios/empleado/${empleado_id}/${fecha}`, {
+        params: { duracion_servicio },
         headers: getAuthHeaders(),
       });
       return res.data;
     } catch (error) {
       console.error("Error al obtener horarios:", error);
+      console.error("Status:", error.response?.status);
+      console.error("Data:", error.response?.data);
+      console.error("URL intentada:", error.config?.url);
+      throw error;
+    }
+  },
+
+  // Obtener franjas horarias disponibles por empleado y fecha (nuevo endpoint)
+  getAvailableFranjas: async (empleado_id, fecha) => {
+    try {
+      console.log(
+        "Intentando obtener franjas para empleado:",
+        empleado_id,
+        "fecha:",
+        fecha
+      );
+      console.log("URL:", `/franjas/empleado/${empleado_id}/${fecha}`);
+      console.log("Headers enviados:", getAuthHeaders());
+
+      const res = await api.get(`/franjas/empleado/${empleado_id}/${fecha}`, {
+        headers: getAuthHeaders(),
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error al obtener franjas:", error);
       console.error("Status:", error.response?.status);
       console.error("Data:", error.response?.data);
       console.error("URL intentada:", error.config?.url);
@@ -138,6 +169,63 @@ const appointmentService = {
       return res.data;
     } catch (error) {
       console.error("Error al obtener cita:", error);
+      throw error;
+    }
+  },
+
+  // Generar franjas horarias para un rango de fechas (solo administradores)
+  generateFranjasForDateRange: async (empleado_id, fecha_inicio, fecha_fin) => {
+    try {
+      console.log(
+        "Generando franjas para empleado:",
+        empleado_id,
+        "desde:",
+        fecha_inicio,
+        "hasta:",
+        fecha_fin
+      );
+
+      const res = await api.post(
+        `/franjas/generar/${empleado_id}`,
+        {
+          fecha_inicio,
+          fecha_fin,
+        },
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+      return res.data;
+    } catch (error) {
+      console.error("Error al generar franjas:", error);
+      throw error;
+    }
+  },
+
+  // Obtener slots de tiempo para una franja específica
+  getTimeSlotsForFranja: async (franja_id, duracion_minutos = 30) => {
+    try {
+      const res = await api.get(`/franjas/${franja_id}/slots`, {
+        params: { duracion_minutos },
+        headers: getAuthHeaders(),
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error al obtener slots de tiempo:", error);
+      throw error;
+    }
+  },
+
+  // Obtener estadísticas de franjas horarias
+  getFranjaStats: async (filters = {}) => {
+    try {
+      const res = await api.get("/franjas/stats", {
+        params: filters,
+        headers: getAuthHeaders(),
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error al obtener estadísticas de franjas:", error);
       throw error;
     }
   },

@@ -2,6 +2,7 @@ import ButtonCloseSession from "../../../components/buttons/ButtonCloseSession";
 import logo from "../../../assets/images/logo.png";
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { BuildingStorefrontIcon } from "@heroicons/react/24/outline";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -196,6 +197,18 @@ const Header = () => {
                         />
                       </svg>
                       Ver mi perfil
+                    </Link>
+                    <Link
+                      to="/cliente/solicitar-propietario"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 mx-2 focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
+                        isScrolled
+                          ? "text-gray-700 hover:bg-gray-100 hover:text-[#D1A04D]"
+                          : "text-[#B0B3B8] hover:bg-[#31343A] hover:text-[#F5F5F5]"
+                      }`}
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <BuildingStorefrontIcon className="w-4 h-4 mr-3 transition-all duration-300" />
+                      Solicitar ser propietario
                     </Link>
                     <div
                       className={`border-t w-full my-1 transition-all duration-300 ${

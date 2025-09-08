@@ -1,10 +1,10 @@
-import { executeQuery, executeTransaction } from '../database/connectiondb.js';
+import { executeQuery, executeTransaction } from "../database/connectiondb.js";
 
 class Employee {
   // Estados válidos para empleados
   static STATES = {
     ACTIVE: 1,
-    INACTIVE: 0
+    INACTIVE: 0,
   };
 
   // Obtener todos los empleados con información completa
@@ -26,37 +26,37 @@ class Employee {
 
     // Aplicar filtros
     if (filters.tienda_id) {
-      conditions.push('e.tienda_id = ?');
+      conditions.push("e.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
     if (filters.negocio_id) {
-      conditions.push('n.negocio_id = ?');
+      conditions.push("n.negocio_id = ?");
       params.push(filters.negocio_id);
     }
 
     if (filters.especialidad) {
-      conditions.push('e.empleado_especialidad LIKE ?');
+      conditions.push("e.empleado_especialidad LIKE ?");
       params.push(`%${filters.especialidad}%`);
     }
 
     if (filters.estado !== undefined) {
-      conditions.push('e.empleado_estado = ?');
+      conditions.push("e.empleado_estado = ?");
       params.push(filters.estado);
     } else {
       // Por defecto, mostrar solo activos
-      conditions.push('e.empleado_estado = ?');
+      conditions.push("e.empleado_estado = ?");
       params.push(this.STATES.ACTIVE);
     }
 
     if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+      query += " WHERE " + conditions.join(" AND ");
     }
 
-    query += ' ORDER BY u.usuario_nombre ASC, u.usuario_apellido ASC';
+    query += " ORDER BY u.usuario_nombre ASC, u.usuario_apellido ASC";
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener empleados: ${result.error}`);
     }
@@ -80,7 +80,7 @@ class Employee {
     `;
 
     const result = await executeQuery(query, [empleado_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener empleado: ${result.error}`);
     }
@@ -104,7 +104,7 @@ class Employee {
     `;
 
     const result = await executeQuery(query, [usuario_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener empleado por usuario: ${result.error}`);
     }
@@ -114,26 +114,35 @@ class Employee {
 
   // Crear nuevo empleado
   static async createEmployee(employeeData) {
-    const { usuario_id, tienda_id, empleado_especialidad, salario, fecha_contratacion } = employeeData;
+    const {
+      usuario_id,
+      tienda_id,
+      empleado_especialidad,
+      salario,
+      fecha_contratacion,
+    } = employeeData;
 
     // Validaciones
     if (!usuario_id || !tienda_id || !empleado_especialidad) {
-      throw new Error('Los campos usuario_id, tienda_id y empleado_especialidad son obligatorios');
+      throw new Error(
+        "Los campos usuario_id, tienda_id y empleado_especialidad son obligatorios"
+      );
     }
 
     try {
       // Verificar que el usuario no sea ya empleado
       const existingEmployee = await this.getEmployeeByUserId(usuario_id);
       if (existingEmployee) {
-        throw new Error('Este usuario ya está registrado como empleado');
+        throw new Error("Este usuario ya está registrado como empleado");
       }
 
       // Verificar que la tienda existe
-      const storeQuery = 'SELECT tienda_id FROM tiendas WHERE tienda_id = ? AND tienda_estado = 1';
+      const storeQuery =
+        "SELECT tienda_id FROM tiendas WHERE tienda_id = ? AND tienda_estado = 1";
       const storeResult = await executeQuery(storeQuery, [tienda_id]);
-      
+
       if (!storeResult.success || storeResult.data.length === 0) {
-        throw new Error('La tienda especificada no existe o está inactiva');
+        throw new Error("La tienda especificada no existe o está inactiva");
       }
 
       // Crear el empleado
@@ -148,12 +157,12 @@ class Employee {
         tienda_id,
         empleado_especialidad,
         salario || null,
-        fecha_contratacion || new Date().toISOString().split('T')[0],
-        this.STATES.ACTIVE
+        fecha_contratacion || new Date().toISOString().split("T")[0],
+        this.STATES.ACTIVE,
       ];
 
       const result = await executeQuery(query, params);
-      
+
       if (!result.success) {
         throw new Error(`Error al crear empleado: ${result.error}`);
       }
@@ -161,10 +170,9 @@ class Employee {
       return {
         success: true,
         empleado_id: result.data.insertId,
-        message: 'Empleado creado exitosamente',
-        data: await this.getEmployeeById(result.data.insertId)
+        message: "Empleado creado exitosamente",
+        data: await this.getEmployeeById(result.data.insertId),
       };
-
     } catch (error) {
       throw new Error(`Error al crear empleado: ${error.message}`);
     }
@@ -172,29 +180,36 @@ class Employee {
 
   // Actualizar empleado
   static async updateEmployee(empleado_id, updateData) {
-    const { usuario_id, tienda_id, empleado_especialidad, empleado_salario, fecha_contratacion } = updateData;
+    const {
+      usuario_id,
+      tienda_id,
+      empleado_especialidad,
+      empleado_salario,
+      fecha_contratacion,
+    } = updateData;
 
     // Verificar que el empleado existe
     const existingEmployee = await this.getEmployeeById(empleado_id);
     if (!existingEmployee) {
-      throw new Error('Empleado no encontrado');
+      throw new Error("Empleado no encontrado");
     }
 
     // Si se cambia el usuario, verificar que no sea ya empleado
     if (usuario_id && usuario_id !== existingEmployee.usuario_id) {
       const duplicateEmployee = await this.getEmployeeByUserId(usuario_id);
       if (duplicateEmployee) {
-        throw new Error('Este usuario ya está registrado como empleado');
+        throw new Error("Este usuario ya está registrado como empleado");
       }
     }
 
     // Si se cambia la tienda, verificar que existe
     if (tienda_id && tienda_id !== existingEmployee.tienda_id) {
-      const storeQuery = 'SELECT tienda_id FROM tiendas WHERE tienda_id = ? AND tienda_estado = 1';
+      const storeQuery =
+        "SELECT tienda_id FROM tiendas WHERE tienda_id = ? AND tienda_estado = 1";
       const storeResult = await executeQuery(storeQuery, [tienda_id]);
-      
+
       if (!storeResult.success || storeResult.data.length === 0) {
-        throw new Error('La tienda especificada no existe o está inactiva');
+        throw new Error("La tienda especificada no existe o está inactiva");
       }
     }
 
@@ -208,22 +223,29 @@ class Employee {
       WHERE empleado_id = ?
     `;
 
-    const params = [usuario_id, tienda_id, empleado_especialidad, empleado_salario, fecha_contratacion, empleado_id];
+    const params = [
+      usuario_id,
+      tienda_id,
+      empleado_especialidad,
+      empleado_salario,
+      fecha_contratacion,
+      empleado_id,
+    ];
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al actualizar empleado: ${result.error}`);
     }
 
     if (result.data.affectedRows === 0) {
-      throw new Error('Empleado no encontrado');
+      throw new Error("Empleado no encontrado");
     }
 
     return {
       success: true,
-      message: 'Empleado actualizado exitosamente',
+      message: "Empleado actualizado exitosamente",
       affectedRows: result.data.affectedRows,
-      data: await this.getEmployeeById(empleado_id)
+      data: await this.getEmployeeById(empleado_id),
     };
   }
 
@@ -234,31 +256,37 @@ class Employee {
       throw new Error(`Estado inválido: ${nuevo_estado}`);
     }
 
-    const query = 'UPDATE empleados SET empleado_estado = ? WHERE empleado_id = ?';
+    const query =
+      "UPDATE empleados SET empleado_estado = ? WHERE empleado_id = ?";
     const result = await executeQuery(query, [nuevo_estado, empleado_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al cambiar estado del empleado: ${result.error}`);
     }
 
     if (result.data.affectedRows === 0) {
-      throw new Error('Empleado no encontrado');
+      throw new Error("Empleado no encontrado");
     }
 
-    const estadoTexto = nuevo_estado === this.STATES.ACTIVE ? 'activado' : 'desactivado';
+    const estadoTexto =
+      nuevo_estado === this.STATES.ACTIVE ? "activado" : "desactivado";
     return {
       success: true,
       message: `Empleado ${estadoTexto} exitosamente`,
-      affectedRows: result.data.affectedRows
+      affectedRows: result.data.affectedRows,
     };
   }
 
   // Desactivar empleado (soft delete)
   static async deleteEmployee(empleado_id) {
     // Verificar si tiene citas pendientes
-    const hasPendingAppointments = await this.hasPendingAppointments(empleado_id);
+    const hasPendingAppointments = await this.hasPendingAppointments(
+      empleado_id
+    );
     if (hasPendingAppointments) {
-      throw new Error('No se puede desactivar un empleado con citas pendientes o confirmadas');
+      throw new Error(
+        "No se puede desactivar un empleado con citas pendientes o confirmadas"
+      );
     }
 
     return await this.changeEmployeeState(empleado_id, this.STATES.INACTIVE);
@@ -280,7 +308,7 @@ class Employee {
     `;
 
     const result = await executeQuery(query, [empleado_id]);
-    
+
     if (!result.success) {
       throw new Error(`Error al verificar citas pendientes: ${result.error}`);
     }
@@ -309,26 +337,38 @@ class Employee {
       WHERE e.tienda_id = ? 
       AND e.empleado_estado = ?
       AND e.empleado_id NOT IN (
-        SELECT c.empleado_id 
-        FROM citas c 
+        SELECT fh.empleado_id 
+        FROM franjas_horarias fh
+        INNER JOIN citas c ON fh.franja_id = c.franja_id
         WHERE DATE(c.cita_fecha) = ? 
-        AND c.horario_id = ?
+        AND fh.horario_id = ?
         AND c.cita_estado NOT IN ('cancelada', 'completada')
       )
       ORDER BY u.usuario_nombre ASC
     `;
 
-    const result = await executeQuery(query, [tienda_id, this.STATES.ACTIVE, fecha, horario_id]);
-    
+    const result = await executeQuery(query, [
+      tienda_id,
+      this.STATES.ACTIVE,
+      fecha,
+      horario_id,
+    ]);
+
     if (!result.success) {
-      throw new Error(`Error al obtener empleados disponibles: ${result.error}`);
+      throw new Error(
+        `Error al obtener empleados disponibles: ${result.error}`
+      );
     }
 
     return result.data;
   }
 
   // Obtener estadísticas del empleado
-  static async getEmployeeStats(empleado_id, fecha_inicio = null, fecha_fin = null) {
+  static async getEmployeeStats(
+    empleado_id,
+    fecha_inicio = null,
+    fecha_fin = null
+  ) {
     let query = `
       SELECT 
         COUNT(*) as total_citas,
@@ -336,38 +376,45 @@ class Employee {
         COUNT(CASE WHEN cita_estado = 'cancelada' THEN 1 END) as citas_canceladas,
         AVG(CASE WHEN cita_estado = 'completada' THEN s.servicio_precio END) as ingreso_promedio
       FROM citas c
+      LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
-      WHERE c.empleado_id = ?
+      WHERE fh.empleado_id = ?
     `;
 
     const params = [empleado_id];
 
     if (fecha_inicio && fecha_fin) {
-      query += ' AND c.cita_fecha BETWEEN ? AND ?';
+      query += " AND c.cita_fecha BETWEEN ? AND ?";
       params.push(fecha_inicio, fecha_fin);
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
-      throw new Error(`Error al obtener estadísticas del empleado: ${result.error}`);
+      throw new Error(
+        `Error al obtener estadísticas del empleado: ${result.error}`
+      );
     }
 
     return result.data[0];
   }
 
   // Contar empleados por estado
-  static async countEmployeesByState(estado = this.STATES.ACTIVE, tienda_id = null) {
-    let query = 'SELECT COUNT(*) as total FROM empleados WHERE empleado_estado = ?';
+  static async countEmployeesByState(
+    estado = this.STATES.ACTIVE,
+    tienda_id = null
+  ) {
+    let query =
+      "SELECT COUNT(*) as total FROM empleados WHERE empleado_estado = ?";
     const params = [estado];
 
     if (tienda_id) {
-      query += ' AND tienda_id = ?';
+      query += " AND tienda_id = ?";
       params.push(tienda_id);
     }
 
     const result = await executeQuery(query, params);
-    
+
     if (!result.success) {
       throw new Error(`Error al contar empleados: ${result.error}`);
     }
@@ -386,12 +433,12 @@ class Employee {
     `;
 
     const result = await executeQuery(query, [this.STATES.ACTIVE]);
-    
+
     if (!result.success) {
       throw new Error(`Error al obtener especialidades: ${result.error}`);
     }
 
-    return result.data.map(row => row.empleado_especialidad);
+    return result.data.map((row) => row.empleado_especialidad);
   }
 }
 

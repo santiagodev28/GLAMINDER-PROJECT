@@ -18,14 +18,16 @@ class Appointment {
         ue.usuario_nombre AS empleado_nombre, ue.usuario_apellido AS empleado_apellido,
         t.tienda_nombre,
         s.servicio_nombre, s.servicio_precio, s.servicio_duracion,
-        h.horario_inicio, h.horario_fin
+        f.franja_hora_inicio, f.franja_hora_fin,
+        h.horario_dia, h.horario_inicio, h.horario_fin
       FROM citas c
       LEFT JOIN usuarios u ON c.usuario_id = u.usuario_id
-      LEFT JOIN empleados e ON c.empleado_id = e.empleado_id
+      LEFT JOIN franjas_horarias f ON c.franja_id = f.franja_id
+      LEFT JOIN horarios h ON f.horario_id = h.horario_id
+      LEFT JOIN empleados e ON f.empleado_id = e.empleado_id
       LEFT JOIN usuarios ue ON e.usuario_id = ue.usuario_id
-      LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id
+      LEFT JOIN tiendas t ON f.tienda_id = t.tienda_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
-      LEFT JOIN horarios h ON c.horario_id = h.horario_id
     `;
 
     const params = [];
@@ -38,12 +40,12 @@ class Appointment {
     }
 
     if (filters.empleado_id) {
-      conditions.push("c.empleado_id = ?");
+      conditions.push("f.empleado_id = ?");
       params.push(filters.empleado_id);
     }
 
     if (filters.tienda_id) {
-      conditions.push("c.tienda_id = ?");
+      conditions.push("f.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
@@ -61,7 +63,7 @@ class Appointment {
       query += " WHERE " + conditions.join(" AND ");
     }
 
-    query += " ORDER BY c.cita_fecha ASC, h.horario_inicio ASC";
+    query += " ORDER BY c.cita_fecha ASC, f.franja_hora_inicio ASC";
 
     const result = await executeQuery(query, params);
 
@@ -81,14 +83,16 @@ class Appointment {
         ue.usuario_nombre AS empleado_nombre, ue.usuario_apellido AS empleado_apellido,
         t.tienda_nombre, t.tienda_direccion,
         s.servicio_nombre, s.servicio_precio, s.servicio_duracion,
-        h.horario_inicio, h.horario_fin
+        f.franja_hora_inicio, f.franja_hora_fin,
+        h.horario_dia, h.horario_inicio, h.horario_fin
       FROM citas c
       LEFT JOIN usuarios u ON c.usuario_id = u.usuario_id
-      LEFT JOIN empleados e ON c.empleado_id = e.empleado_id
+      LEFT JOIN franjas_horarias f ON c.franja_id = f.franja_id
+      LEFT JOIN horarios h ON f.horario_id = h.horario_id
+      LEFT JOIN empleados e ON f.empleado_id = e.empleado_id
       LEFT JOIN usuarios ue ON e.usuario_id = ue.usuario_id
-      LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id
+      LEFT JOIN tiendas t ON f.tienda_id = t.tienda_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
-      LEFT JOIN horarios h ON c.horario_id = h.horario_id
       WHERE c.cita_id = ?
     `;
 
@@ -109,7 +113,9 @@ class Appointment {
       tienda_id,
       servicio_id,
       cita_fecha,
-      horario_id,
+      franja_id, // franja_id real
+      slot_inicio,
+      slot_fin,
     } = appointmentData;
 
     // Validar datos requeridos
@@ -119,37 +125,66 @@ class Appointment {
       !tienda_id ||
       !servicio_id ||
       !cita_fecha ||
-      !horario_id
+      !franja_id
     ) {
       throw new Error("Todos los campos son requeridos");
     }
 
     try {
-      // Verificar disponibilidad del horario
-      const isAvailable = await this.checkTimeSlotAvailability(
-        empleado_id,
-        cita_fecha,
-        horario_id
-      );
+      // Si se proporcionan slot_inicio y slot_fin, verificar disponibilidad del slot específico
+      if (slot_inicio && slot_fin) {
+        console.log("🔍 Verificando disponibilidad del slot:", {
+          franja_id,
+          slot_inicio,
+          slot_fin,
+          cita_fecha,
+        });
 
-      if (!isAvailable) {
-        throw new Error("El horario seleccionado no está disponible");
+        const isSlotAvailable = await this.checkSlotAvailability(
+          franja_id,
+          slot_inicio,
+          slot_fin,
+          cita_fecha
+        );
+
+        console.log("🔍 Resultado de checkSlotAvailability:", isSlotAvailable);
+
+        if (!isSlotAvailable) {
+          throw new Error("El horario seleccionado no está disponible");
+        }
+      } else {
+        console.log("🔍 Verificando disponibilidad de la franja completa:", {
+          franja_id,
+          cita_fecha,
+        });
+
+        // Verificar disponibilidad de la franja horaria completa
+        const isAvailable = await this.checkFranjaAvailability(
+          franja_id,
+          cita_fecha
+        );
+
+        console.log("🔍 Resultado de checkFranjaAvailability:", isAvailable);
+
+        if (!isAvailable) {
+          throw new Error("La franja horaria seleccionada no está disponible");
+        }
       }
 
-      // Crear la cita
+      // Crear la cita usando franja_id
       const query = `
         INSERT INTO citas 
-        (usuario_id, empleado_id, tienda_id, servicio_id, cita_fecha, horario_id, cita_estado) 
+        (usuario_id, franja_id, servicio_id, cita_fecha, slot_inicio, slot_fin, cita_estado) 
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
 
       const params = [
         usuario_id,
-        empleado_id,
-        tienda_id,
+        franja_id, // franja_id real
         servicio_id,
         cita_fecha,
-        horario_id,
+        slot_inicio,
+        slot_fin,
         this.STATES.PENDING,
       ];
 
@@ -170,23 +205,21 @@ class Appointment {
     }
   }
 
-  // Verificar disponibilidad de horario
-  static async checkTimeSlotAvailability(
-    empleado_id,
+  // Verificar disponibilidad de franja horaria
+  static async checkFranjaAvailability(
+    franja_id,
     fecha,
-    horario_id,
     exclude_cita_id = null
   ) {
     let query = `
       SELECT COUNT(*) as count 
       FROM citas 
-      WHERE empleado_id = ? 
+      WHERE franja_id = ? 
         AND DATE(cita_fecha) = ? 
-        AND horario_id = ? 
         AND cita_estado NOT IN ('cancelada', 'completada')
     `;
 
-    const params = [empleado_id, fecha, horario_id];
+    const params = [franja_id, fecha];
 
     // Excluir cita específica (útil para actualizaciones)
     if (exclude_cita_id) {
@@ -201,6 +234,78 @@ class Appointment {
     }
 
     return result.data[0].count === 0;
+  }
+
+  // Verificar disponibilidad de slot específico dentro de una franja
+  static async checkSlotAvailability(
+    franja_id,
+    slot_inicio,
+    slot_fin,
+    fecha,
+    exclude_cita_id = null
+  ) {
+    console.log("🔍 checkSlotAvailability llamado con:", {
+      franja_id,
+      slot_inicio,
+      slot_fin,
+      fecha,
+      exclude_cita_id,
+    });
+
+    let query = `
+      SELECT COUNT(*) as count 
+      FROM citas c
+      WHERE c.franja_id = ? 
+        AND DATE(c.cita_fecha) = ? 
+        AND c.cita_estado NOT IN ('cancelada', 'completada')
+        AND (
+          (c.slot_inicio <= ? AND c.slot_fin > ?) OR
+          (c.slot_inicio < ? AND c.slot_fin >= ?) OR
+          (c.slot_inicio >= ? AND c.slot_fin <= ?)
+        )
+    `;
+
+    const params = [
+      franja_id,
+      fecha,
+      slot_inicio,
+      slot_inicio,
+      slot_fin,
+      slot_fin,
+      slot_inicio,
+      slot_fin,
+    ];
+
+    // Excluir cita específica (útil para actualizaciones)
+    if (exclude_cita_id) {
+      query += " AND c.cita_id != ?";
+      params.push(exclude_cita_id);
+    }
+
+    const result = await executeQuery(query, params);
+
+    if (!result.success) {
+      throw new Error(
+        `Error al verificar disponibilidad del slot: ${result.error}`
+      );
+    }
+
+    return result.data[0].count === 0;
+  }
+
+  // Verificar disponibilidad de horario (método legacy para compatibilidad)
+  static async checkTimeSlotAvailability(
+    empleado_id,
+    fecha,
+    horario_id,
+    exclude_cita_id = null
+  ) {
+    // Redirigir al nuevo método de franjas
+    return await this.checkFranjaAvailability(
+      horario_id,
+      fecha,
+      exclude_cita_id
+    );
   }
 
   // Actualizar cita
@@ -376,9 +481,10 @@ class Appointment {
       SELECT h.* 
       FROM horarios h
       WHERE h.horario_id NOT IN (
-        SELECT c.horario_id 
-        FROM citas c 
-        WHERE c.empleado_id = ? 
+        SELECT fh.horario_id 
+        FROM franjas_horarias fh
+        INNER JOIN citas c ON fh.franja_id = c.franja_id
+        WHERE fh.empleado_id = ? 
           AND DATE(c.cita_fecha) = ?
           AND c.cita_estado NOT IN ('cancelada', 'completada')
       )
