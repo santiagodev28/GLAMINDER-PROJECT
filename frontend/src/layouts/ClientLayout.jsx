@@ -3,7 +3,7 @@ import Header from "../features/client/components/Header";
 
 const ClientLayout = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1F1F1F] via-[#23262B] to-[#1F1F1F]">
+    <div className="min-h-screen app-background">
       {/* Header flotante moderno */}
       <Header />
 

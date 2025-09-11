@@ -13,8 +13,22 @@ serviceRoutes.post(
   ServiceController.createService
 );
 serviceRoutes.get("/", ServiceController.getAllServices);
+
+// Obtener servicios por propietario (solo de sus negocios)
+serviceRoutes.get(
+  "/propietario/:propietario_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  ServiceController.getServicesByOwner
+);
+
 serviceRoutes.get("/:servicio_id", ServiceController.getServiceById);
-serviceRoutes.get("/tienda/:tienda_id", verifyToken, authorizeRoles(1,4), ServiceController.getServicesByStore);
+serviceRoutes.get(
+  "/tienda/:tienda_id",
+  verifyToken,
+  authorizeRoles(1, 4),
+  ServiceController.getServicesByStore
+);
 serviceRoutes.put(
   "/:servicio_id",
   verifyToken,

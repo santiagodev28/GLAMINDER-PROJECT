@@ -225,7 +225,7 @@ const UserAppointments = () => {
                     <div>
                       <p className="text-sm text-[#B0B3B8]">Hora</p>
                       <p className="text-[#F5F5F5] font-medium">
-                        {appointment.horario_hora_inicio}
+                        {appointment.franja_hora_inicio}
                       </p>
                     </div>
                   </div>

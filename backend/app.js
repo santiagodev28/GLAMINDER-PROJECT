@@ -16,6 +16,8 @@ import scheduleRoutes from "./routes/schedulesRoutes.js";
 import appointmentRoutes from "./routes/appointmentsRoute.js";
 import requestRoutes from "./routes/requestRoute.js";
 import franjasRoutes from "./routes/franjasRoute.js";
+import tiendaCategoriaRoutes from "./routes/tiendaCategoriaRoute.js";
+import servicioCategoriaRoutes from "./routes/servicioCategoriaRoute.js";
 
 const app = express();
 
@@ -46,5 +48,7 @@ app.use("/api/citas", appointmentRoutes);
 app.use("/api/horarios", scheduleRoutes);
 app.use("/api/franjas", franjasRoutes);
 app.use("/api/solicitudes", requestRoutes);
+app.use("/api/tienda-categorias", tiendaCategoriaRoutes);
+app.use("/api/servicio-categorias", servicioCategoriaRoutes);
 
 export default app;

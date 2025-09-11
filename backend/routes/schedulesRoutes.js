@@ -16,6 +16,30 @@ scheduleRoutes.get(
   SchedulesController.getAvailableSchedules
 );
 
+// Obtener horarios de un empleado específico
+scheduleRoutes.get(
+  "/empleado/:empleado_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  SchedulesController.getEmployeeSchedules
+);
+
+// Obtener horarios de una tienda específica
+scheduleRoutes.get(
+  "/tienda/:tienda_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  SchedulesController.getStoreSchedules
+);
+
+// Obtener horarios por propietario (todos los empleados de sus tiendas)
+scheduleRoutes.get(
+  "/propietario/:propietario_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  SchedulesController.getSchedulesByOwner
+);
+
 scheduleRoutes.get("/:cita_id", SchedulesController.getScheduleById);
 scheduleRoutes.post(
   "/",

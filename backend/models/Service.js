@@ -159,6 +159,84 @@ class Service {
     return result.data[0] || null;
   }
 
+  // Obtener servicios por propietario (solo de sus negocios)
+  static async getServicesByOwner(propietario_id, filters = {}) {
+    let query = `
+      SELECT 
+        s.*,
+        t.tienda_nombre,
+        t.tienda_direccion,
+        t.tienda_ciudad,
+        n.negocio_nombre,
+        n.negocio_id,
+        sc.categoria_nombre,
+        sc.categoria_descripcion
+      FROM servicios s
+      LEFT JOIN tiendas t ON s.tienda_id = t.tienda_id
+      LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
+      LEFT JOIN servicio_categoria sc ON s.categoria_id = sc.categoria_id
+      WHERE n.propietario_id = ?
+    `;
+
+    const params = [propietario_id];
+    const conditions = [];
+
+    // Aplicar filtros adicionales
+    if (filters.negocio_id) {
+      conditions.push("n.negocio_id = ?");
+      params.push(filters.negocio_id);
+    }
+
+    if (filters.tienda_id) {
+      conditions.push("t.tienda_id = ?");
+      params.push(filters.tienda_id);
+    }
+
+    if (filters.servicio_estado !== undefined) {
+      conditions.push("s.servicio_estado = ?");
+      params.push(filters.servicio_estado);
+    }
+
+    if (filters.categoria_id) {
+      conditions.push("s.categoria_id = ?");
+      params.push(filters.categoria_id);
+    }
+
+    if (conditions.length > 0) {
+      query += " AND " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY s.servicio_nombre ASC";
+
+    const result = await executeQuery(query, params);
+
+    if (!result.success) {
+      throw new Error(
+        `Error al obtener servicios del propietario: ${result.error}`
+      );
+    }
+
+    // Estructurar los datos para que coincidan con lo que espera el frontend
+    return result.data.map((service) => ({
+      ...service,
+      tienda: {
+        tienda_nombre: service.tienda_nombre,
+        tienda_direccion: service.tienda_direccion,
+        tienda_ciudad: service.tienda_ciudad,
+        negocio_id: service.negocio_id,
+      },
+      negocio: {
+        negocio_nombre: service.negocio_nombre,
+        negocio_id: service.negocio_id,
+      },
+      categoria: {
+        categoria_id: service.categoria_id,
+        categoria_nombre: service.categoria_nombre,
+        categoria_descripcion: service.categoria_descripcion,
+      },
+    }));
+  }
+
   // Obtener servicios por tienda
   static async getServicesByStore(tienda_id, includeInactive = false) {
     try {
@@ -215,9 +293,7 @@ class Service {
       servicio_descripcion,
       servicio_precio,
       servicio_duracion,
-      servicio_categoria,
-      servicio_tipo = this.TYPES.INDIVIDUAL,
-      servicio_capacidad_maxima = 1,
+      categoria_id,
     } = serviceData;
 
     // Validaciones básicas
@@ -226,10 +302,10 @@ class Service {
       !servicio_nombre ||
       !servicio_precio ||
       !servicio_duracion ||
-      !servicio_categoria
+      !categoria_id
     ) {
       throw new Error(
-        "Los campos tienda_id, servicio_nombre, servicio_precio, servicio_duracion y servicio_categoria son obligatorios"
+        "Los campos tienda_id, servicio_nombre, servicio_precio, servicio_duracion y categoria_id son obligatorios"
       );
     }
 
@@ -243,25 +319,13 @@ class Service {
       throw new Error("La duración del servicio debe ser mayor a 0 minutos");
     }
 
-    // Validar categoría
-    if (
-      !Object.values(this.CATEGORIES).includes(servicio_categoria.toLowerCase())
-    ) {
-      throw new Error(
-        `Categoría inválida: ${servicio_categoria}. Debe ser una de: ${Object.values(
-          this.CATEGORIES
-        ).join(", ")}`
-      );
+    // Validar que la categoría existe
+    const categoryValidation = await this.validateCategory(categoria_id);
+    if (!categoryValidation.isValid) {
+      throw new Error(categoryValidation.message);
     }
 
-    // Validar tipo
-    if (!Object.values(this.TYPES).includes(servicio_tipo.toLowerCase())) {
-      throw new Error(
-        `Tipo de servicio inválido: ${servicio_tipo}. Debe ser uno de: ${Object.values(
-          this.TYPES
-        ).join(", ")}`
-      );
-    }
+    // Validación de tipo removida - no existe en la base de datos
 
     try {
       // Verificar que la tienda existe
@@ -282,9 +346,8 @@ class Service {
       const query = `
         INSERT INTO servicios 
         (tienda_id, servicio_nombre, servicio_descripcion, servicio_precio, 
-         servicio_duracion, servicio_categoria, servicio_tipo, servicio_capacidad_maxima,
-         servicio_estado, fecha_creacion)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+         servicio_duracion, categoria_id, servicio_estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
 
       const params = [
@@ -293,9 +356,7 @@ class Service {
         servicio_descripcion ? servicio_descripcion.trim() : null,
         servicio_precio,
         servicio_duracion,
-        servicio_categoria.toLowerCase(),
-        servicio_tipo.toLowerCase(),
-        servicio_capacidad_maxima,
+        categoria_id,
         this.STATES.ACTIVE,
       ];
 
@@ -324,9 +385,7 @@ class Service {
       servicio_descripcion,
       servicio_precio,
       servicio_duracion,
-      servicio_categoria,
-      servicio_tipo,
-      servicio_capacidad_maxima,
+      categoria_id,
     } = updateData;
 
     // Verificar que el servicio existe
@@ -344,19 +403,14 @@ class Service {
       throw new Error("La duración del servicio debe ser mayor a 0 minutos");
     }
 
-    if (
-      servicio_categoria &&
-      !Object.values(this.CATEGORIES).includes(servicio_categoria.toLowerCase())
-    ) {
-      throw new Error(`Categoría inválida: ${servicio_categoria}`);
+    if (categoria_id) {
+      const categoryValidation = await this.validateCategory(categoria_id);
+      if (!categoryValidation.isValid) {
+        throw new Error(categoryValidation.message);
+      }
     }
 
-    if (
-      servicio_tipo &&
-      !Object.values(this.TYPES).includes(servicio_tipo.toLowerCase())
-    ) {
-      throw new Error(`Tipo de servicio inválido: ${servicio_tipo}`);
-    }
+    // Validación de tipo removida - no existe en la base de datos
 
     // Verificar tienda si se cambia
     if (tienda_id && tienda_id !== existingService.tienda_id) {
@@ -405,10 +459,7 @@ class Service {
           servicio_descripcion = COALESCE(?, servicio_descripcion),
           servicio_precio = COALESCE(?, servicio_precio),
           servicio_duracion = COALESCE(?, servicio_duracion),
-          servicio_categoria = COALESCE(?, servicio_categoria),
-          servicio_tipo = COALESCE(?, servicio_tipo),
-          servicio_capacidad_maxima = COALESCE(?, servicio_capacidad_maxima),
-          fecha_modificacion = NOW()
+          categoria_id = COALESCE(?, categoria_id)
       WHERE servicio_id = ?
     `;
 
@@ -418,9 +469,7 @@ class Service {
       servicio_descripcion?.trim(),
       servicio_precio,
       servicio_duracion,
-      servicio_categoria?.toLowerCase(),
-      servicio_tipo?.toLowerCase(),
-      servicio_capacidad_maxima,
+      categoria_id,
       servicio_id,
     ];
 
@@ -585,6 +634,22 @@ class Service {
       isValid: true,
       message: "Tienda válida",
     };
+  }
+
+  // Método auxiliar para validar categoría
+  static async validateCategory(categoria_id) {
+    const query = `SELECT categoria_id FROM servicio_categoria WHERE categoria_id = ? AND categoria_estado = 1`;
+    const result = await executeQuery(query, [categoria_id]);
+
+    if (!result.success) {
+      return { isValid: false, message: "Error al validar categoría" };
+    }
+
+    if (!result.data.length) {
+      return { isValid: false, message: "Categoría no encontrada o inactiva" };
+    }
+
+    return { isValid: true };
   }
 
   // Verificar servicio duplicado

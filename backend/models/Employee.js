@@ -1,4 +1,5 @@
 import { executeQuery, executeTransaction } from "../database/connectiondb.js";
+import bcrypt from "bcrypt";
 
 class Employee {
   // Estados válidos para empleados
@@ -13,8 +14,8 @@ class Employee {
       SELECT 
         e.*,
         u.usuario_nombre, u.usuario_apellido, u.usuario_correo, u.usuario_telefono,
-        t.tienda_nombre, t.tienda_direccion,
-        n.negocio_nombre
+        t.tienda_nombre, t.tienda_direccion, t.tienda_ciudad,
+        n.negocio_nombre, n.negocio_id
       FROM empleados e
       LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
       LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id
@@ -61,7 +62,26 @@ class Employee {
       throw new Error(`Error al obtener empleados: ${result.error}`);
     }
 
-    return result.data;
+    // Estructurar los datos para que coincidan con lo que espera el frontend
+    return result.data.map((employee) => ({
+      ...employee,
+      usuario: {
+        usuario_nombre: employee.usuario_nombre,
+        usuario_apellido: employee.usuario_apellido,
+        usuario_correo: employee.usuario_correo,
+        usuario_telefono: employee.usuario_telefono,
+      },
+      tienda: {
+        tienda_nombre: employee.tienda_nombre,
+        tienda_direccion: employee.tienda_direccion,
+        tienda_ciudad: employee.tienda_ciudad,
+        negocio_id: employee.negocio_id,
+      },
+      negocio: {
+        negocio_nombre: employee.negocio_nombre,
+        negocio_id: employee.negocio_id,
+      },
+    }));
   }
 
   // Obtener empleado por ID con información completa
@@ -70,7 +90,7 @@ class Employee {
       SELECT 
         e.*,
         u.usuario_nombre, u.usuario_apellido, u.usuario_correo, u.usuario_telefono, u.usuario_estado,
-        t.tienda_nombre, t.tienda_direccion, t.tienda_telefono,
+        t.tienda_nombre, t.tienda_direccion, t.tienda_telefono, t.tienda_ciudad,
         n.negocio_nombre, n.negocio_id
       FROM empleados e
       LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
@@ -85,7 +105,31 @@ class Employee {
       throw new Error(`Error al obtener empleado: ${result.error}`);
     }
 
-    return result.data[0] || null;
+    const employee = result.data[0];
+    if (!employee) return null;
+
+    // Estructurar los datos para que coincidan con lo que espera el frontend
+    return {
+      ...employee,
+      usuario: {
+        usuario_nombre: employee.usuario_nombre,
+        usuario_apellido: employee.usuario_apellido,
+        usuario_correo: employee.usuario_correo,
+        usuario_telefono: employee.usuario_telefono,
+        usuario_estado: employee.usuario_estado,
+      },
+      tienda: {
+        tienda_nombre: employee.tienda_nombre,
+        tienda_direccion: employee.tienda_direccion,
+        tienda_telefono: employee.tienda_telefono,
+        tienda_ciudad: employee.tienda_ciudad,
+        negocio_id: employee.negocio_id,
+      },
+      negocio: {
+        negocio_nombre: employee.negocio_nombre,
+        negocio_id: employee.negocio_id,
+      },
+    };
   }
 
   // Obtener empleado por usuario_id
@@ -94,7 +138,7 @@ class Employee {
       SELECT 
         e.*,
         u.usuario_nombre, u.usuario_apellido, u.usuario_correo, u.usuario_telefono,
-        t.tienda_nombre, t.tienda_direccion,
+        t.tienda_nombre, t.tienda_direccion, t.tienda_ciudad,
         n.negocio_nombre, n.negocio_id
       FROM empleados e
       LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
@@ -109,7 +153,29 @@ class Employee {
       throw new Error(`Error al obtener empleado por usuario: ${result.error}`);
     }
 
-    return result.data[0] || null;
+    const employee = result.data[0];
+    if (!employee) return null;
+
+    // Estructurar los datos para que coincidan con lo que espera el frontend
+    return {
+      ...employee,
+      usuario: {
+        usuario_nombre: employee.usuario_nombre,
+        usuario_apellido: employee.usuario_apellido,
+        usuario_correo: employee.usuario_correo,
+        usuario_telefono: employee.usuario_telefono,
+      },
+      tienda: {
+        tienda_nombre: employee.tienda_nombre,
+        tienda_direccion: employee.tienda_direccion,
+        tienda_ciudad: employee.tienda_ciudad,
+        negocio_id: employee.negocio_id,
+      },
+      negocio: {
+        negocio_nombre: employee.negocio_nombre,
+        negocio_id: employee.negocio_id,
+      },
+    };
   }
 
   // Crear nuevo empleado
@@ -148,16 +214,14 @@ class Employee {
       // Crear el empleado
       const query = `
         INSERT INTO empleados 
-        (usuario_id, tienda_id, empleado_especialidad, empleado_salario, fecha_contratacion, empleado_estado) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        (usuario_id, tienda_id, empleado_especialidad, empleado_estado) 
+        VALUES (?, ?, ?, ?)
       `;
 
       const params = [
         usuario_id,
         tienda_id,
         empleado_especialidad,
-        salario || null,
-        fecha_contratacion || new Date().toISOString().split("T")[0],
         this.STATES.ACTIVE,
       ];
 
@@ -175,6 +239,129 @@ class Employee {
       };
     } catch (error) {
       throw new Error(`Error al crear empleado: ${error.message}`);
+    }
+  }
+
+  // Crear empleado completo (usuario + empleado) en transacción
+  static async createCompleteEmployee(employeeData) {
+    const {
+      // Datos del usuario
+      usuario_nombre,
+      usuario_apellido,
+      usuario_correo,
+      usuario_contrasena,
+      usuario_telefono,
+      // Datos del empleado
+      tienda_id,
+      empleado_especialidad,
+      empleado_salario,
+      fecha_contratacion,
+    } = employeeData;
+
+    // Validaciones
+    if (
+      !usuario_nombre ||
+      !usuario_apellido ||
+      !usuario_correo ||
+      !usuario_contrasena
+    ) {
+      throw new Error(
+        "Los campos usuario_nombre, usuario_apellido, usuario_correo y usuario_contrasena son obligatorios"
+      );
+    }
+
+    if (!tienda_id || !empleado_especialidad) {
+      throw new Error(
+        "Los campos tienda_id y empleado_especialidad son obligatorios"
+      );
+    }
+
+    try {
+      // Verificar que el email no esté en uso
+      const existingUser = await this.checkEmailExists(usuario_correo);
+      if (existingUser) {
+        throw new Error("Este correo electrónico ya está registrado");
+      }
+
+      // Verificar que la tienda existe
+      const storeQuery =
+        "SELECT tienda_id FROM tiendas WHERE tienda_id = ? AND tienda_estado = 1";
+      const storeResult = await executeQuery(storeQuery, [tienda_id]);
+
+      if (!storeResult.success || storeResult.data.length === 0) {
+        throw new Error("La tienda especificada no existe o está inactiva");
+      }
+
+      // Hashear contraseña antes de crear usuario
+      const hashedPassword = await this.hashPassword(usuario_contrasena);
+
+      // Crear usuario primero
+      const userQuery = `
+        INSERT INTO usuarios 
+        (usuario_nombre, usuario_apellido, usuario_correo, usuario_contrasena, usuario_telefono, rol_id, usuario_estado) 
+        VALUES (?, ?, ?, ?, ?, 3, 1)
+      `;
+
+      const userParams = [
+        usuario_nombre.trim(),
+        usuario_apellido.trim(),
+        usuario_correo.trim().toLowerCase(),
+        hashedPassword,
+        usuario_telefono || null,
+      ];
+
+      const userResult = await executeQuery(userQuery, userParams);
+
+      if (!userResult.success) {
+        throw new Error(`Error al crear usuario: ${userResult.error}`);
+      }
+
+      const usuario_id = userResult.data.insertId;
+
+      // Crear empleado
+      const employeeQuery = `
+        INSERT INTO empleados 
+        (usuario_id, tienda_id, empleado_especialidad, empleado_estado) 
+        VALUES (?, ?, ?, ?)
+      `;
+
+      const employeeParams = [
+        usuario_id,
+        tienda_id,
+        empleado_especialidad.trim(),
+        this.STATES.ACTIVE,
+      ];
+
+      const employeeResult = await executeQuery(employeeQuery, employeeParams);
+
+      if (!employeeResult.success) {
+        // Si falla la creación del empleado, eliminar el usuario creado
+        await executeQuery("DELETE FROM usuarios WHERE usuario_id = ?", [
+          usuario_id,
+        ]);
+        throw new Error(`Error al crear empleado: ${employeeResult.error}`);
+      }
+
+      const empleado_id = employeeResult.data.insertId;
+
+      // Validar que se obtuvo el ID del empleado
+      if (!empleado_id) {
+        // Si no se obtuvo el ID, eliminar el usuario creado
+        await executeQuery("DELETE FROM usuarios WHERE usuario_id = ?", [
+          usuario_id,
+        ]);
+        throw new Error("Error: No se pudo obtener el ID del empleado creado");
+      }
+
+      return {
+        success: true,
+        usuario_id: usuario_id,
+        empleado_id: empleado_id,
+        message: "Empleado creado exitosamente con usuario completo",
+        data: await this.getEmployeeById(empleado_id),
+      };
+    } catch (error) {
+      throw new Error(`Error al crear empleado completo: ${error.message}`);
     }
   }
 
@@ -217,20 +404,11 @@ class Employee {
       UPDATE empleados 
       SET usuario_id = COALESCE(?, usuario_id),
           tienda_id = COALESCE(?, tienda_id),
-          empleado_especialidad = COALESCE(?, empleado_especialidad),
-          empleado_salario = COALESCE(?, empleado_salario),
-          fecha_contratacion = COALESCE(?, fecha_contratacion)
+          empleado_especialidad = COALESCE(?, empleado_especialidad)
       WHERE empleado_id = ?
     `;
 
-    const params = [
-      usuario_id,
-      tienda_id,
-      empleado_especialidad,
-      empleado_salario,
-      fecha_contratacion,
-      empleado_id,
-    ];
+    const params = [usuario_id, tienda_id, empleado_especialidad, empleado_id];
     const result = await executeQuery(query, params);
 
     if (!result.success) {
@@ -439,6 +617,25 @@ class Employee {
     }
 
     return result.data.map((row) => row.empleado_especialidad);
+  }
+
+  // ===== MÉTODOS AUXILIARES =====
+
+  // Verificar si un email ya existe
+  static async checkEmailExists(email) {
+    const query = "SELECT usuario_id FROM usuarios WHERE usuario_correo = ?";
+    const result = await executeQuery(query, [email.toLowerCase()]);
+
+    if (!result.success) {
+      throw new Error(`Error al verificar email: ${result.error}`);
+    }
+
+    return result.data.length > 0;
+  }
+
+  // Hashear contraseña
+  static async hashPassword(password) {
+    return await bcrypt.hash(password, 10);
   }
 }
 

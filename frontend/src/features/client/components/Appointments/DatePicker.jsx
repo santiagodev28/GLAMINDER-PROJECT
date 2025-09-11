@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  getColombiaDate,
+  formatDateForColombia,
+} from "../../../../utils/dateUtils";
 
 const DatePicker = ({
   selectedDate,
@@ -8,7 +12,7 @@ const DatePicker = ({
   maxDate,
   disabledDates = [],
 }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(getColombiaDate());
   const [calendarDays, setCalendarDays] = useState([]);
 
   useEffect(() => {
@@ -75,7 +79,7 @@ const DatePicker = ({
   };
 
   const isDateDisabled = (date) => {
-    const today = new Date();
+    const today = getColombiaDate();
     today.setHours(0, 0, 0, 0);
 
     // Fecha mínima
@@ -88,8 +92,8 @@ const DatePicker = ({
       return true;
     }
 
-    // No permitir fechas pasadas
-    if (date < today) {
+    // No permitir fechas pasadas (incluyendo hoy)
+    if (date <= today) {
       return true;
     }
 
@@ -109,7 +113,7 @@ const DatePicker = ({
 
   const handleDateClick = (day) => {
     if (!day.isDisabled && day.isCurrentMonth) {
-      onDateSelect(day.date.toISOString().split("T")[0]);
+      onDateSelect(formatDateForColombia(day.date));
     }
   };
 

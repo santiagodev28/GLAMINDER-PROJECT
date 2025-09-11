@@ -5,7 +5,7 @@ DROP DATABASE IF EXISTS `glaminderdb`;
 CREATE DATABASE `glaminderdb`;
 USE `glaminderdb`;
 
-DROP TABLE IF EXISTS `roles`, `usuarios`, `empleados`, `propietarios`, `negocios`, `tiendas`, `servicios`, `calificaciones`, `calificaciones_negocios`, `calificaciones_empleados`, `horarios`, `citas`;
+DROP TABLE IF EXISTS `roles`, `usuarios`, `empleados`, `propietarios`, `negocios`, `tiendas`, `servicios`, `servicio_categoria`, `tienda_categoria_servicio`, `calificaciones`, `calificaciones_negocios`, `calificaciones_empleados`, `horarios`, `franjas_horarias`, `citas`, `solicitudes_propietario`;
 
 -- Tabla roles
 CREATE TABLE `roles` (
@@ -103,28 +103,83 @@ INSERT INTO `negocios` (`negocio_id`,`propietario_id`,`negocio_nombre`,`negocio_
 (1,1,'Exclusivos','Calle 123 #45-67, Bogotá','3213119804','exclusi@gmail.com','Empresa de belleza dedicada al servicio de barberia ubicada en la ciudad de bogota.');
 
 
+-- Tabla tienda_categoria
+CREATE TABLE `tienda_categoria` (
+  `categoria_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `categoria_nombre` VARCHAR(100) NOT NULL,
+  `categoria_descripcion` TEXT,
+  `categoria_estado` BOOLEAN DEFAULT 1
+);
+
+-- Datos Categorías de Tienda
+INSERT INTO `tienda_categoria` (`categoria_id`, `categoria_nombre`, `categoria_descripcion`) VALUES
+(1, 'Barbería', 'Establecimiento especializado en cortes de cabello y afeitado para hombres'),
+(2, 'Salón de Belleza', 'Centro de belleza integral para mujeres y hombres'),
+(3, 'Spa', 'Centro de relajación y tratamientos corporales'),
+(4, 'Centro de Estética', 'Clínica especializada en tratamientos estéticos'),
+(5, 'Nail Bar', 'Especializado en manicure y pedicure'),
+(6, 'Centro de Depilación', 'Especializado en servicios de depilación');
+
 -- Tabla tiendas
 CREATE TABLE `tiendas` (
   `tienda_id` INT AUTO_INCREMENT PRIMARY KEY,
   `negocio_id` INT,
+  `categoria_id` INT,
   `tienda_nombre` VARCHAR(100), 
   `tienda_direccion` VARCHAR(200),
   `tienda_telefono` VARCHAR(10),
   `tienda_correo` VARCHAR(150),
   `tienda_ciudad` VARCHAR(50),
-  `tienda_activa` BOOLEAN,
+  `tienda_hora_apertura` TIME,
+  `tienda_hora_cierre` TIME,
   `tienda_fecha_apertura` DATE,
-  `tienda_estado` BOOLEAN DEFAULT 1
+  `tienda_estado` BOOLEAN DEFAULT 1,
 );
 
 -- Datos Tiendas
-INSERT INTO `tiendas` (`tienda_id`,`negocio_id`,`tienda_nombre`,`tienda_direccion`,`tienda_telefono`,`tienda_correo`,`tienda_ciudad`,`tienda_activa`,`tienda_fecha_apertura`) VALUES
-(1,1,'Exclusivos VIP','Tv. 5r Bis #04, Cdad. Bolívar','3123534739','excluvip@gmail.com', 'Bogotá', 1, '2020-01-01');
+INSERT INTO `tiendas` (`tienda_id`,`negocio_id`,`categoria_id`,`tienda_nombre`,`tienda_direccion`,`tienda_telefono`,`tienda_correo`,`tienda_ciudad`,`tienda_hora_apertura`,`tienda_hora_cierre`,`tienda_fecha_apertura`) VALUES
+(1,1,1,'Exclusivos VIP','Tv. 5r Bis #04, Cdad. Bolívar','3123534739','excluvip@gmail.com', 'Bogotá', '08:00:00', '18:00:00', '2020-01-01');
+
+-- Tabla servicio_categoria
+CREATE TABLE `servicio_categoria` (
+  `categoria_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `categoria_nombre` VARCHAR(100) NOT NULL UNIQUE,
+  `categoria_descripcion` TEXT,
+  `categoria_estado` TINYINT(1) DEFAULT 1 COMMENT '1=Activa, 0=Inactiva',
+  `categoria_fecha_creacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `categoria_fecha_actualizacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Datos Categorías de Servicios
+INSERT INTO `servicio_categoria` (`categoria_id`, `categoria_nombre`, `categoria_descripcion`) VALUES
+(1, 'Belleza', 'Servicios relacionados con belleza y estética'),
+(2, 'Barbería', 'Servicios de corte y cuidado masculino'),
+(3, 'Manicure', 'Servicios de cuidado de uñas de las manos'),
+(4, 'Pedicure', 'Servicios de cuidado de uñas de los pies'),
+(5, 'Tratamientos Faciales', 'Servicios de cuidado y tratamiento facial'),
+(6, 'Masajes', 'Servicios de relajación y masajes terapéuticos'),
+(7, 'Peinados', 'Servicios de peinado y styling'),
+(8, 'Tintes', 'Servicios de coloración capilar'),
+(9, 'Tratamientos Capilares', 'Servicios de cuidado y tratamiento del cabello'),
+(10, 'Depilación', 'Servicios de eliminación de vello'),
+(11, 'Maquillaje', 'Servicios de maquillaje profesional'),
+(12, 'Otros', 'Otros servicios no categorizados');
+
+-- Tabla tienda_categoria_servicio (relación many-to-many entre tiendas y categorías)
+CREATE TABLE `tienda_categoria_servicio` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `tienda_id` INT NOT NULL,
+  `categoria_id` INT NOT NULL,
+  `estado` TINYINT(1) DEFAULT 1 COMMENT '1=Activa, 0=Inactiva',
+  `fecha_asignacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `unique_tienda_categoria` (`tienda_id`, `categoria_id`)
+);
 
 -- Tabla servicios
 CREATE TABLE `servicios` (
   `servicio_id` INT AUTO_INCREMENT PRIMARY KEY,
   `tienda_id` INT,
+  `categoria_id` INT,
   `servicio_nombre` VARCHAR(100),
   `servicio_descripcion` TEXT,
   `servicio_precio` DECIMAL(10,2),
@@ -133,9 +188,9 @@ CREATE TABLE `servicios` (
   `servicio_estado` BOOLEAN DEFAULT 1
 );
 -- Datos Servicios
-INSERT INTO `servicios` (`servicio_id`,`tienda_id`,`servicio_nombre`,`servicio_descripcion`,`servicio_precio`,`servicio_duracion`,`servicio_categoria`) VALUES
-(1, 1, 'Corte de Cabello Clasico', 'Corte profesional clasico para hombre.', 15000.00, 30, 'Corte de Cabello Hombre'),
-(2, 1, 'Corte de Cabello Cuchilla', 'Corte profesional Moderno con cuchilla para hombre.', 20000.00, 45, 'Corte de Cabello Hombre');
+INSERT INTO `servicios` (`servicio_id`,`tienda_id`,`categoria_id`,`servicio_nombre`,`servicio_descripcion`,`servicio_precio`,`servicio_duracion`,`servicio_categoria`) VALUES
+(1, 1, 2, 'Corte de Cabello Clasico', 'Corte profesional clasico para hombre.', 15000.00, 30, 'Corte de Cabello Hombre'),
+(2, 1, 2, 'Corte de Cabello Cuchilla', 'Corte profesional Moderno con cuchilla para hombre.', 20000.00, 45, 'Corte de Cabello Hombre');
 
 
 -- Tabla calificaciones
@@ -176,30 +231,26 @@ CREATE TABLE `horarios` (
   `tienda_id` INT,
   `empleado_id` INT,
   `horario_dia` VARCHAR(20),
+  `horario_tipo_semanal` ENUM('semanal', 'especifico') DEFAULT 'semanal',
+  `dias_trabajo` JSON COMMENT 'Array de días: [1,2,3,4,5] = Lunes a Viernes',
+  `dias_descanso` JSON COMMENT 'Array de días: [6,7] = Sábado y Domingo',
+  `fecha_inicio` DATE COMMENT 'Fecha desde cuando aplica este horario',
+  `fecha_fin` DATE COMMENT 'Fecha hasta cuando aplica (NULL = indefinido)',
+  `horario_nombre` VARCHAR(100) COMMENT 'Nombre del horario: "Horario Matutino", "Horario Vespertino"',
   `horario_inicio` TIME,
   `horario_fin` TIME,
-  `horario_activo` BOOLEAN,
+  `horario_activo` BOOLEAN DEFAULT 1,
   `horario_tipo` VARCHAR(20) DEFAULT 'cita',
-  `horario_estado` TINYINT DEFAULT 1,
-  `horario_hora_inicio` TIME,
-  `horario_hora_fin` TIME
+  `horario_estado` TINYINT DEFAULT 1
 );
--- Datos Horarios - Múltiples horarios por empleado por día
-INSERT INTO `horarios` (`horario_id`,`tienda_id`,`empleado_id`,`horario_dia`,`horario_inicio`,`horario_fin`,`horario_activo`,`horario_tipo`,`horario_estado`,`horario_hora_inicio`,`horario_hora_fin`) VALUES
--- Horarios del empleado 1 (Juan) - Lunes: Mañana y Tarde
-(1, 1, 1, 'lunes', '09:00:00', '12:00:00', true, 'cita', 1, '09:00:00', '12:00:00'),
-(2, 1, 1, 'lunes', '14:00:00', '17:00:00', true, 'cita', 1, '14:00:00', '17:00:00'),
--- Martes: Solo mañana
-(3, 1, 1, 'martes', '09:00:00', '13:00:00', true, 'cita', 1, '09:00:00', '13:00:00'),
--- Miércoles: Mañana y tarde
-(4, 1, 1, 'miércoles', '08:00:00', '12:00:00', true, 'cita', 1, '08:00:00', '12:00:00'),
-(5, 1, 1, 'miércoles', '15:00:00', '19:00:00', true, 'cita', 1, '15:00:00', '19:00:00'),
--- Jueves: Jornada completa
-(6, 1, 1, 'jueves', '09:00:00', '17:00:00', true, 'cita', 1, '09:00:00', '17:00:00'),
--- Viernes: Solo tarde
-(7, 1, 1, 'viernes', '13:00:00', '17:00:00', true, 'cita', 1, '13:00:00', '17:00:00'),
--- Sábado: Solo mañana
-(8, 1, 1, 'sábado', '09:00:00', '12:00:00', true, 'cita', 1, '09:00:00', '12:00:00');
+-- Datos Horarios - Horarios semanales y específicos
+INSERT INTO `horarios` (`horario_id`,`tienda_id`,`empleado_id`,`horario_tipo_semanal`,`dias_trabajo`,`dias_descanso`,`fecha_inicio`,`fecha_fin`,`horario_nombre`,`horario_inicio`,`horario_fin`,`horario_activo`,`horario_tipo`,`horario_estado`) VALUES
+-- Horario Matutino (Lunes a Viernes, 8:00-12:00)
+(1, 1, 1, 'semanal', '[1,2,3,4,5]', '[6,7]', '2024-01-01', NULL, 'Horario Matutino', '08:00:00', '12:00:00', true, 'cita', 1),
+-- Horario Vespertino (Lunes a Viernes, 14:00-18:00)
+(2, 1, 1, 'semanal', '[1,2,3,4,5]', '[6,7]', '2024-01-01', NULL, 'Horario Vespertino', '14:00:00', '18:00:00', true, 'cita', 1),
+-- Horario de Fin de Semana (Sábado, 9:00-13:00)
+(3, 1, 1, 'semanal', '[6]', '[1,2,3,4,5,7]', '2024-01-01', NULL, 'Horario Fin de Semana', '09:00:00', '13:00:00', true, 'cita', 1);
 
 -- Tabla franjas_horarias
 CREATE TABLE `franjas_horarias` (
@@ -244,7 +295,11 @@ ALTER TABLE `empleados` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tien
 ALTER TABLE `propietarios` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`);
 ALTER TABLE `negocios` ADD FOREIGN KEY (`propietario_id`) REFERENCES `propietarios`(`propietario_id`);
 ALTER TABLE `tiendas` ADD FOREIGN KEY (`negocio_id`) REFERENCES `negocios`(`negocio_id`);
+ALTER TABLE `tiendas` ADD FOREIGN KEY (`categoria_id`) REFERENCES `tienda_categoria`(`categoria_id`);
+ALTER TABLE `tienda_categoria_servicio` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`) ON DELETE CASCADE;
+ALTER TABLE `tienda_categoria_servicio` ADD FOREIGN KEY (`categoria_id`) REFERENCES `servicio_categoria`(`categoria_id`) ON DELETE CASCADE;
 ALTER TABLE `servicios` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`);
+ALTER TABLE `servicios` ADD FOREIGN KEY (`categoria_id`) REFERENCES `servicio_categoria`(`categoria_id`) ON DELETE SET NULL;
 ALTER TABLE `calificaciones` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`);
 ALTER TABLE `calificaciones_negocios` ADD FOREIGN KEY (`negocio_id`) REFERENCES `negocios`(`negocio_id`);
 ALTER TABLE `calificaciones_negocios` ADD FOREIGN KEY (`calificacion_id`) REFERENCES `calificaciones`(`calificacion_id`);

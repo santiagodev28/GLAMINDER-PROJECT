@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ClockIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { formatDateForDisplay } from "../../../../utils/dateUtils";
 
 const TimeSlotSelector = ({
   schedules,
@@ -13,7 +14,22 @@ const TimeSlotSelector = ({
   // Debug: Log básico
   console.log("🚀 TimeSlotSelector renderizado");
   console.log("📊 Schedules recibidos:", schedules);
+  console.log("📊 Tipo de schedules:", typeof schedules);
+  console.log("📊 Longitud de schedules:", schedules?.length);
   console.log("🎯 selectedSlotId actual:", selectedSlotId);
+
+  // Debug detallado de cada schedule
+  if (schedules && schedules.length > 0) {
+    console.log("🔍 Primer schedule:", schedules[0]);
+    console.log("🔍 Campos de tiempo del primer schedule:", {
+      slot_inicio: schedules[0].slot_inicio,
+      horario_inicio: schedules[0].horario_inicio,
+      horario_hora_inicio: schedules[0].horario_hora_inicio,
+      slot_fin: schedules[0].slot_fin,
+      horario_fin: schedules[0].horario_fin,
+      horario_hora_fin: schedules[0].horario_hora_fin,
+    });
+  }
 
   // Si no hay schedules, mostrar mensaje
   if (!schedules || schedules.length === 0) {
@@ -97,19 +113,27 @@ const TimeSlotSelector = ({
   const groupedSlots = {
     morning: schedules.filter(
       (slot) =>
-        getTimeCategory(slot.horario_inicio || slot.slot_inicio) === "morning"
+        getTimeCategory(
+          slot.slot_inicio || slot.horario_inicio || slot.horario_hora_inicio
+        ) === "morning"
     ),
     afternoon: schedules.filter(
       (slot) =>
-        getTimeCategory(slot.horario_inicio || slot.slot_inicio) === "afternoon"
+        getTimeCategory(
+          slot.slot_inicio || slot.horario_inicio || slot.horario_hora_inicio
+        ) === "afternoon"
     ),
     evening: schedules.filter(
       (slot) =>
-        getTimeCategory(slot.horario_inicio || slot.slot_inicio) === "evening"
+        getTimeCategory(
+          slot.slot_inicio || slot.horario_inicio || slot.horario_hora_inicio
+        ) === "evening"
     ),
     night: schedules.filter(
       (slot) =>
-        getTimeCategory(slot.horario_inicio || slot.slot_inicio) === "night"
+        getTimeCategory(
+          slot.slot_inicio || slot.horario_inicio || slot.horario_hora_inicio
+        ) === "night"
     ),
   };
 
@@ -122,7 +146,7 @@ const TimeSlotSelector = ({
         </h3>
         <p className="text-[#B0B3B8] text-lg">
           {employeeName} •{" "}
-          {selectedDate ? new Date(selectedDate).toLocaleDateString() : ""}
+          {selectedDate ? formatDateForDisplay(selectedDate) : ""}
         </p>
       </div>
 
@@ -153,12 +177,18 @@ const TimeSlotSelector = ({
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {categorySlots.map((slot, index) => {
                   const isSelected = selectedSlotId === slot.slot_id;
-                  const isAvailable = slot.franja_disponible;
-                  const horaInicio = slot.horario_inicio || slot.slot_inicio;
-                  const horaFin = slot.horario_fin || slot.slot_fin;
+                  const isAvailable = slot.franja_disponible !== false; // Por defecto disponible
+                  const horaInicio =
+                    slot.slot_inicio ||
+                    slot.horario_inicio ||
+                    slot.horario_hora_inicio;
+                  const horaFin =
+                    slot.slot_fin || slot.horario_fin || slot.horario_hora_fin;
 
                   // Clave única usando múltiples identificadores
-                  const uniqueKey = `slot-${slot.franja_id}-${slot.slot_id}-${category}-${index}`;
+                  const uniqueKey = `slot-${
+                    slot.horario_id || slot.franja_id
+                  }-${slot.slot_id}-${category}-${index}`;
 
                   console.log(
                     `🔑 Slot: ${slot.slot_id}, selectedSlotId: ${selectedSlotId}, isSelected: ${isSelected}`
@@ -184,7 +214,9 @@ const TimeSlotSelector = ({
                         <div className="text-lg font-semibold">
                           {formatTime(horaInicio)}
                         </div>
-                        <div className="text-xs mt-1 opacity-75">{horaFin}</div>
+                        <div className="text-xs mt-1 opacity-75">
+                          {formatTime(horaFin)}
+                        </div>
                         {isAvailable && (
                           <div className="text-xs mt-1 opacity-75">
                             {slot.franja_duracion_minutos || 30} min

@@ -25,26 +25,17 @@ class Store {
 
   // ===== MÉTODOS CRUD BÁSICOS =====
 
-  // Obtener todas las tiendas con información completa
+  // Obtener todas las tiendas con información básica
   static async getAllStores(filters = {}) {
     let query = `
       SELECT 
         t.*,
         n.negocio_nombre,
         n.negocio_descripcion,
-        n.negocio_estado,
-        COUNT(DISTINCT e.empleado_id) as total_empleados,
-        COUNT(CASE WHEN e.empleado_estado = 1 THEN 1 END) as empleados_activos,
-        COUNT(DISTINCT s.servicio_id) as total_servicios,
-        COUNT(CASE WHEN s.servicio_estado = 1 THEN 1 END) as servicios_activos,
-        COUNT(DISTINCT c.cita_id) as total_citas,
-        COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) as citas_completadas,
-        SUM(CASE WHEN c.cita_estado = 'completada' THEN s.servicio_precio ELSE 0 END) as ingresos_totales
+        tc.categoria_nombre
       FROM tiendas t
       LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
-      LEFT JOIN empleados e ON t.tienda_id = e.tienda_id
-      LEFT JOIN servicios s ON t.tienda_id = s.tienda_id
-      LEFT JOIN citas c ON s.servicio_id = c.servicio_id
+      LEFT JOIN tienda_categoria tc ON t.categoria_id = tc.categoria_id
     `;
 
     const params = [];
@@ -56,8 +47,7 @@ class Store {
       params.push(filters.tienda_estado);
     } else {
       // Por defecto, mostrar solo activas
-      conditions.push("t.tienda_estado = ?");
-      params.push(this.STATES.ACTIVE);
+      conditions.push("t.tienda_estado = 1");
     }
 
     if (filters.negocio_id) {
@@ -65,14 +55,14 @@ class Store {
       params.push(filters.negocio_id);
     }
 
+    if (filters.categoria_id) {
+      conditions.push("t.categoria_id = ?");
+      params.push(filters.categoria_id);
+    }
+
     if (filters.tienda_ciudad) {
       conditions.push("t.tienda_ciudad LIKE ?");
       params.push(`%${filters.tienda_ciudad}%`);
-    }
-
-    if (filters.tienda_tipo) {
-      conditions.push("t.tienda_tipo = ?");
-      params.push(filters.tienda_tipo);
     }
 
     if (filters.search) {
@@ -83,24 +73,11 @@ class Store {
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    if (filters.fecha_apertura_desde) {
-      conditions.push("t.tienda_fecha_apertura >= ?");
-      params.push(filters.fecha_apertura_desde);
-    }
-
-    if (filters.fecha_apertura_hasta) {
-      conditions.push("t.tienda_fecha_apertura <= ?");
-      params.push(filters.fecha_apertura_hasta);
-    }
-
     if (conditions.length > 0) {
       query += " WHERE " + conditions.join(" AND ");
     }
 
-    query += `
-      GROUP BY t.tienda_id
-      ORDER BY t.tienda_nombre ASC
-    `;
+    query += " ORDER BY t.tienda_nombre ASC";
 
     const result = await executeQuery(query, params);
 
@@ -154,23 +131,27 @@ class Store {
   static async createStore(storeData) {
     const {
       negocio_id,
+      categoria_id,
       tienda_nombre,
       tienda_direccion,
       tienda_telefono,
       tienda_correo,
       tienda_ciudad,
+      tienda_hora_apertura = "08:00",
+      tienda_hora_cierre = "18:00",
       tienda_fecha_apertura,
-      tienda_tipo = this.TYPES.SUCURSAL,
-      tienda_estado_operacion = this.OPERATION_STATUS.ABIERTA,
-      tienda_capacidad_maxima = 10,
-      tienda_horario_apertura = "09:00",
-      tienda_horario_cierre = "18:00",
     } = storeData;
 
     // Validaciones básicas
-    if (!negocio_id || !tienda_nombre || !tienda_direccion || !tienda_ciudad) {
+    if (
+      !negocio_id ||
+      !categoria_id ||
+      !tienda_nombre ||
+      !tienda_direccion ||
+      !tienda_ciudad
+    ) {
       throw new Error(
-        "Los campos negocio_id, tienda_nombre, tienda_direccion y tienda_ciudad son obligatorios"
+        "Los campos negocio_id, categoria_id, tienda_nombre, tienda_direccion y tienda_ciudad son obligatorios"
       );
     }
 
@@ -182,20 +163,6 @@ class Store {
     // Validar teléfono si se proporciona
     if (tienda_telefono && !this.isValidPhone(tienda_telefono)) {
       throw new Error("Formato de teléfono inválido");
-    }
-
-    // Validar tipo de tienda
-    if (!Object.values(this.TYPES).includes(tienda_tipo.toLowerCase())) {
-      throw new Error(
-        `Tipo de tienda inválido: ${tienda_tipo}. Debe ser uno de: ${Object.values(
-          this.TYPES
-        ).join(", ")}`
-      );
-    }
-
-    // Validar fecha de apertura
-    if (tienda_fecha_apertura && new Date(tienda_fecha_apertura) > new Date()) {
-      console.warn("La fecha de apertura es futura");
     }
 
     try {
@@ -219,27 +186,23 @@ class Store {
 
       const query = `
         INSERT INTO tiendas 
-        (negocio_id, tienda_nombre, tienda_direccion, tienda_telefono, 
-         tienda_correo, tienda_ciudad, tienda_fecha_apertura, tienda_tipo,
-         tienda_estado_operacion, tienda_capacidad_maxima, tienda_horario_apertura,
-         tienda_horario_cierre, tienda_estado, fecha_creacion)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (negocio_id, categoria_id, tienda_nombre, tienda_direccion, tienda_telefono, 
+         tienda_correo, tienda_ciudad, tienda_hora_apertura, tienda_hora_cierre, 
+         tienda_fecha_apertura, tienda_estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
       `;
 
       const params = [
         negocio_id,
+        categoria_id,
         tienda_nombre.trim(),
         tienda_direccion.trim(),
         tienda_telefono || null,
         tienda_correo || null,
         tienda_ciudad.trim(),
+        tienda_hora_apertura,
+        tienda_hora_cierre,
         tienda_fecha_apertura || new Date(),
-        tienda_tipo.toLowerCase(),
-        tienda_estado_operacion.toLowerCase(),
-        tienda_capacidad_maxima,
-        tienda_horario_apertura,
-        tienda_horario_cierre,
-        this.STATES.ACTIVE,
       ];
 
       const result = await executeQuery(query, params);
@@ -716,6 +679,12 @@ class Store {
 
   // Obtener estadísticas de tiendas
   static async getStoreStats(filters = {}) {
+    // Si se especifica tienda_id, obtener estadísticas de esa tienda específica
+    if (filters.tienda_id) {
+      return await this.getIndividualStoreStats(filters.tienda_id);
+    }
+
+    // Estadísticas generales de todas las tiendas
     let query = `
       SELECT 
         COUNT(*) as total_tiendas,
@@ -754,6 +723,82 @@ class Store {
     }
 
     return result.data[0];
+  }
+
+  // Obtener estadísticas de una tienda específica
+  static async getIndividualStoreStats(tienda_id) {
+    const query = `
+      SELECT 
+        t.tienda_id,
+        t.tienda_nombre,
+        t.tienda_direccion,
+        t.tienda_ciudad,
+        t.tienda_estado,
+        t.tienda_fecha_apertura,
+        t.tienda_hora_apertura,
+        t.tienda_hora_cierre,
+        n.negocio_nombre,
+        tc.categoria_nombre,
+        COUNT(DISTINCT e.empleado_id) as total_empleados,
+        COUNT(CASE WHEN e.empleado_estado = 1 THEN 1 END) as empleados_activos,
+        COUNT(DISTINCT s.servicio_id) as total_servicios,
+        COUNT(CASE WHEN s.servicio_estado = 1 THEN 1 END) as servicios_activos,
+        COUNT(DISTINCT c.cita_id) as total_citas,
+        COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) as citas_completadas,
+        COUNT(CASE WHEN c.cita_estado = 'cancelada' THEN 1 END) as citas_canceladas,
+        COUNT(CASE WHEN c.cita_estado = 'pendiente' THEN 1 END) as citas_pendientes,
+        SUM(CASE WHEN c.cita_estado = 'completada' THEN s.servicio_precio ELSE 0 END) as ingresos_totales,
+        AVG(CASE WHEN c.cita_estado = 'completada' THEN s.servicio_precio END) as ticket_promedio,
+        MIN(c.cita_fecha) as primera_cita,
+        MAX(c.cita_fecha) as ultima_cita,
+        DATEDIFF(CURDATE(), t.tienda_fecha_apertura) as dias_operacion,
+        ROUND((COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) / NULLIF(COUNT(c.cita_id), 0)) * 100, 2) as tasa_completacion
+      FROM tiendas t
+      LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
+      LEFT JOIN tienda_categoria tc ON t.categoria_id = tc.categoria_id
+      LEFT JOIN empleados e ON t.tienda_id = e.tienda_id
+      LEFT JOIN servicios s ON t.tienda_id = s.tienda_id
+      LEFT JOIN citas c ON s.servicio_id = c.servicio_id
+      WHERE t.tienda_id = ?
+      GROUP BY t.tienda_id
+    `;
+
+    const result = await executeQuery(query, [tienda_id]);
+
+    if (!result.success) {
+      throw new Error(
+        `Error al obtener estadísticas de la tienda: ${result.error}`
+      );
+    }
+
+    const stats = result.data[0];
+
+    if (!stats) {
+      throw new Error("Tienda no encontrada");
+    }
+
+    // Agregar estadísticas adicionales calculadas
+    const statsWithCalculations = {
+      ...stats,
+      es_tienda_nueva: stats.dias_operacion <= 90,
+      es_tienda_establecida: stats.dias_operacion >= 365,
+      tasa_ocupacion_empleados:
+        stats.total_empleados > 0
+          ? Math.round((stats.empleados_activos / stats.total_empleados) * 100)
+          : 0,
+      tasa_ocupacion_servicios:
+        stats.total_servicios > 0
+          ? Math.round((stats.servicios_activos / stats.total_servicios) * 100)
+          : 0,
+      ingresos_mensuales_promedio:
+        stats.dias_operacion > 0
+          ? Math.round((stats.ingresos_totales / stats.dias_operacion) * 30)
+          : 0,
+      estado_display: stats.tienda_estado === 1 ? "Activa" : "Inactiva",
+      horario_display: `${stats.tienda_hora_apertura} - ${stats.tienda_hora_cierre}`,
+    };
+
+    return statsWithCalculations;
   }
 
   // Obtener tiendas con mejor rendimiento

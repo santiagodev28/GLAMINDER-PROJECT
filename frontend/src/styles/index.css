@@ -43,7 +43,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: linear-gradient(135deg, #1e3a8a 0%, #374151 50%, #1f2937 100%);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -77,7 +77,7 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: linear-gradient(135deg, #272c36 0%, #374151 50%, #1f2937 100%);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -116,5 +116,11 @@
 
 body {
   color: hsl(var(--foreground));
-  background: hsl(var(--background));
+  background: var(--background);
+  min-height: 100vh;
+}
+
+/* Fondo personalizado para toda la aplicación */
+.app-background {
+  background: linear-gradient(135deg, #000000 0%, #374151 50%, #1f2937 100%) !important;
 }

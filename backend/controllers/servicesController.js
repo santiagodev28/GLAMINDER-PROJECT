@@ -10,6 +10,24 @@ class ServiceController {
     }
   }
 
+  static async getServicesByOwner(req, res) {
+    try {
+      const { propietario_id } = req.params;
+      const filters = req.query;
+      const services = await Services.getServicesByOwner(
+        propietario_id,
+        filters
+      );
+      res.json(services);
+    } catch (error) {
+      console.error(
+        "Error al obtener servicios del propietario:",
+        error.message
+      );
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   static async getServiceById(req, res) {
     try {
       const { servicio_id } = req.params;
@@ -23,9 +41,12 @@ class ServiceController {
   static async createService(req, res) {
     try {
       const service = req.body;
+      console.log("Datos recibidos para crear servicio:", service);
       const newService = await Services.createService(service);
       res.status(201).json(newService);
     } catch (error) {
+      console.error("Error al crear servicio:", error.message);
+      console.error("Stack trace:", error.stack);
       res.status(500).json({ error: error.message });
     }
   }

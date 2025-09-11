@@ -12,6 +12,21 @@ class AppointmentsController {
     }
   }
 
+  static async getAppointmentsByOwner(req, res) {
+    try {
+      const { propietario_id } = req.params;
+      const filters = req.query;
+      const appointments = await Appointment.getAppointmentsByOwner(
+        propietario_id,
+        filters
+      );
+      res.json(appointments);
+    } catch (error) {
+      console.error("Error al obtener citas del propietario:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   static async getAppointmentById(req, res) {
     try {
       const { cita_id } = req.params;
@@ -194,10 +209,13 @@ class AppointmentsController {
 
   static async getAppointmentStats(req, res) {
     try {
+      console.log("🔍 Endpoint /api/citas/stats llamado");
       const filters = req.query;
       const stats = await Appointment.getAppointmentStats(filters);
+      console.log("🔍 Estadísticas de citas obtenidas:", stats);
       res.json(stats);
     } catch (error) {
+      console.error("Error al obtener estadísticas de citas:", error.message);
       res.status(500).json({ error: error.message });
     }
   }

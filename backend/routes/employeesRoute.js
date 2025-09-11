@@ -37,6 +37,14 @@ employeeRoutes.post(
   EmployeeController.createEmployee
 );
 
+// Crear empleado completo (usuario + empleado)
+employeeRoutes.post(
+  "/completo",
+  verifyToken,
+  authorizeRoles(1, 2),
+  EmployeeController.createCompleteEmployee
+);
+
 // Actualizar empleado
 employeeRoutes.put(
   "/:empleado_id",

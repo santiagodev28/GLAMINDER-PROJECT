@@ -88,16 +88,6 @@ class SchedulesController {
 
       console.log("✅ Fecha válida, obteniendo horarios...");
 
-      // Primero probar la conexión a la BD
-      try {
-        await Schedule.testConnection();
-      } catch (error) {
-        console.error("❌ Error en conexión a BD:", error);
-        return res
-          .status(500)
-          .json({ error: "Error de conexión a la base de datos" });
-      }
-
       const schedules = await Schedule.getAvailableSchedulesByEmployee(
         empleado_id,
         fecha,
@@ -108,6 +98,59 @@ class SchedulesController {
       res.status(200).json(schedules);
     } catch (error) {
       console.error("❌ Error obteniendo horarios disponibles:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Obtener horarios de un empleado específico
+  static async getEmployeeSchedules(req, res) {
+    try {
+      const { empleado_id } = req.params;
+
+      if (!empleado_id) {
+        return res.status(400).json({ error: "ID de empleado es requerido" });
+      }
+
+      const schedules = await Schedule.getEmployeeSchedules(empleado_id);
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error al obtener horarios del empleado:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Obtener horarios de una tienda específica
+  static async getStoreSchedules(req, res) {
+    try {
+      const { tienda_id } = req.params;
+
+      if (!tienda_id) {
+        return res.status(400).json({ error: "ID de tienda es requerido" });
+      }
+
+      const schedules = await Schedule.getStoreSchedules(tienda_id);
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error al obtener horarios de la tienda:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Obtener horarios por propietario (todos los empleados de sus tiendas)
+  static async getSchedulesByOwner(req, res) {
+    try {
+      const { propietario_id } = req.params;
+
+      if (!propietario_id) {
+        return res
+          .status(400)
+          .json({ error: "ID de propietario es requerido" });
+      }
+
+      const schedules = await Schedule.getSchedulesByOwner(propietario_id);
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error al obtener horarios del propietario:", error);
       res.status(500).json({ error: error.message });
     }
   }

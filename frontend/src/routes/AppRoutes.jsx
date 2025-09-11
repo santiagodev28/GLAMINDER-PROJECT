@@ -21,6 +21,15 @@ import AppointmentBooking from "../features/client/components/Appointments/Appoi
 import UserAppointments from "../features/client/components/Appointments/UserAppointments";
 import DashboardClient from "../features/client/pages/DashboardClient";
 
+// Importaciones del propietario
+import OwnerDashboard from "../features/owner/pages/OwnerDashboard";
+import StoreManagement from "../features/owner/pages/StoreManagement";
+import EmployeeManagement from "../features/owner/pages/EmployeeManagement";
+import AppointmentManagement from "../features/owner/pages/AppointmentManagement";
+import ServiceManagement from "../features/owner/pages/ServiceManagement";
+import ScheduleManagement from "../features/owner/pages/ScheduleManagement";
+import ReportsAndStats from "../features/owner/pages/ReportsAndStats";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -55,7 +64,10 @@ const AppRoutes = () => {
         {/* Ruta por defecto - Dashboard */}
         <Route index element={<DashboardClient />} />
         <Route path="/cliente/propietario" element={<RequestOwner />} />
-        <Route path="/cliente/solicitar-propietario" element={<RequestOwner />} />
+        <Route
+          path="/cliente/solicitar-propietario"
+          element={<RequestOwner />}
+        />
         <Route path="/cliente/dashboard" element={<DashboardClient />} />
         <Route path="/cliente/negocios" element={<BusinessList />} />
         <Route path="/cliente/negocios/:id" element={<BusinessDetail />} />
@@ -67,7 +79,25 @@ const AppRoutes = () => {
       </Route>
 
       {/* Layout de Propietario */}
-      <Route path="/propietario" element={<OwnerLayout />}></Route>
+      <Route path="/propietario" element={<OwnerLayout />}>
+        {/* Ruta por defecto - Dashboard */}
+        <Route index element={<OwnerDashboard />} />
+        <Route path="/propietario/dashboard" element={<OwnerDashboard />} />
+        <Route path="/propietario/tiendas" element={<StoreManagement />} />
+        <Route
+          path="/propietario/tiendas/nueva"
+          element={<StoreManagement />}
+        />
+        <Route
+          path="/propietario/tiendas/:id/detalle"
+          element={<StoreManagement />}
+        />
+        <Route path="/propietario/empleados" element={<EmployeeManagement />} />
+        <Route path="/propietario/horarios" element={<ScheduleManagement />} />
+        <Route path="/propietario/citas" element={<AppointmentManagement />} />
+        <Route path="/propietario/servicios" element={<ServiceManagement />} />
+        <Route path="/propietario/reportes" element={<ReportsAndStats />} />
+      </Route>
     </Routes>
   );
 };

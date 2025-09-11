@@ -1,334 +1,418 @@
-import { executeQuery, executeTransaction } from "../database/connectiondb.js";
+import { executeQuery } from "../database/connectiondb.js";
 
 class Schedule {
-  // Estados válidos para horarios
+  // Días de la semana (números para JSON)
+  static DAYS = {
+    LUNES: 1,
+    MARTES: 2,
+    MIERCOLES: 3,
+    JUEVES: 4,
+    VIERNES: 5,
+    SABADO: 6,
+    DOMINGO: 7,
+  };
+
+  // Días de la semana (nombres para compatibilidad)
+  static DAYS_NAMES = {
+    1: "Lunes",
+    2: "Martes",
+    3: "Miércoles",
+    4: "Jueves",
+    5: "Viernes",
+    6: "Sábado",
+    7: "Domingo",
+  };
+
+  // Estados de horario
   static STATES = {
     ACTIVE: 1,
     INACTIVE: 0,
   };
 
-  // Días de la semana válidos
-  static DAYS = {
-    LUNES: "lunes",
-    MARTES: "martes",
-    MIERCOLES: "miércoles",
-    JUEVES: "jueves",
-    VIERNES: "viernes",
-    SABADO: "sábado",
-    DOMINGO: "domingo",
-  };
-
   // Tipos de horario
   static TYPES = {
-    GENERAL: "general", // Horarios generales de tienda
-    EMPLOYEE: "empleado", // Horarios específicos de empleado
+    SEMANAL: "semanal",
+    ESPECIFICO: "especifico",
   };
 
-  // ===== MÉTODOS CRUD BÁSICOS =====
+  // Obtener horarios de un empleado
+  static async getEmployeeSchedules(empleado_id) {
+    try {
+      const query = `
+        SELECT 
+          h.*,
+          t.tienda_nombre,
+          e.empleado_especialidad,
+          u.usuario_nombre,
+          u.usuario_apellido
+        FROM horarios h
+        LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
+        LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
+        LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
+        WHERE h.empleado_id = ? AND h.horario_estado = 1
+        ORDER BY 
+          h.horario_tipo_semanal,
+          h.horario_nombre,
+          h.horario_inicio
+      `;
 
-  // Obtener todos los horarios con información completa
-  static async getAllSchedules(filters = {}) {
-    let query = `
-      SELECT 
-        h.*,
-        e.empleado_id,
-        u.usuario_nombre AS empleado_nombre,
-        u.usuario_apellido AS empleado_apellido,
-        t.tienda_nombre,
-        n.negocio_nombre,
-        COUNT(c.cita_id) as total_citas_programadas
-      FROM horarios h
-      LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
-      LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
-      LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id
-      LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
-      LEFT JOIN citas c ON h.horario_id = c.horario_id AND c.cita_estado NOT IN ('cancelada')
-    `;
+      const result = await executeQuery(query, [empleado_id]);
 
-    const params = [];
-    const conditions = [];
+      if (!result.success) {
+        throw new Error(`Error al obtener horarios: ${result.error}`);
+      }
 
-    // Aplicar filtros
-    if (filters.horario_estado !== undefined) {
-      conditions.push("h.horario_activo = ?");
-      params.push(filters.horario_estado);
-    } else {
-      // Por defecto, mostrar solo activos
-      conditions.push("h.horario_activo = ?");
-      params.push(this.STATES.ACTIVE);
+      // Procesar los datos para parsear JSON
+      const processedData = result.data.map((schedule) => ({
+        ...schedule,
+        dias_trabajo: schedule.dias_trabajo
+          ? JSON.parse(schedule.dias_trabajo)
+          : [],
+        dias_descanso: schedule.dias_descanso
+          ? JSON.parse(schedule.dias_descanso)
+          : [],
+      }));
+
+      return processedData;
+    } catch (error) {
+      throw new Error(
+        `Error al obtener horarios del empleado: ${error.message}`
+      );
+    }
+  }
+
+  // Obtener horarios de todos los empleados de una tienda
+  static async getStoreSchedules(tienda_id) {
+    try {
+      const query = `
+        SELECT 
+          h.*,
+          t.tienda_nombre,
+          e.empleado_especialidad,
+          u.usuario_nombre,
+          u.usuario_apellido
+        FROM horarios h
+        LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
+        LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
+        LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
+        WHERE h.tienda_id = ? AND h.horario_estado = 1
+        ORDER BY 
+          u.usuario_nombre,
+          h.horario_tipo_semanal,
+          h.horario_nombre,
+          h.horario_inicio
+      `;
+
+      const result = await executeQuery(query, [tienda_id]);
+
+      if (!result.success) {
+        throw new Error(`Error al obtener horarios: ${result.error}`);
+      }
+
+      // Procesar los datos para parsear JSON
+      const processedData = result.data.map((schedule) => ({
+        ...schedule,
+        dias_trabajo: schedule.dias_trabajo
+          ? JSON.parse(schedule.dias_trabajo)
+          : [],
+        dias_descanso: schedule.dias_descanso
+          ? JSON.parse(schedule.dias_descanso)
+          : [],
+      }));
+
+      return processedData;
+    } catch (error) {
+      throw new Error(
+        `Error al obtener horarios de la tienda: ${error.message}`
+      );
+    }
+  }
+
+  // Crear horario para empleado
+  static async createSchedule(scheduleData) {
+    const {
+      empleado_id,
+      tienda_id,
+      horario_tipo_semanal = "semanal",
+      dias_trabajo = [],
+      dias_descanso = [],
+      fecha_inicio,
+      fecha_fin = null,
+      horario_nombre,
+      horario_inicio,
+      horario_fin,
+      horario_dia = null, // Para horarios específicos
+      horario_tipo = "cita",
+    } = scheduleData;
+
+    // Validaciones básicas
+    if (!empleado_id || !tienda_id || !horario_inicio || !horario_fin) {
+      throw new Error("Empleado, tienda, hora inicio y fin son obligatorios");
     }
 
-    if (filters.horario_dia) {
-      conditions.push("h.horario_dia = ?");
-      params.push(filters.horario_dia);
+    // Validar que la hora de inicio es menor que la de fin
+    if (horario_inicio >= horario_fin) {
+      throw new Error("La hora de inicio debe ser menor que la hora de fin");
     }
 
-    if (filters.empleado_id) {
-      conditions.push("h.empleado_id = ?");
-      params.push(filters.empleado_id);
+    // Validaciones específicas por tipo
+    if (horario_tipo_semanal === "semanal") {
+      if (!dias_trabajo || dias_trabajo.length === 0) {
+        throw new Error("Debe especificar al menos un día de trabajo");
+      }
+      if (!horario_nombre) {
+        throw new Error(
+          "El nombre del horario es obligatorio para horarios semanales"
+        );
+      }
+      if (!fecha_inicio) {
+        throw new Error("La fecha de inicio es obligatoria");
+      }
+    } else if (horario_tipo_semanal === "especifico") {
+      if (!horario_dia) {
+        throw new Error(
+          "El día específico es obligatorio para horarios específicos"
+        );
+      }
+      if (!fecha_inicio) {
+        throw new Error("La fecha de inicio es obligatoria");
+      }
     }
 
-    if (filters.tienda_id) {
-      conditions.push("t.tienda_id = ?");
-      params.push(filters.tienda_id);
+    // Verificar que el empleado existe
+    const employeeQuery =
+      "SELECT empleado_id FROM empleados WHERE empleado_id = ?";
+    const employeeResult = await executeQuery(employeeQuery, [empleado_id]);
+
+    if (!employeeResult.success || employeeResult.data.length === 0) {
+      throw new Error("El empleado no existe");
     }
 
-    if (filters.negocio_id) {
-      conditions.push("n.negocio_id = ?");
-      params.push(filters.negocio_id);
+    // Verificar que la tienda existe
+    const storeQuery = "SELECT tienda_id FROM tiendas WHERE tienda_id = ?";
+    const storeResult = await executeQuery(storeQuery, [tienda_id]);
+
+    if (!storeResult.success || storeResult.data.length === 0) {
+      throw new Error("La tienda no existe");
     }
 
-    if (filters.disponible_fecha) {
-      // Filtrar horarios disponibles para una fecha específica
-      conditions.push(`
-        h.horario_id NOT IN (
-          SELECT horario_id 
-          FROM citas 
-          WHERE DATE(cita_fecha) = ? 
-          AND cita_estado NOT IN ('cancelada', 'completada')
+    // Verificar conflictos de horarios
+    let conflictQuery, conflictParams;
+
+    if (horario_tipo_semanal === "semanal") {
+      // Para horarios semanales, verificar conflictos en días de trabajo
+      const diasTrabajoStr = JSON.stringify(dias_trabajo);
+      conflictQuery = `
+        SELECT horario_id FROM horarios 
+        WHERE empleado_id = ? AND horario_tipo_semanal = 'semanal' 
+        AND horario_estado = 1 AND JSON_OVERLAPS(dias_trabajo, ?)
+        AND (
+          (horario_inicio <= ? AND horario_fin > ?) OR
+          (horario_inicio < ? AND horario_fin >= ?) OR
+          (horario_inicio >= ? AND horario_fin <= ?)
         )
-      `);
-      params.push(filters.disponible_fecha);
+      `;
+      conflictParams = [
+        empleado_id,
+        diasTrabajoStr,
+        horario_inicio,
+        horario_inicio,
+        horario_fin,
+        horario_fin,
+        horario_inicio,
+        horario_fin,
+      ];
+    } else {
+      // Para horarios específicos, verificar conflictos en el día específico
+      conflictQuery = `
+        SELECT horario_id FROM horarios 
+        WHERE empleado_id = ? AND horario_dia = ? AND horario_estado = 1
+        AND (
+          (horario_inicio <= ? AND horario_fin > ?) OR
+          (horario_inicio < ? AND horario_fin >= ?) OR
+          (horario_inicio >= ? AND horario_fin <= ?)
+        )
+      `;
+      conflictParams = [
+        empleado_id,
+        horario_dia,
+        horario_inicio,
+        horario_inicio,
+        horario_fin,
+        horario_fin,
+        horario_inicio,
+        horario_fin,
+      ];
     }
 
-    if (conditions.length > 0) {
-      query += " WHERE " + conditions.join(" AND ");
+    const conflictResult = await executeQuery(conflictQuery, conflictParams);
+
+    if (conflictResult.success && conflictResult.data.length > 0) {
+      throw new Error("Ya existe un horario conflictivo para este empleado");
     }
 
-    query += `
-      GROUP BY h.horario_id
-      ORDER BY h.horario_dia ASC, h.horario_inicio ASC
+    // Crear el horario
+    const query = `
+      INSERT INTO horarios 
+      (empleado_id, tienda_id, horario_tipo_semanal, dias_trabajo, dias_descanso,
+       fecha_inicio, fecha_fin, horario_nombre, horario_dia, horario_inicio, 
+       horario_fin, horario_activo, horario_tipo, horario_estado)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
+
+    const params = [
+      empleado_id,
+      tienda_id,
+      horario_tipo_semanal,
+      JSON.stringify(dias_trabajo),
+      JSON.stringify(dias_descanso),
+      fecha_inicio,
+      fecha_fin,
+      horario_nombre,
+      horario_dia,
+      horario_inicio,
+      horario_fin,
+      true,
+      horario_tipo,
+      this.STATES.ACTIVE,
+    ];
 
     const result = await executeQuery(query, params);
 
     if (!result.success) {
-      throw new Error(`Error al obtener horarios: ${result.error}`);
+      throw new Error(`Error al crear horario: ${result.error}`);
     }
 
-    return result.data;
-  }
-
-  // Obtener horario por ID con información completa
-  static async getScheduleById(horario_id) {
-    const query = `
-      SELECT 
-        h.*,
-        e.empleado_id,
-        u.usuario_nombre AS empleado_nombre,
-        u.usuario_apellido AS empleado_apellido,
-        e.empleado_especialidad,
-        t.tienda_nombre,
-        n.negocio_nombre,
-        COUNT(c.cita_id) as total_citas_programadas,
-        COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) as citas_completadas
-      FROM horarios h
-      LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
-      LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
-      LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id
-      LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
-      LEFT JOIN citas c ON h.horario_id = c.horario_id
-      WHERE h.horario_id = ?
-      GROUP BY h.horario_id
-    `;
-
-    const result = await executeQuery(query, [horario_id]);
-
-    if (!result.success) {
-      throw new Error(`Error al obtener horario: ${result.error}`);
-    }
-
-    return result.data[0] || null;
-  }
-
-  // Crear nuevo horario
-  static async createSchedule(scheduleData) {
-    const {
-      empleado_id,
-      horario_dia,
-      horario_hora_inicio,
-      horario_hora_fin,
-      horario_tipo = this.TYPES.GENERAL,
-      horario_duracion_cita = 30,
-    } = scheduleData;
-
-    // Validaciones básicas
-    if (!horario_dia || !horario_hora_inicio || !horario_hora_fin) {
-      throw new Error(
-        "Los campos horario_dia, horario_hora_inicio y horario_hora_fin son obligatorios"
-      );
-    }
-
-    // Validar día de la semana
-    if (!Object.values(this.DAYS).includes(horario_dia.toLowerCase())) {
-      throw new Error(
-        `Día inválido: ${horario_dia}. Debe ser uno de: ${Object.values(
-          this.DAYS
-        ).join(", ")}`
-      );
-    }
-
-    // Validar horarios
-    const validation = this.validateTimeRange(
-      horario_hora_inicio,
-      horario_hora_fin
-    );
-    if (!validation.isValid) {
-      throw new Error(validation.message);
-    }
-
-    try {
-      // Si tiene empleado_id, verificar que el empleado existe
-      if (empleado_id) {
-        const employeeValidation = await this.validateEmployee(empleado_id);
-        if (!employeeValidation.isValid) {
-          throw new Error(employeeValidation.message);
-        }
-
-        // Verificar conflictos de horario para el empleado
-        const hasConflict = await this.checkScheduleConflict(
-          empleado_id,
-          horario_dia,
-          horario_hora_inicio,
-          horario_hora_fin
-        );
-        if (hasConflict) {
-          throw new Error(
-            "El empleado ya tiene un horario que se superpone en este día y horario"
-          );
-        }
-      }
-
-      const query = `
-        INSERT INTO horarios 
-        (empleado_id, horario_dia, horario_hora_inicio, horario_hora_fin, 
-         horario_tipo, horario_duracion_cita, horario_estado, fecha_creacion)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
-      `;
-
-      const params = [
-        empleado_id || null,
-        horario_dia.toLowerCase(),
-        horario_hora_inicio,
-        horario_hora_fin,
-        horario_tipo,
-        horario_duracion_cita,
-        this.STATES.ACTIVE,
-      ];
-
-      const result = await executeQuery(query, params);
-
-      if (!result.success) {
-        throw new Error(`Error al crear horario: ${result.error}`);
-      }
-
-      return {
-        success: true,
-        horario_id: result.data.insertId,
-        message: "Horario creado exitosamente",
-        data: await this.getScheduleById(result.data.insertId),
-      };
-    } catch (error) {
-      throw new Error(`Error al crear horario: ${error.message}`);
-    }
+    return {
+      success: true,
+      horario_id: result.data.insertId,
+      message: "Horario creado exitosamente",
+    };
   }
 
   // Actualizar horario
   static async updateSchedule(horario_id, updateData) {
     const {
-      empleado_id,
+      horario_tipo_semanal,
+      dias_trabajo,
+      dias_descanso,
+      fecha_inicio,
+      fecha_fin,
+      horario_nombre,
       horario_dia,
-      horario_hora_inicio,
-      horario_hora_fin,
-      horario_tipo,
-      horario_duracion_cita,
+      horario_inicio,
+      horario_fin,
+      horario_activo,
     } = updateData;
 
     // Verificar que el horario existe
-    const existingSchedule = await this.getScheduleById(horario_id);
-    if (!existingSchedule) {
+    const existingQuery = "SELECT * FROM horarios WHERE horario_id = ?";
+    const existingResult = await executeQuery(existingQuery, [horario_id]);
+
+    if (!existingResult.success || existingResult.data.length === 0) {
       throw new Error("Horario no encontrado");
     }
 
+    const existingSchedule = existingResult.data[0];
+
     // Validaciones si se proporcionan nuevos valores
-    if (
-      horario_dia &&
-      !Object.values(this.DAYS).includes(horario_dia.toLowerCase())
-    ) {
-      throw new Error(`Día inválido: ${horario_dia}`);
+    if (horario_inicio && horario_fin && horario_inicio >= horario_fin) {
+      throw new Error("La hora de inicio debe ser menor que la hora de fin");
     }
 
-    if (horario_hora_inicio && horario_hora_fin) {
-      const validation = this.validateTimeRange(
-        horario_hora_inicio,
-        horario_hora_fin
-      );
-      if (!validation.isValid) {
-        throw new Error(validation.message);
+    // Verificar conflictos si se cambian las horas o días
+    if (horario_inicio || horario_fin || dias_trabajo) {
+      const finalInicio = horario_inicio || existingSchedule.horario_inicio;
+      const finalFin = horario_fin || existingSchedule.horario_fin;
+      const finalTipo =
+        horario_tipo_semanal || existingSchedule.horario_tipo_semanal;
+      const finalDiasTrabajo =
+        dias_trabajo || JSON.parse(existingSchedule.dias_trabajo || "[]");
+
+      let conflictQuery, conflictParams;
+
+      if (finalTipo === "semanal") {
+        const diasTrabajoStr = JSON.stringify(finalDiasTrabajo);
+        conflictQuery = `
+          SELECT horario_id FROM horarios 
+          WHERE empleado_id = ? AND horario_tipo_semanal = 'semanal' 
+          AND horario_id != ? AND horario_estado = 1 
+          AND JSON_OVERLAPS(dias_trabajo, ?)
+          AND (
+            (horario_inicio <= ? AND horario_fin > ?) OR
+            (horario_inicio < ? AND horario_fin >= ?) OR
+            (horario_inicio >= ? AND horario_fin <= ?)
+          )
+        `;
+        conflictParams = [
+          existingSchedule.empleado_id,
+          horario_id,
+          diasTrabajoStr,
+          finalInicio,
+          finalInicio,
+          finalFin,
+          finalFin,
+          finalInicio,
+          finalFin,
+        ];
+      } else {
+        const finalDia = horario_dia || existingSchedule.horario_dia;
+        conflictQuery = `
+          SELECT horario_id FROM horarios 
+          WHERE empleado_id = ? AND horario_dia = ? AND horario_id != ? AND horario_estado = 1
+          AND (
+            (horario_inicio <= ? AND horario_fin > ?) OR
+            (horario_inicio < ? AND horario_fin >= ?) OR
+            (horario_inicio >= ? AND horario_fin <= ?)
+          )
+        `;
+        conflictParams = [
+          existingSchedule.empleado_id,
+          finalDia,
+          horario_id,
+          finalInicio,
+          finalInicio,
+          finalFin,
+          finalFin,
+          finalInicio,
+          finalFin,
+        ];
+      }
+
+      const conflictResult = await executeQuery(conflictQuery, conflictParams);
+
+      if (conflictResult.success && conflictResult.data.length > 0) {
+        throw new Error("Ya existe un horario conflictivo para este empleado");
       }
     }
 
-    // Verificar empleado si se cambia
-    if (empleado_id && empleado_id !== existingSchedule.empleado_id) {
-      const employeeValidation = await this.validateEmployee(empleado_id);
-      if (!employeeValidation.isValid) {
-        throw new Error(employeeValidation.message);
-      }
-
-      // Verificar conflictos
-      const newDay = horario_dia || existingSchedule.horario_dia;
-      const newStart =
-        horario_hora_inicio || existingSchedule.horario_hora_inicio;
-      const newEnd = horario_hora_fin || existingSchedule.horario_hora_fin;
-
-      const hasConflict = await this.checkScheduleConflict(
-        empleado_id,
-        newDay,
-        newStart,
-        newEnd,
-        horario_id
-      );
-      if (hasConflict) {
-        throw new Error(
-          "El empleado ya tiene un horario que se superpone en este día y horario"
-        );
-      }
-    }
-
-    // Verificar si hay citas programadas antes de hacer cambios significativos
-    if (
-      (horario_hora_inicio &&
-        horario_hora_inicio !== existingSchedule.horario_hora_inicio) ||
-      (horario_hora_fin &&
-        horario_hora_fin !== existingSchedule.horario_hora_fin)
-    ) {
-      const hasFutureCitas = await this.hasFutureAppointments(horario_id);
-      if (hasFutureCitas) {
-        throw new Error(
-          "No se puede modificar el horario porque tiene citas programadas"
-        );
-      }
-    }
-
+    // Actualizar el horario
     const query = `
       UPDATE horarios 
-      SET empleado_id = COALESCE(?, empleado_id),
+      SET horario_tipo_semanal = COALESCE(?, horario_tipo_semanal),
+          dias_trabajo = COALESCE(?, dias_trabajo),
+          dias_descanso = COALESCE(?, dias_descanso),
+          fecha_inicio = COALESCE(?, fecha_inicio),
+          fecha_fin = COALESCE(?, fecha_fin),
+          horario_nombre = COALESCE(?, horario_nombre),
           horario_dia = COALESCE(?, horario_dia),
-          horario_hora_inicio = COALESCE(?, horario_hora_inicio),
-          horario_hora_fin = COALESCE(?, horario_hora_fin),
-          horario_tipo = COALESCE(?, horario_tipo),
-          horario_duracion_cita = COALESCE(?, horario_duracion_cita),
-          fecha_modificacion = NOW()
+          horario_inicio = COALESCE(?, horario_inicio),
+          horario_fin = COALESCE(?, horario_fin),
+          horario_activo = COALESCE(?, horario_activo)
       WHERE horario_id = ?
     `;
 
     const params = [
-      empleado_id,
-      horario_dia?.toLowerCase(),
-      horario_hora_inicio,
-      horario_hora_fin,
-      horario_tipo,
-      horario_duracion_cita,
+      horario_tipo_semanal,
+      dias_trabajo ? JSON.stringify(dias_trabajo) : null,
+      dias_descanso ? JSON.stringify(dias_descanso) : null,
+      fecha_inicio,
+      fecha_fin,
+      horario_nombre,
+      horario_dia,
+      horario_inicio,
+      horario_fin,
+      horario_activo,
       horario_id,
     ];
 
@@ -338,575 +422,390 @@ class Schedule {
       throw new Error(`Error al actualizar horario: ${result.error}`);
     }
 
-    if (result.data.affectedRows === 0) {
-      throw new Error("Horario no encontrado");
-    }
-
     return {
       success: true,
       message: "Horario actualizado exitosamente",
-      affectedRows: result.data.affectedRows,
-      data: await this.getScheduleById(horario_id),
     };
   }
 
-  // Cambiar estado del horario
-  static async changeScheduleState(horario_id, nuevo_estado) {
-    // Validar estado
-    if (!Object.values(this.STATES).includes(nuevo_estado)) {
-      throw new Error(`Estado inválido: ${nuevo_estado}`);
-    }
-
-    // Si se va a desactivar, verificar citas futuras
-    if (nuevo_estado === this.STATES.INACTIVE) {
-      const hasFutureCitas = await this.hasFutureAppointments(horario_id);
-      if (hasFutureCitas) {
-        throw new Error(
-          "No se puede desactivar un horario con citas programadas"
-        );
-      }
-    }
-
-    const query =
-      "UPDATE horarios SET horario_estado = ?, fecha_modificacion = NOW() WHERE horario_id = ?";
-    const result = await executeQuery(query, [nuevo_estado, horario_id]);
-
-    if (!result.success) {
-      throw new Error(`Error al cambiar estado del horario: ${result.error}`);
-    }
-
-    if (result.data.affectedRows === 0) {
-      throw new Error("Horario no encontrado");
-    }
-
-    const estadoTexto =
-      nuevo_estado === this.STATES.ACTIVE ? "activado" : "desactivado";
-    return {
-      success: true,
-      message: `Horario ${estadoTexto} exitosamente`,
-      affectedRows: result.data.affectedRows,
-    };
-  }
-
-  // Eliminar horario (hard delete con validaciones)
+  // Eliminar horario (soft delete)
   static async deleteSchedule(horario_id) {
-    // Verificar que el horario existe
-    const existingSchedule = await this.getScheduleById(horario_id);
-    if (!existingSchedule) {
-      throw new Error("Horario no encontrado");
-    }
+    try {
+      const query = `
+        UPDATE horarios 
+        SET horario_estado = 0, horario_activo = false
+        WHERE horario_id = ?
+      `;
 
-    // Verificar si hay citas asociadas
-    const hasCitas = await this.hasAnyAppointments(horario_id);
-    if (hasCitas) {
+      const result = await executeQuery(query, [horario_id]);
+
+      if (!result.success) {
+        throw new Error(`Error al eliminar horario: ${result.error}`);
+      }
+
+      return {
+        success: true,
+        message: "Horario eliminado exitosamente",
+      };
+    } catch (error) {
+      throw new Error(`Error al eliminar horario: ${error.message}`);
+    }
+  }
+
+  // Obtener horarios por propietario (todos los empleados de sus tiendas)
+  static async getSchedulesByOwner(propietario_id) {
+    try {
+      const query = `
+        SELECT 
+          h.*,
+          t.tienda_nombre,
+          t.tienda_direccion,
+          e.empleado_especialidad,
+          u.usuario_nombre,
+          u.usuario_apellido,
+          n.negocio_nombre
+        FROM horarios h
+        LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
+        LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
+        LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
+        LEFT JOIN negocios n ON t.negocio_id = n.negocio_id
+        WHERE n.propietario_id = ? AND h.horario_estado = 1
+        ORDER BY 
+          n.negocio_nombre,
+          t.tienda_nombre,
+          u.usuario_nombre,
+          h.horario_tipo_semanal,
+          h.horario_nombre,
+          h.horario_inicio
+      `;
+
+      const result = await executeQuery(query, [propietario_id]);
+
+      if (!result.success) {
+        throw new Error(`Error al obtener horarios: ${result.error}`);
+      }
+
+      // Procesar los datos para parsear JSON
+      const processedData = result.data.map((schedule) => ({
+        ...schedule,
+        dias_trabajo: schedule.dias_trabajo
+          ? JSON.parse(schedule.dias_trabajo)
+          : [],
+        dias_descanso: schedule.dias_descanso
+          ? JSON.parse(schedule.dias_descanso)
+          : [],
+      }));
+
+      return processedData;
+    } catch (error) {
       throw new Error(
-        "No se puede eliminar un horario que tiene citas asociadas. Considera desactivarlo en su lugar."
+        `Error al obtener horarios del propietario: ${error.message}`
       );
     }
-
-    const query = "DELETE FROM horarios WHERE horario_id = ?";
-    const result = await executeQuery(query, [horario_id]);
-
-    if (!result.success) {
-      throw new Error(`Error al eliminar horario: ${result.error}`);
-    }
-
-    return {
-      success: true,
-      message: "Horario eliminado exitosamente",
-      affectedRows: result.data.affectedRows,
-    };
   }
 
-  // ===== MÉTODOS DE CONSULTA ESPECÍFICOS =====
-
-  // Obtener horarios por empleado
-  static async getSchedulesByEmployee(empleado_id, includeInactive = false) {
-    const filters = { empleado_id };
-    if (includeInactive) {
-      filters.horario_estado = undefined;
-    }
-    return await this.getAllSchedules(filters);
-  }
-
-  // Obtener horarios por día
-  static async getSchedulesByDay(horario_dia, filters = {}) {
-    return await this.getAllSchedules({
-      ...filters,
-      horario_dia: horario_dia.toLowerCase(),
-    });
-  }
-
-  // Obtener horarios disponibles para una fecha específica
-  static async getAvailableSchedules(fecha, filters = {}) {
-    return await this.getAllSchedules({ ...filters, disponible_fecha: fecha });
-  }
-
-  // Obtener horarios disponibles por empleado y fecha específica
+  // Obtener horarios disponibles por empleado y fecha (para agendamiento de citas)
   static async getAvailableSchedulesByEmployee(
     empleado_id,
     fecha,
     duracion_servicio = 30
   ) {
     try {
-      console.log("🚀 getAvailableSchedulesByEmployee iniciado");
-      console.log("👤 empleado_id:", empleado_id);
-      console.log("📅 fecha:", fecha);
-      console.log("⏱️ duracion_servicio:", duracion_servicio, "minutos");
-
-      // Importar FranjaHoraria dinámicamente para evitar dependencias circulares
-      const FranjaHoraria = (await import("./FranjaHoraria.js")).default;
-
-      // Primero, generar franjas horarias para esta fecha si no existen
-      await this.ensureFranjasForDate(empleado_id, fecha);
-
-      // Obtener franjas horarias disponibles para esta fecha
-      const franjasDisponibles =
-        await FranjaHoraria.getAvailableFranjasByEmployee(empleado_id, fecha);
+      const fechaDate = new Date(fecha);
+      const diaSemana = fechaDate.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+      const diaSemanaNum = diaSemana === 0 ? 7 : diaSemana; // Convertir a formato 1-7 (Lunes-Domingo)
 
       console.log(
-        "📅 Franjas disponibles encontradas:",
-        franjasDisponibles.length
+        `🔍 Buscando horarios para empleado ${empleado_id}, fecha ${fecha}, día de semana ${diaSemanaNum}`
       );
 
-      // Convertir franjas a slots de 30 minutos para compatibilidad
-      const horariosDisponibles = [];
+      // Primero, vamos a ver qué horarios existen para este empleado
+      const debugQuery = `
+        SELECT 
+          h.*,
+          t.tienda_nombre,
+          e.empleado_especialidad,
+          u.usuario_nombre,
+          u.usuario_apellido
+        FROM horarios h
+        LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
+        LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
+        LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
+        WHERE h.empleado_id = ?
+        ORDER BY h.horario_inicio
+      `;
 
-      for (const franja of franjasDisponibles) {
-        // Generar slots según la duración del servicio
-        const slots = FranjaHoraria.generateTimeSlots(
-          franja.franja_hora_inicio,
-          franja.franja_hora_fin,
-          duracion_servicio // Duración del servicio seleccionado
-        );
+      console.log("🔍 Consulta de debug - todos los horarios del empleado:");
+      const debugResult = await executeQuery(debugQuery, [empleado_id]);
+      console.log("📋 Todos los horarios del empleado:", debugResult.data);
 
-        // Crear un objeto de horario para cada slot
-        for (const slot of slots) {
-          const slotId = `${franja.franja_id}_${slot.slot_index}`;
-          console.log(
-            `🔧 Creando slot: franja_id=${franja.franja_id}, slot_index=${slot.slot_index}, slot_id=${slotId}`
-          );
+      // Buscar horarios semanales que apliquen para este día
+      const query = `
+        SELECT 
+          h.*,
+          t.tienda_nombre,
+          e.empleado_especialidad,
+          u.usuario_nombre,
+          u.usuario_apellido
+        FROM horarios h
+        LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
+        LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
+        LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
+        WHERE h.empleado_id = ? 
+          AND h.horario_estado = 1 
+          AND h.horario_activo = 1
+          AND (
+            (h.horario_tipo_semanal = 'semanal' 
+             AND (h.dias_trabajo LIKE ? OR h.dias_trabajo LIKE ?)
+             AND (h.fecha_inicio IS NULL OR h.fecha_inicio <= ?)
+             AND (h.fecha_fin IS NULL OR h.fecha_fin >= ? OR h.fecha_fin = '0000-00-00'))
+            OR 
+            (h.horario_tipo_semanal = 'especifico' 
+             AND h.horario_dia = ?)
+          )
+        ORDER BY h.horario_inicio
+      `;
 
-          horariosDisponibles.push({
-            horario_id: franja.franja_id, // Usar el franja_id real
-            franja_id: franja.franja_id,
-            tienda_id: franja.tienda_id,
-            empleado_id: franja.empleado_id,
-            horario_dia: franja.horario_dia,
-            horario_inicio: slot.hora_inicio,
-            horario_fin: slot.hora_fin,
-            horario_hora_inicio: slot.hora_inicio,
-            horario_hora_fin: slot.hora_fin,
-            horario_activo: franja.franja_estado,
-            franja_disponible: franja.franja_disponible,
-            franja_duracion_minutos: duracion_servicio, // Duración del servicio seleccionado
-            empleado_nombre: franja.usuario_nombre,
-            empleado_apellido: franja.usuario_apellido,
-            empleado_especialidad: franja.empleado_especialidad,
-            // Información adicional para el frontend
-            slot_inicio: slot.hora_inicio,
-            slot_fin: slot.hora_fin,
-            es_slot_individual: true,
-            slot_id: slotId, // ID único usando el índice del slot
-          });
-        }
-      }
+      // Crear patrones de búsqueda para el día de la semana
+      const dayPattern1 = `%"${diaSemanaNum}"%`; // Para formato ["1","2","3"]
+      const dayPattern2 = `%${diaSemanaNum}%`; // Para formato [1,2,3] o [null,1,2,3]
 
-      console.log(
-        "📅 Horarios disponibles convertidos:",
-        horariosDisponibles.length
-      );
-
-      // Log detallado de los horarios generados
-      horariosDisponibles.forEach((horario, index) => {
-        console.log(`📅 Horario ${index}:`, {
-          slot_id: horario.slot_id,
-          franja_id: horario.franja_id,
-          horario_inicio: horario.horario_inicio,
-          horario_fin: horario.horario_fin,
-          slot_inicio: horario.slot_inicio,
-          slot_fin: horario.slot_fin,
-        });
-      });
-
-      return horariosDisponibles;
-    } catch (error) {
-      throw new Error(
-        `Error al obtener horarios disponibles por empleado: ${error.message}`
-      );
-    }
-  }
-
-  // Asegurar que existan franjas horarias para una fecha específica
-  static async ensureFranjasForDate(empleado_id, fecha) {
-    try {
-      console.log("🔧 ensureFranjasForDate iniciado para:", {
+      console.log("🔍 Parámetros de la consulta principal:", {
         empleado_id,
+        diaSemanaNum,
+        dayPattern1,
+        dayPattern2,
         fecha,
       });
 
-      // Importar FranjaHoraria dinámicamente
-      const FranjaHoraria = (await import("./FranjaHoraria.js")).default;
+      const result = await executeQuery(query, [
+        empleado_id,
+        dayPattern1,
+        dayPattern2,
+        fecha,
+        fecha,
+        fecha,
+      ]);
 
-      // Verificar si ya existen franjas para esta fecha
-      const franjasExistentes = await FranjaHoraria.getAllFranjas({
-        empleado_id: empleado_id,
-        franja_fecha: fecha,
-        franja_estado: 1,
+      console.log("🔍 Resultado de la consulta principal:", result.data);
+
+      if (!result.success) {
+        throw new Error(`Error al obtener horarios: ${result.error}`);
+      }
+
+      // Procesar los datos y generar slots de tiempo
+      const processedData = result.data.map((schedule) => {
+        // Limpiar y parsear dias_trabajo
+        let diasTrabajo = [];
+        if (schedule.dias_trabajo) {
+          try {
+            const parsed = JSON.parse(schedule.dias_trabajo);
+            // Filtrar valores null y convertir a números
+            diasTrabajo = parsed
+              .filter((day) => day !== null && day !== undefined)
+              .map((day) => parseInt(day));
+          } catch (error) {
+            console.error(
+              "Error parseando dias_trabajo:",
+              schedule.dias_trabajo,
+              error
+            );
+            diasTrabajo = [];
+          }
+        }
+
+        // Limpiar y parsear dias_descanso
+        let diasDescanso = [];
+        if (schedule.dias_descanso) {
+          try {
+            const parsed = JSON.parse(schedule.dias_descanso);
+            diasDescanso = parsed
+              .filter((day) => day !== null && day !== undefined)
+              .map((day) => parseInt(day));
+          } catch (error) {
+            console.error(
+              "Error parseando dias_descanso:",
+              schedule.dias_descanso,
+              error
+            );
+            diasDescanso = [];
+          }
+        }
+
+        return {
+          ...schedule,
+          dias_trabajo: diasTrabajo,
+          dias_descanso: diasDescanso,
+        };
       });
 
-      console.log(
-        "📅 Franjas existentes para esta fecha:",
-        franjasExistentes.length
-      );
+      console.log(`📋 Horarios encontrados en BD:`, processedData.length);
+      console.log(`📋 Datos de horarios:`, processedData);
 
-      if (franjasExistentes.length === 0) {
-        console.log("🔧 No hay franjas para esta fecha, generando...");
-        // Generar franjas para esta fecha específica
-        const result = await FranjaHoraria.generateFranjasForDateRange(
+      // Generar slots de tiempo para cada horario
+      const timeSlots = [];
+      for (const schedule of processedData) {
+        console.log(`🔄 Procesando horario:`, {
+          horario_id: schedule.horario_id,
+          horario_inicio: schedule.horario_inicio,
+          horario_fin: schedule.horario_fin,
+          horario_tipo_semanal: schedule.horario_tipo_semanal,
+          tienda_id: schedule.tienda_id,
+        });
+
+        const slots = await this.generateTimeSlots(
+          schedule.horario_inicio,
+          schedule.horario_fin,
+          duracion_servicio,
+          schedule.horario_id,
           empleado_id,
-          fecha,
+          schedule.tienda_id,
           fecha
         );
-        console.log(
-          "✅ Franjas generadas para la fecha:",
-          result.total_franjas
-        );
-      } else {
-        console.log("✅ Ya existen franjas para esta fecha");
+        timeSlots.push(...slots);
       }
-    } catch (error) {
-      console.error("❌ Error en ensureFranjasForDate:", error);
-      throw error;
-    }
-  }
 
-  // Obtener horarios por tienda
-  static async getSchedulesByStore(tienda_id) {
-    return await this.getAllSchedules({ tienda_id });
-  }
-
-  // Método de prueba para verificar conexión a BD
-  static async testConnection() {
-    try {
-      const query = "SELECT COUNT(*) as total FROM horarios";
-      const result = await executeQuery(query);
       console.log(
-        "✅ Conexión a BD exitosa. Total horarios:",
-        result.data[0].total
+        `✅ Encontrados ${timeSlots.length} slots de tiempo para el empleado ${empleado_id}`
       );
-      return result.data[0].total;
+      return timeSlots;
     } catch (error) {
-      console.error("❌ Error de conexión a BD:", error);
-      throw error;
-    }
-  }
-
-  // ===== VALIDACIONES Y UTILIDADES =====
-
-  // Validar rango de tiempo
-  static validateTimeRange(inicio, fin) {
-    const startTime = new Date(`1970-01-01T${inicio}:00`);
-    const endTime = new Date(`1970-01-01T${fin}:00`);
-
-    if (startTime >= endTime) {
-      return {
-        isValid: false,
-        message: "La hora de inicio debe ser anterior a la hora de fin",
-      };
-    }
-
-    // Validar duración mínima (15 minutos)
-    const diffMinutes = (endTime - startTime) / (1000 * 60);
-    if (diffMinutes < 15) {
-      return {
-        isValid: false,
-        message: "La duración del horario debe ser de al menos 15 minutos",
-      };
-    }
-
-    return {
-      isValid: true,
-      message: "Rango de tiempo válido",
-    };
-  }
-
-  // Validar empleado
-  static async validateEmployee(empleado_id) {
-    const query =
-      "SELECT empleado_id, empleado_estado FROM empleados WHERE empleado_id = ?";
-    const result = await executeQuery(query, [empleado_id]);
-
-    if (!result.success) {
-      return {
-        isValid: false,
-        message: "Error al validar empleado",
-      };
-    }
-
-    if (result.data.length === 0) {
-      return {
-        isValid: false,
-        message: "Empleado no encontrado",
-      };
-    }
-
-    if (result.data[0].empleado_estado !== 1) {
-      return {
-        isValid: false,
-        message: "El empleado está inactivo",
-      };
-    }
-
-    return {
-      isValid: true,
-      message: "Empleado válido",
-    };
-  }
-
-  // Verificar conflictos de horario
-  static async checkScheduleConflict(
-    empleado_id,
-    dia,
-    hora_inicio,
-    hora_fin,
-    exclude_horario_id = null
-  ) {
-    let query = `
-      SELECT horario_id 
-      FROM horarios 
-      WHERE empleado_id = ? 
-      AND horario_dia = ? 
-      AND horario_estado = 1
-      AND (
-        (horario_hora_inicio <= ? AND horario_hora_fin > ?) OR
-        (horario_hora_inicio < ? AND horario_hora_fin >= ?) OR
-        (horario_hora_inicio >= ? AND horario_hora_fin <= ?)
-      )
-    `;
-
-    const params = [
-      empleado_id,
-      dia.toLowerCase(),
-      hora_inicio,
-      hora_inicio,
-      hora_fin,
-      hora_fin,
-      hora_inicio,
-      hora_fin,
-    ];
-
-    if (exclude_horario_id) {
-      query += " AND horario_id != ?";
-      params.push(exclude_horario_id);
-    }
-
-    const result = await executeQuery(query, params);
-
-    if (!result.success) {
-      throw new Error(`Error al verificar conflictos: ${result.error}`);
-    }
-
-    return result.data.length > 0;
-  }
-
-  // Verificar si tiene citas futuras
-  static async hasFutureAppointments(horario_id) {
-    const query = `
-      SELECT COUNT(*) as count 
-      FROM citas 
-      WHERE horario_id = ? 
-      AND cita_fecha >= CURDATE()
-      AND cita_estado NOT IN ('cancelada', 'completada')
-    `;
-
-    const result = await executeQuery(query, [horario_id]);
-
-    if (!result.success) {
-      throw new Error(`Error al verificar citas futuras: ${result.error}`);
-    }
-
-    return result.data[0]?.count > 0;
-  }
-
-  // Verificar si tiene citas (cualquier fecha)
-  static async hasAnyAppointments(horario_id) {
-    const query = "SELECT COUNT(*) as count FROM citas WHERE horario_id = ?";
-    const result = await executeQuery(query, [horario_id]);
-
-    if (!result.success) {
-      throw new Error(`Error al verificar citas: ${result.error}`);
-    }
-
-    return result.data[0]?.count > 0;
-  }
-
-  // ===== REPORTES Y ESTADÍSTICAS =====
-
-  // Obtener estadísticas de horarios
-  static async getScheduleStats(filters = {}) {
-    let query = `
-      SELECT 
-        COUNT(*) as total_horarios,
-        COUNT(CASE WHEN h.horario_estado = 1 THEN 1 END) as horarios_activos,
-        COUNT(CASE WHEN h.empleado_id IS NOT NULL THEN 1 END) as horarios_asignados,
-        COUNT(DISTINCT h.horario_dia) as dias_configurados,
-        COUNT(DISTINCT h.empleado_id) as empleados_con_horarios,
-        AVG(TIME_TO_SEC(TIMEDIFF(h.horario_hora_fin, h.horario_hora_inicio))/3600) as horas_promedio_jornada
-      FROM horarios h
-    `;
-
-    const params = [];
-    const conditions = [];
-
-    if (filters.empleado_id) {
-      query +=
-        " LEFT JOIN empleados e ON h.empleado_id = e.empleado_id LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id";
-      conditions.push("e.empleado_id = ?");
-      params.push(filters.empleado_id);
-    }
-
-    if (filters.tienda_id) {
-      if (!query.includes("JOIN tiendas")) {
-        query +=
-          " LEFT JOIN empleados e ON h.empleado_id = e.empleado_id LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id";
-      }
-      conditions.push("t.tienda_id = ?");
-      params.push(filters.tienda_id);
-    }
-
-    if (conditions.length > 0) {
-      query += " WHERE " + conditions.join(" AND ");
-    }
-
-    const result = await executeQuery(query, params);
-
-    if (!result.success) {
       throw new Error(
-        `Error al obtener estadísticas de horarios: ${result.error}`
+        `Error al obtener horarios disponibles: ${error.message}`
       );
     }
-
-    return result.data[0];
   }
 
-  // Obtener horarios más utilizados
-  static async getMostUsedSchedules(limit = 10, filters = {}) {
-    let query = `
-      SELECT 
-        h.*,
-        u.usuario_nombre AS empleado_nombre,
-        u.usuario_apellido AS empleado_apellido,
-        COUNT(c.cita_id) as total_citas,
-        COUNT(CASE WHEN c.cita_estado = 'completada' THEN 1 END) as citas_completadas,
-        ROUND(AVG(s.servicio_precio), 2) as precio_promedio_servicio
-      FROM horarios h
-      LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
-      LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
-      LEFT JOIN citas c ON h.horario_id = c.horario_id
-      LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
-      WHERE h.horario_estado = 1
-    `;
-
-    const params = [];
-
-    if (filters.fecha_desde) {
-      query += " AND c.cita_fecha >= ?";
-      params.push(filters.fecha_desde);
-    }
-
-    if (filters.fecha_hasta) {
-      query += " AND c.cita_fecha <= ?";
-      params.push(filters.fecha_hasta);
-    }
-
-    query += `
-      GROUP BY h.horario_id
-      HAVING total_citas > 0
-      ORDER BY total_citas DESC
-      LIMIT ?
-    `;
-    params.push(limit);
-
-    const result = await executeQuery(query, params);
-
-    if (!result.success) {
-      throw new Error(
-        `Error al obtener horarios más utilizados: ${result.error}`
-      );
-    }
-
-    return result.data;
-  }
-
-  // ===== MÉTODOS UTILITARIOS =====
-
-  // Obtener días disponibles
-  static getAvailableDays() {
-    return Object.values(this.DAYS);
-  }
-
-  // Validar día
-  static isValidDay(dia) {
-    return Object.values(this.DAYS).includes(dia.toLowerCase());
-  }
-
-  // Formatear horario para respuesta
-  static formatScheduleResponse(schedule) {
-    if (!schedule) return null;
-
-    const startTime = new Date(`1970-01-01T${schedule.horario_hora_inicio}:00`);
-    const endTime = new Date(`1970-01-01T${schedule.horario_hora_fin}:00`);
-    const durationMinutes = (endTime - startTime) / (1000 * 60);
-
-    return {
-      ...schedule,
-      duracion_jornada_minutos: durationMinutes,
-      duracion_jornada_horas: Math.round((durationMinutes / 60) * 100) / 100,
-      slots_disponibles: Math.floor(
-        durationMinutes / (schedule.horario_duracion_cita || 30)
-      ),
-      dia_semana_numero: this.getDayNumber(schedule.horario_dia),
-    };
-  }
-
-  // Obtener número del día de la semana
-  static getDayNumber(dia) {
-    const dayNumbers = {
-      lunes: 1,
-      martes: 2,
-      miércoles: 3,
-      jueves: 4,
-      viernes: 5,
-      sábado: 6,
-      domingo: 0,
-    };
-    return dayNumbers[dia.toLowerCase()] || 0;
-  }
-
-  // Generar slots de tiempo para un horario
-  static generateTimeSlots(
-    horario_hora_inicio,
-    horario_hora_fin,
-    duracion_cita = 30
+  // Generar slots de tiempo basados en un rango de horario
+  static async generateTimeSlots(
+    horaInicio,
+    horaFin,
+    duracionMinutos,
+    horarioId,
+    empleadoId,
+    tiendaId,
+    fecha
   ) {
     const slots = [];
-    const start = new Date(`1970-01-01T${horario_hora_inicio}:00`);
-    const end = new Date(`1970-01-01T${horario_hora_fin}:00`);
+    const inicio = new Date(`2000-01-01T${horaInicio}`);
+    const fin = new Date(`2000-01-01T${horaFin}`);
 
-    let current = new Date(start);
-    while (current < end) {
-      const slotEnd = new Date(current.getTime() + duracion_cita * 60000);
-      if (slotEnd <= end) {
-        slots.push({
-          hora_inicio: current.toTimeString().slice(0, 5),
-          hora_fin: slotEnd.toTimeString().slice(0, 5),
-        });
+    console.log(
+      `🕐 Generando slots desde ${horaInicio} hasta ${horaFin} con duración ${duracionMinutos} min`
+    );
+
+    let currentTime = new Date(inicio);
+
+    while (currentTime < fin) {
+      const slotFin = new Date(currentTime.getTime() + duracionMinutos * 60000);
+
+      // Verificar que el slot no exceda el horario de fin
+      if (slotFin <= fin) {
+        const slotInicioStr = currentTime.toTimeString().slice(0, 5);
+        const slotFinStr = slotFin.toTimeString().slice(0, 5);
+
+        // Crear o obtener franja horaria real
+        const franjaId = await this.createOrGetFranjaHoraria(
+          horarioId,
+          empleadoId,
+          tiendaId,
+          fecha,
+          slotInicioStr,
+          slotFinStr,
+          duracionMinutos
+        );
+
+        const slot = {
+          slot_id: `slot-${horarioId}-${slotInicioStr.replace(":", "")}`,
+          franja_id: franjaId,
+          horario_id: horarioId,
+          slot_inicio: slotInicioStr,
+          slot_fin: slotFinStr,
+          horario_inicio: slotInicioStr,
+          horario_fin: slotFinStr,
+          horario_hora_inicio: slotInicioStr,
+          horario_hora_fin: slotFinStr,
+          franja_disponible: true,
+          franja_duracion_minutos: duracionMinutos,
+        };
+
+        console.log(`✅ Slot generado con franja_id:`, slot);
+        slots.push(slot);
       }
-      current = slotEnd;
+
+      // Avanzar al siguiente slot
+      currentTime = new Date(currentTime.getTime() + duracionMinutos * 60000);
     }
 
+    console.log(`📊 Total de slots generados: ${slots.length}`);
     return slots;
+  }
+
+  // Crear o obtener franja horaria real en la base de datos
+  static async createOrGetFranjaHoraria(
+    horarioId,
+    empleadoId,
+    tiendaId,
+    fecha,
+    horaInicio,
+    horaFin,
+    duracionMinutos
+  ) {
+    try {
+      // Primero verificar si ya existe una franja para este horario específico
+      const checkQuery = `
+        SELECT franja_id FROM franjas_horarias 
+        WHERE horario_id = ? 
+          AND empleado_id = ? 
+          AND tienda_id = ? 
+          AND franja_fecha = ? 
+          AND franja_hora_inicio = ? 
+          AND franja_hora_fin = ?
+      `;
+
+      const checkResult = await executeQuery(checkQuery, [
+        horarioId,
+        empleadoId,
+        tiendaId,
+        fecha,
+        horaInicio,
+        horaFin,
+      ]);
+
+      if (checkResult.success && checkResult.data.length > 0) {
+        console.log(
+          `✅ Franja existente encontrada: ${checkResult.data[0].franja_id}`
+        );
+        return checkResult.data[0].franja_id;
+      }
+
+      // Si no existe, crear una nueva franja
+      const insertQuery = `
+        INSERT INTO franjas_horarias 
+        (horario_id, empleado_id, tienda_id, franja_fecha, franja_hora_inicio, franja_hora_fin, franja_disponible, franja_duracion_minutos, franja_estado)
+        VALUES (?, ?, ?, ?, ?, ?, 1, ?, 1)
+      `;
+
+      const insertResult = await executeQuery(insertQuery, [
+        horarioId,
+        empleadoId,
+        tiendaId,
+        fecha,
+        horaInicio,
+        horaFin,
+        duracionMinutos,
+      ]);
+
+      if (insertResult.success) {
+        console.log(`✅ Nueva franja creada con ID: ${insertResult.insertId}`);
+        return insertResult.insertId;
+      } else {
+        throw new Error(`Error creando franja horaria: ${insertResult.error}`);
+      }
+    } catch (error) {
+      console.error("❌ Error en createOrGetFranjaHoraria:", error);
+      throw error;
+    }
   }
 }
 

@@ -5,12 +5,28 @@ import { authorizeRoles } from "../middlewares/authorizeRoles.js";
 
 const appointmentRoutes = Router();
 
+// Estadísticas de citas (DEBE IR PRIMERO)
+appointmentRoutes.get(
+  "/stats",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.getAppointmentStats
+);
+
 // Obtener todas las citas (con filtros)
 appointmentRoutes.get(
   "/",
   verifyToken,
   authorizeRoles(1, 2, 4),
   AppointmentsController.getAllAppointments
+);
+
+// Obtener citas por propietario (solo de sus negocios)
+appointmentRoutes.get(
+  "/propietario/:propietario_id",
+  verifyToken,
+  authorizeRoles(1, 2),
+  AppointmentsController.getAppointmentsByOwner
 );
 
 // Obtener cita por ID
@@ -107,14 +123,6 @@ appointmentRoutes.get(
   verifyToken,
   authorizeRoles(1, 2),
   AppointmentsController.getAvailableTimeSlots
-);
-
-// Estadísticas de citas
-appointmentRoutes.get(
-  "/stats",
-  verifyToken,
-  authorizeRoles(1, 2),
-  AppointmentsController.getAppointmentStats
 );
 
 export default appointmentRoutes;

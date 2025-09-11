@@ -2,6 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import appointmentService from "../../../../services/appointmentService";
 import AdminService from "../../../../services/adminService";
+import TimeSlotSelector from "./TimeSlotSelector";
+import {
+  getMinAppointmentDate,
+  getMaxAppointmentDate,
+  generateAvailableDays,
+  formatDateForDisplay,
+} from "../../../../utils/dateUtils";
 import {
   CalendarIcon,
   ClockIcon,
@@ -107,16 +114,27 @@ const AppointmentBooking = () => {
   const loadSchedules = async () => {
     try {
       setLoading(true);
+      console.log("🔄 Cargando horarios para:", {
+        empleado_id: selectedEmployee.empleado_id,
+        fecha: selectedDate,
+        duracion: selectedService?.servicio_duracion || 30,
+      });
 
       const schedulesData = await appointmentService.getAvailableSchedules(
         selectedEmployee.empleado_id,
         selectedDate,
         selectedService?.servicio_duracion || 30
       );
+
+      console.log("📅 Horarios recibidos del backend:", schedulesData);
+      console.log("📅 Tipo de datos:", typeof schedulesData);
+      console.log("📅 Longitud:", schedulesData?.length);
+
       setSchedules(schedulesData);
       setStep(4);
     } catch (error) {
-      console.error("Error cargando horarios:", error);
+      console.error("❌ Error cargando horarios:", error);
+      console.error("❌ Detalles del error:", error.response?.data);
       setError("Error al cargar los horarios disponibles");
     } finally {
       setLoading(false);
@@ -141,6 +159,23 @@ const AppointmentBooking = () => {
     setError("");
 
     try {
+      // Verificar que todos los campos requeridos estén presentes
+      console.log("🔍 Verificando datos antes de enviar:");
+      console.log("🔍 selectedStore:", selectedStore);
+      console.log("🔍 selectedService:", selectedService);
+      console.log("🔍 selectedEmployee:", selectedEmployee);
+      console.log("🔍 selectedDate:", selectedDate);
+      console.log("🔍 selectedSchedule:", selectedSchedule);
+      console.log(
+        "🔍 selectedSchedule.franja_id:",
+        selectedSchedule?.franja_id
+      );
+      console.log(
+        "🔍 selectedSchedule.slot_inicio:",
+        selectedSchedule?.slot_inicio
+      );
+      console.log("🔍 selectedSchedule.slot_fin:", selectedSchedule?.slot_fin);
+
       const appointmentData = {
         usuario_id: JSON.parse(localStorage.getItem("usuario")).usuario_id,
         empleado_id: selectedEmployee.empleado_id,
@@ -154,6 +189,27 @@ const AppointmentBooking = () => {
 
       console.log("🔍 Datos de la cita a enviar:", appointmentData);
       console.log("🔍 selectedSchedule completo:", selectedSchedule);
+
+      // Verificar que no haya valores undefined o null
+      const requiredFields = [
+        "usuario_id",
+        "empleado_id",
+        "tienda_id",
+        "servicio_id",
+        "cita_fecha",
+        "franja_id",
+        "slot_inicio",
+        "slot_fin",
+      ];
+      const missingFields = requiredFields.filter(
+        (field) => !appointmentData[field]
+      );
+
+      if (missingFields.length > 0) {
+        console.error("❌ Campos faltantes:", missingFields);
+        setError(`Campos faltantes: ${missingFields.join(", ")}`);
+        return;
+      }
 
       const result = await appointmentService.createAppointment(
         appointmentData
@@ -175,46 +231,15 @@ const AppointmentBooking = () => {
     }
   };
 
-  const getMinDate = () => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
-  };
-
-  const getMaxDate = () => {
-    const today = new Date();
-    const maxDate = new Date(today);
-    maxDate.setDate(maxDate.getDate() + 30); // Máximo 30 días en adelante
-    return maxDate.toISOString().split("T")[0];
-  };
-
   // Generar días disponibles para el selector visual
   const getAvailableDays = () => {
-    const days = [];
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const days = generateAvailableDays(14);
 
-    // Generar 14 días a partir de mañana
-    for (let i = 0; i < 14; i++) {
-      const date = new Date(tomorrow);
-      date.setDate(tomorrow.getDate() + i);
-
-      const isSelected = selectedDate === date.toISOString().split("T")[0];
-      const isToday = i === 0;
-
-      days.push({
-        date: date.toISOString().split("T")[0],
-        day: date.getDate(),
-        month: date.toLocaleDateString("es-ES", { month: "short" }),
-        dayName: date.toLocaleDateString("es-ES", { weekday: "short" }),
-        isSelected,
-        isToday,
-      });
-    }
-
-    return days;
+    // Agregar estado de selección
+    return days.map((day) => ({
+      ...day,
+      isSelected: selectedDate === day.date,
+    }));
   };
 
   if (loading) {
@@ -446,47 +471,33 @@ const AppointmentBooking = () => {
                 Fecha:
               </h3>
 
-              {/* Selector de días mejorado */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-7 gap-2 mb-4">
-                  {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(
-                    (day) => (
-                      <div
-                        key={day}
-                        className="text-center text-sm font-medium text-[#B0B3B8] py-2"
-                      >
-                        {day}
-                      </div>
-                    )
-                  )}
-                </div>
-
-                <div className="grid grid-cols-7 gap-2">
-                  {getAvailableDays().map((day, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSelectedDate(day.date);
-                      }}
-                      className={`
-                          p-3 rounded-lg text-center transition-all duration-300 hover:scale-105
-                          ${
-                            day.isSelected
-                              ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg transform scale-105"
-                              : day.isToday
-                              ? "bg-[#D1A04D]/20 border border-[#D1A04D]/50 text-[#D1A04D] hover:bg-[#D1A04D]/30"
-                              : "bg-[#1F1F1F]/50 border border-[#31343A] text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
-                          }
-                        `}
-                    >
-                      <div className="text-sm font-medium">{day.day}</div>
-                      <div className="text-xs opacity-75">{day.month}</div>
-                    </button>
-                  ))}
-                </div>
+              {/* Selector de días simple */}
+              <div className="grid grid-cols-2 gap-3">
+                {getAvailableDays().map((day, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedDate(day.date);
+                    }}
+                    className={`
+                      p-4 rounded-xl text-center transition-all duration-300 hover:scale-105 border-2
+                      ${
+                        day.isSelected
+                          ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg transform scale-105 border-[#D1A04D]"
+                          : day.isToday
+                          ? "bg-[#D1A04D]/20 border-[#D1A04D]/50 text-[#D1A04D] hover:bg-[#D1A04D]/30 hover:border-[#D1A04D]"
+                          : "bg-[#1F1F1F]/50 border-[#31343A] text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                      }
+                    `}
+                  >
+                    <div className="text-lg font-bold mb-1">{day.day}</div>
+                    <div className="text-sm opacity-75 mb-1">{day.month}</div>
+                    <div className="text-xs opacity-60">{day.dayName}</div>
+                  </button>
+                ))}
               </div>
 
               {/* Input de fecha como respaldo */}
@@ -498,8 +509,8 @@ const AppointmentBooking = () => {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  min={getMinDate()}
-                  max={getMaxDate()}
+                  min={getMinAppointmentDate()}
+                  max={getMaxAppointmentDate()}
                   className="w-full p-3 bg-[#1F1F1F]/50 border border-[#31343A] rounded-lg text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
                   required
                 />
@@ -536,26 +547,21 @@ const AppointmentBooking = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {schedules.map((schedule, index) => (
-                  <button
-                    key={`schedule-${schedule.franja_id}-${schedule.slot_id}-${index}`}
-                    type="button"
-                    onClick={() => setSelectedSchedule(schedule)}
-                    className={`p-4 border-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 ${
-                      selectedSchedule?.slot_id === schedule.slot_id
-                        ? "border-[#D1A04D] bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
-                        : "border-[#31343A] bg-[#1F1F1F]/50 text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg font-semibold">
-                        {schedule.horario_hora_inicio}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <TimeSlotSelector
+                schedules={schedules}
+                selectedSchedule={selectedSchedule}
+                onScheduleSelect={(schedule) => {
+                  console.log(
+                    "🔍 Schedule recibido en onScheduleSelect:",
+                    schedule
+                  );
+                  console.log("🔍 franja_id en schedule:", schedule?.franja_id);
+                  console.log("🔍 slot_id en schedule:", schedule?.slot_id);
+                  setSelectedSchedule(schedule);
+                }}
+                selectedDate={selectedDate}
+                employeeName={`${selectedEmployee.usuario_nombre} ${selectedEmployee.usuario_apellido}`}
+              />
             )}
           </div>
         )}
@@ -601,13 +607,14 @@ const AppointmentBooking = () => {
                   <p className="flex justify-between">
                     <span className="font-medium text-[#B0B3B8]">Fecha:</span>
                     <span className="text-[#F5F5F5]">
-                      {new Date(selectedDate).toLocaleDateString()}
+                      {formatDateForDisplay(selectedDate)}
                     </span>
                   </p>
                   <p className="flex justify-between">
                     <span className="font-medium text-[#B0B3B8]">Hora:</span>
                     <span className="text-[#F5F5F5]">
-                      {selectedSchedule.horario_hora_inicio}
+                      {selectedSchedule.slot_inicio ||
+                        selectedSchedule.horario_hora_inicio}
                     </span>
                   </p>
                   <p className="flex justify-between">
