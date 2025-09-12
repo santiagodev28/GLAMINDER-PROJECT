@@ -73,7 +73,7 @@ appointmentRoutes.put(
 appointmentRoutes.put(
   "/:cita_id/confirmar",
   verifyToken,
-  authorizeRoles(1, 2, 4),
+  authorizeRoles(1, 2, 3, 4),
   AppointmentsController.confirmAppointment
 );
 
@@ -81,7 +81,7 @@ appointmentRoutes.put(
 appointmentRoutes.put(
   "/:cita_id/completar",
   verifyToken,
-  authorizeRoles(1, 2, 4),
+  authorizeRoles(1, 2, 3, 4),
   AppointmentsController.completeAppointment
 );
 
@@ -113,7 +113,7 @@ appointmentRoutes.get(
 appointmentRoutes.get(
   "/empleado/:empleado_id",
   verifyToken,
-  authorizeRoles(1, 2),
+  authorizeRoles(1, 2, 3),
   AppointmentsController.getAppointmentsByEmployee
 );
 

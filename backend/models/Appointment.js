@@ -586,9 +586,14 @@ class Appointment {
   }
 
   // Obtener citas por empleado
-  static async getAppointmentsByEmployee(empleado_id, fecha = null) {
+  static async getAppointmentsByEmployee(
+    empleado_id,
+    fecha = null,
+    estado = null
+  ) {
     const filters = { empleado_id };
     if (fecha) filters.fecha = fecha;
+    if (estado && estado !== "todos") filters.estado = estado;
 
     return await this.getAllAppointments(filters);
   }

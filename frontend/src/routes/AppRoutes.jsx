@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import ClientLayout from "../layouts/ClientLayout";
 import OwnerLayout from "../layouts/OwnerLayout";
+import EmployeeLayout from "../layouts/EmployeeLayout";
 
 // Importación de las páginas y componentes
 import Login from "../features/auth/pages/Login";
@@ -29,6 +30,11 @@ import AppointmentManagement from "../features/owner/pages/AppointmentManagement
 import ServiceManagement from "../features/owner/pages/ServiceManagement";
 import ScheduleManagement from "../features/owner/pages/ScheduleManagement";
 import ReportsAndStats from "../features/owner/pages/ReportsAndStats";
+
+// Importaciones del empleado
+import EmployeeDashboard from "../features/employee/pages/EmployeeDashboard";
+import EmployeeAppointments from "../features/employee/pages/EmployeeAppointments";
+import EmployeeServices from "../features/employee/pages/EmployeeServices";
 
 const AppRoutes = () => {
   return (
@@ -97,6 +103,15 @@ const AppRoutes = () => {
         <Route path="/propietario/citas" element={<AppointmentManagement />} />
         <Route path="/propietario/servicios" element={<ServiceManagement />} />
         <Route path="/propietario/reportes" element={<ReportsAndStats />} />
+      </Route>
+
+      {/* Layout de Empleado */}
+      <Route path="/empleado" element={<EmployeeLayout />}>
+        {/* Ruta por defecto - Dashboard */}
+        <Route index element={<EmployeeDashboard />} />
+        <Route path="/empleado/dashboard" element={<EmployeeDashboard />} />
+        <Route path="/empleado/citas" element={<EmployeeAppointments />} />
+        <Route path="/empleado/servicios" element={<EmployeeServices />} />
       </Route>
     </Routes>
   );

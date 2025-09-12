@@ -9,7 +9,7 @@ const employeeRoutes = Router();
 employeeRoutes.get(
   "/",
   verifyToken,
-  authorizeRoles(1, 2, 4),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getAllEmployees
 );
 
@@ -17,7 +17,7 @@ employeeRoutes.get(
 employeeRoutes.get(
   "/:empleado_id",
   verifyToken,
-  authorizeRoles(1, 2, 4),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getEmployeeById
 );
 
@@ -25,7 +25,7 @@ employeeRoutes.get(
 employeeRoutes.get(
   "/usuario/:usuario_id",
   verifyToken,
-  authorizeRoles(1, 2, 4),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getEmployeeByUserId
 );
 
@@ -49,7 +49,7 @@ employeeRoutes.post(
 employeeRoutes.put(
   "/:empleado_id",
   verifyToken,
-  authorizeRoles(1, 2, 3),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.updateEmployee
 );
 
@@ -81,7 +81,7 @@ employeeRoutes.put(
 employeeRoutes.get(
   "/tienda/:tienda_id",
   verifyToken,
-  authorizeRoles(1, 2, 4),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getEmployeesByStore
 );
 
@@ -89,7 +89,7 @@ employeeRoutes.get(
 employeeRoutes.get(
   "/especialidad",
   verifyToken,
-  authorizeRoles(1, 2),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getEmployeesBySpecialty
 );
 
@@ -97,7 +97,7 @@ employeeRoutes.get(
 employeeRoutes.get(
   "/disponibles/:tienda_id",
   verifyToken,
-  authorizeRoles(1, 2),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getAvailableEmployees
 );
 
@@ -105,8 +105,24 @@ employeeRoutes.get(
 employeeRoutes.get(
   "/:empleado_id/stats",
   verifyToken,
-  authorizeRoles(1, 2),
+  authorizeRoles(1, 2, 3, 4),
   EmployeeController.getEmployeeStats
+);
+
+// Obtener información completa del empleado (con negocio y tienda)
+employeeRoutes.get(
+  "/:empleado_id/info",
+  verifyToken,
+  authorizeRoles(1, 2, 3, 4),
+  EmployeeController.getEmployeeInfo
+);
+
+// Obtener servicios del empleado
+employeeRoutes.get(
+  "/:empleado_id/servicios",
+  verifyToken,
+  authorizeRoles(1, 2, 3, 4),
+  EmployeeController.getEmployeeServices
 );
 
 // Contar empleados por estado

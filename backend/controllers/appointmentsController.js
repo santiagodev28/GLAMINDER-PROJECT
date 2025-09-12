@@ -185,13 +185,31 @@ class AppointmentsController {
   static async getAppointmentsByEmployee(req, res) {
     try {
       const { empleado_id } = req.params;
-      const { fecha } = req.query;
+      const { fecha, estado } = req.query;
+      console.log(
+        "🔍 getAppointmentsByEmployee - empleado_id:",
+        empleado_id,
+        "fecha recibida:",
+        fecha,
+        "estado recibido:",
+        estado
+      );
+      console.log("📅 Tipo de fecha:", typeof fecha);
+      console.log("📅 Tipo de estado:", typeof estado);
+
       const appointments = await Appointment.getAppointmentsByEmployee(
         empleado_id,
-        fecha
+        fecha,
+        estado
       );
+      console.log("📅 Citas encontradas:", appointments.length);
+      if (appointments.length > 0) {
+        console.log("📅 Primera cita fecha:", appointments[0].cita_fecha);
+        console.log("📅 Primera cita estado:", appointments[0].cita_estado);
+      }
       res.json(appointments);
     } catch (error) {
+      console.error("❌ Error en getAppointmentsByEmployee:", error);
       res.status(500).json({ error: error.message });
     }
   }

@@ -91,7 +91,7 @@ class Employee {
         e.*,
         u.usuario_nombre, u.usuario_apellido, u.usuario_correo, u.usuario_telefono, u.usuario_estado,
         t.tienda_nombre, t.tienda_direccion, t.tienda_telefono, t.tienda_ciudad,
-        n.negocio_nombre, n.negocio_id
+        n.negocio_nombre, n.negocio_id, n.negocio_direccion, n.negocio_telefono
       FROM empleados e
       LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
       LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id
@@ -110,7 +110,13 @@ class Employee {
 
     // Estructurar los datos para que coincidan con lo que espera el frontend
     return {
-      ...employee,
+      id: employee.empleado_id,
+      empleado_id: employee.empleado_id,
+      usuario_id: employee.usuario_id,
+      tienda_id: employee.tienda_id,
+      empleado_especialidad: employee.empleado_especialidad,
+      empleado_estado: employee.empleado_estado,
+      nombre: `${employee.usuario_nombre} ${employee.usuario_apellido}`,
       usuario: {
         usuario_nombre: employee.usuario_nombre,
         usuario_apellido: employee.usuario_apellido,
@@ -119,15 +125,25 @@ class Employee {
         usuario_estado: employee.usuario_estado,
       },
       tienda: {
+        id: employee.tienda_id,
+        tienda_id: employee.tienda_id,
+        nombre: employee.tienda_nombre,
         tienda_nombre: employee.tienda_nombre,
+        direccion: employee.tienda_direccion,
         tienda_direccion: employee.tienda_direccion,
+        telefono: employee.tienda_telefono,
         tienda_telefono: employee.tienda_telefono,
+        ciudad: employee.tienda_ciudad,
         tienda_ciudad: employee.tienda_ciudad,
         negocio_id: employee.negocio_id,
       },
       negocio: {
-        negocio_nombre: employee.negocio_nombre,
+        id: employee.negocio_id,
         negocio_id: employee.negocio_id,
+        nombre: employee.negocio_nombre,
+        negocio_nombre: employee.negocio_nombre,
+        direccion: employee.negocio_direccion || null,
+        telefono: employee.negocio_telefono || null,
       },
     };
   }
@@ -139,7 +155,7 @@ class Employee {
         e.*,
         u.usuario_nombre, u.usuario_apellido, u.usuario_correo, u.usuario_telefono,
         t.tienda_nombre, t.tienda_direccion, t.tienda_ciudad,
-        n.negocio_nombre, n.negocio_id
+        n.negocio_nombre, n.negocio_id, n.negocio_direccion, n.negocio_telefono
       FROM empleados e
       LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
       LEFT JOIN tiendas t ON e.tienda_id = t.tienda_id
@@ -158,7 +174,13 @@ class Employee {
 
     // Estructurar los datos para que coincidan con lo que espera el frontend
     return {
-      ...employee,
+      id: employee.empleado_id,
+      empleado_id: employee.empleado_id,
+      usuario_id: employee.usuario_id,
+      tienda_id: employee.tienda_id,
+      empleado_especialidad: employee.empleado_especialidad,
+      empleado_estado: employee.empleado_estado,
+      nombre: `${employee.usuario_nombre} ${employee.usuario_apellido}`,
       usuario: {
         usuario_nombre: employee.usuario_nombre,
         usuario_apellido: employee.usuario_apellido,
@@ -166,14 +188,23 @@ class Employee {
         usuario_telefono: employee.usuario_telefono,
       },
       tienda: {
+        id: employee.tienda_id,
+        tienda_id: employee.tienda_id,
+        nombre: employee.tienda_nombre,
         tienda_nombre: employee.tienda_nombre,
+        direccion: employee.tienda_direccion,
         tienda_direccion: employee.tienda_direccion,
+        ciudad: employee.tienda_ciudad,
         tienda_ciudad: employee.tienda_ciudad,
         negocio_id: employee.negocio_id,
       },
       negocio: {
-        negocio_nombre: employee.negocio_nombre,
+        id: employee.negocio_id,
         negocio_id: employee.negocio_id,
+        nombre: employee.negocio_nombre,
+        negocio_nombre: employee.negocio_nombre,
+        direccion: employee.negocio_direccion || null,
+        telefono: employee.negocio_telefono || null,
       },
     };
   }
@@ -636,6 +667,49 @@ class Employee {
   // Hashear contraseña
   static async hashPassword(password) {
     return await bcrypt.hash(password, 10);
+  }
+
+  // Obtener servicios del empleado
+  static async getEmployeeServices(empleado_id) {
+    const query = `
+      SELECT 
+        s.*,
+        sc.categoria_nombre,
+        t.tienda_nombre
+      FROM servicios s
+      INNER JOIN empleados e ON s.tienda_id = e.tienda_id
+      LEFT JOIN servicio_categoria sc ON s.categoria_id = sc.categoria_id
+      LEFT JOIN tiendas t ON s.tienda_id = t.tienda_id
+      WHERE e.empleado_id = ? 
+      AND s.servicio_estado = 1
+      ORDER BY s.servicio_nombre ASC
+    `;
+
+    const result = await executeQuery(query, [empleado_id]);
+
+    if (!result.success) {
+      throw new Error(
+        `Error al obtener servicios del empleado: ${result.error}`
+      );
+    }
+
+    return result.data.map((service) => ({
+      id: service.servicio_id,
+      nombre: service.servicio_nombre,
+      descripcion: service.servicio_descripcion,
+      precio: service.servicio_precio,
+      duracion: service.servicio_duracion,
+      activo: service.servicio_estado === 1,
+      observaciones: service.servicio_observaciones,
+      categoria: {
+        id: service.categoria_id,
+        nombre: service.categoria_nombre,
+      },
+      tienda: {
+        id: service.tienda_id,
+        nombre: service.tienda_nombre,
+      },
+    }));
   }
 }
 

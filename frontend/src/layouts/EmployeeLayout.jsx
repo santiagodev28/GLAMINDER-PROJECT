@@ -2,13 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link, Outlet, useLocation } from "react-router-dom";
 import {
   HomeIcon,
-  BuildingStorefrontIcon,
-  UserGroupIcon,
   CalendarIcon,
   CogIcon,
-  ChartBarIcon,
   ArrowRightOnRectangleIcon,
-  ClockIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
 import RoleChangeModal from "../components/modals/RoleChangeModal";
@@ -17,7 +13,7 @@ import ProfileService from "../services/profileService";
 import api from "../api/api";
 import { messageChangeRole } from "../services/clientService";
 
-const LayoutOwner = ({ children }) => {
+const EmployeeLayout = ({ children }) => {
   const [showModal, setShowModal] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [user, setUser] = useState(() => {
@@ -88,8 +84,8 @@ const LayoutOwner = ({ children }) => {
       {showModal && (
         <RoleChangeModal onClose={handleCloseModal} title="¡Felicidades!">
           <p className="text-lg text-gray-700">
-            Tu rol ha sido actualizado a <strong>Propietario</strong>. Ahora
-            puedes gestionar tu(s) negocio(s) desde este panel.
+            Tu rol ha sido actualizado a <strong>Empleado</strong>. Ahora puedes
+            gestionar tus citas y servicios desde este panel.
           </p>
         </RoleChangeModal>
       )}
@@ -134,9 +130,9 @@ const LayoutOwner = ({ children }) => {
           {/* Navegación */}
           <nav className="space-y-2">
             <Link
-              to="/propietario/dashboard"
+              to="/empleado/dashboard"
               className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/dashboard")
+                isActive("/empleado/dashboard")
                   ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
                   : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
               }`}
@@ -146,75 +142,27 @@ const LayoutOwner = ({ children }) => {
             </Link>
 
             <Link
-              to="/propietario/tiendas"
+              to="/empleado/citas"
               className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/tiendas")
-                  ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
-                  : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
-              }`}
-            >
-              <BuildingStorefrontIcon className="w-5 h-5" />
-              <span className="font-medium">Mis Tiendas</span>
-            </Link>
-
-            <Link
-              to="/propietario/empleados"
-              className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/empleados")
-                  ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
-                  : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
-              }`}
-            >
-              <UserGroupIcon className="w-5 h-5" />
-              <span className="font-medium">Empleados</span>
-            </Link>
-
-            <Link
-              to="/propietario/horarios"
-              className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/horarios")
-                  ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
-                  : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
-              }`}
-            >
-              <ClockIcon className="w-5 h-5" />
-              <span className="font-medium">Horarios</span>
-            </Link>
-
-            <Link
-              to="/propietario/citas"
-              className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/citas")
+                isActive("/empleado/citas")
                   ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
                   : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
               }`}
             >
               <CalendarIcon className="w-5 h-5" />
-              <span className="font-medium">Citas</span>
+              <span className="font-medium">Mis Citas</span>
             </Link>
 
             <Link
-              to="/propietario/servicios"
+              to="/empleado/servicios"
               className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/servicios")
+                isActive("/empleado/servicios")
                   ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
                   : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
               }`}
             >
               <CogIcon className="w-5 h-5" />
-              <span className="font-medium">Servicios</span>
-            </Link>
-
-            <Link
-              to="/propietario/reportes"
-              className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isActive("/propietario/reportes")
-                  ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
-                  : "text-[#B0B3B8] hover:text-[#F5F5F5] hover:bg-[#1F1F1F]/50"
-              }`}
-            >
-              <ChartBarIcon className="w-5 h-5" />
-              <span className="font-medium">Reportes</span>
+              <span className="font-medium">Mis Servicios</span>
             </Link>
           </nav>
         </div>
@@ -245,4 +193,4 @@ const LayoutOwner = ({ children }) => {
   );
 };
 
-export default LayoutOwner;
+export default EmployeeLayout;

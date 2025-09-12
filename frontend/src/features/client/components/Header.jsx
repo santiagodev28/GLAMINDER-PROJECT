@@ -1,17 +1,37 @@
 import ButtonCloseSession from "../../../components/buttons/ButtonCloseSession";
+import EditProfileModal from "../../../components/modals/EditProfileModal";
+import ProfileService from "../../../services/profileService";
 import logo from "../../../assets/images/logo.png";
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BuildingStorefrontIcon } from "@heroicons/react/24/outline";
+import { BuildingStorefrontIcon, UserIcon } from "@heroicons/react/24/outline";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [user, setUser] = useState(null);
   const dropdownRef = useRef(null);
   const location = useLocation();
 
-  // Simular datos del usuario (esto debería venir de tu contexto de autenticación)
-  const name = localStorage.getItem("usuario_nombre");
+  // Cargar datos del usuario
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const userData = await ProfileService.getCurrentUser();
+      setUser(userData);
+    } catch (error) {
+      console.error("Error al cargar datos del usuario:", error);
+    }
+  };
+
+  const handleProfileSave = (updatedUser) => {
+    setUser(updatedUser);
+    setShowEditProfile(false);
+  };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -138,7 +158,7 @@ const Header = () => {
                 >
                   <div className="w-10 h-10 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
                     <span className="text-white font-semibold text-sm">
-                      {name?.charAt(0).toUpperCase() || "U"}
+                      {ProfileService.getInitials(user)}
                     </span>
                   </div>
                   <span
@@ -146,7 +166,7 @@ const Header = () => {
                       isScrolled ? "text-gray-700" : "text-[#F5F5F5]"
                     }`}
                   >
-                    {name || "Usuario"}
+                    {ProfileService.getFullName(user)}
                   </span>
                   <svg
                     className={`w-4 h-4 transition-all duration-300 ${
@@ -174,30 +194,20 @@ const Header = () => {
                         : "bg-[#23262B]/95 border border-[#31343A]"
                     }`}
                   >
-                    <Link
-                      to="/cliente/perfil"
-                      className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 mx-2 focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
+                    <button
+                      onClick={() => {
+                        setShowEditProfile(true);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 mx-2 focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 w-full text-left ${
                         isScrolled
                           ? "text-gray-700 hover:bg-gray-100 hover:text-[#D1A04D]"
                           : "text-[#B0B3B8] hover:bg-[#31343A] hover:text-[#F5F5F5]"
                       }`}
-                      onClick={() => setIsDropdownOpen(false)}
                     >
-                      <svg
-                        className="w-4 h-4 mr-3 transition-all duration-300"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                      Ver mi perfil
-                    </Link>
+                      <UserIcon className="w-4 h-4 mr-3 transition-all duration-300" />
+                      Editar Perfil
+                    </button>
                     <Link
                       to="/cliente/solicitar-propietario"
                       className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 mx-2 focus:outline-none focus:ring-2 focus:ring-[#D1A04D]/50 ${
@@ -225,6 +235,13 @@ const Header = () => {
           </div>
         </div>
       </header>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditProfile}
+        onClose={() => setShowEditProfile(false)}
+        onSave={handleProfileSave}
+      />
     </div>
   );
 };

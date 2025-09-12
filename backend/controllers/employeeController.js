@@ -240,6 +240,34 @@ class EmployeeController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  static async getEmployeeInfo(req, res) {
+    try {
+      const { empleado_id } = req.params;
+      const employee = await Employee.getEmployeeById(empleado_id);
+      if (!employee) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+      }
+      res.json(employee);
+    } catch (error) {
+      console.error(
+        "Error al obtener información del empleado:",
+        error.message
+      );
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getEmployeeServices(req, res) {
+    try {
+      const { empleado_id } = req.params;
+      const services = await Employee.getEmployeeServices(empleado_id);
+      res.json(services);
+    } catch (error) {
+      console.error("Error al obtener servicios del empleado:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 export default EmployeeController;
