@@ -23,26 +23,26 @@ router.get(
 // Rutas que requieren permisos de administrador o propietario
 router.post(
   "/",
-  authorizeRoles(["Administrador", "Propietario"]),
+  authorizeRoles(1,2,4),
   FranjasController.createFranja
 );
 
 router.put(
   "/:franja_id",
-  authorizeRoles(["Administrador", "Propietario"]),
+  authorizeRoles(1,2,4),
   FranjasController.updateFranja
 );
 
 router.delete(
   "/:franja_id",
-  authorizeRoles(["Administrador", "Propietario"]),
+  authorizeRoles(1,2),
   FranjasController.deleteFranja
 );
 
 // Ruta para generar franjas en lote (solo administradores)
 router.post(
   "/generar/:empleado_id",
-  authorizeRoles(["Administrador"]),
+  authorizeRoles(1,2,4),
   FranjasController.generateFranjasForDateRange
 );
 

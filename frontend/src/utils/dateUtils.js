@@ -92,10 +92,9 @@ export const getDayName = (dateString) => {
  * @returns {string} Fecha en formato YYYY-MM-DD
  */
 export const getMinAppointmentDate = () => {
+  // Permitir agendar desde hoy
   const today = getColombiaDate();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return formatDateForColombia(tomorrow);
+  return formatDateForColombia(today);
 };
 
 /**
@@ -119,28 +118,27 @@ export const generateAvailableDays = (daysCount = 14) => {
   const today = getColombiaDate();
   const todayString = formatDateForColombia(today);
 
-  // Empezar desde mañana (no permitir agendar para hoy)
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
+  // Empezar desde hoy (permitir agendar para hoy)
   for (let i = 0; i < daysCount; i++) {
-    const date = new Date(tomorrow);
-    date.setDate(tomorrow.getDate() + i);
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
     const dateString = formatDateForColombia(date);
 
-    // Crear fecha para mostrar nombres de días y meses
-    const displayDate = new Date(dateString + "T00:00:00");
+    // Usar zona horaria de Colombia para mostrar nombres correctos
+    const displayDate = new Date(dateString + "T00:00:00-05:00");
 
     days.push({
       date: dateString,
       day: displayDate.getDate(),
       month: displayDate.toLocaleDateString("es-CO", {
         month: "short",
+        timeZone: COLOMBIA_TIMEZONE,
       }),
       dayName: displayDate.toLocaleDateString("es-CO", {
         weekday: "short",
+        timeZone: COLOMBIA_TIMEZONE,
       }),
-      isToday: dateString === todayString, // Comparar con la fecha actual real
+      isToday: dateString === todayString,
     });
   }
 

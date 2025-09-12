@@ -182,7 +182,7 @@ const DashboardClient = () => {
         </div>
 
         <div className="p-6">
-          {appointments.length === 0 ? (
+          {appointments.filter((apt) => apt.cita_estado === "pendiente").length === 0 ? (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <CalendarIcon className="w-10 h-10 text-white" />
@@ -204,7 +204,10 @@ const DashboardClient = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {appointments.slice(0, 3).map((appointment) => (
+              {appointments
+                .filter((apt) => apt.cita_estado === "pendiente")
+                .slice(0, 3)
+                .map((appointment) => (
                 <div
                   key={appointment.cita_id}
                   className="flex items-center justify-between p-4 bg-[#1F1F1F]/50 backdrop-blur-sm rounded-lg hover:bg-[#1F1F1F]/70 transition-all duration-300 border border-[#31343A]/30 hover:border-[#D1A04D]/30"
@@ -286,6 +289,18 @@ const DashboardClient = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-12 py-8 text-center text-[#B0B3B8] text-sm border-t border-[#31343A]/50">
+        <div className="flex flex-col items-center gap-2">
+          <span>
+            © {new Date().getFullYear()} Glaminder. Todos los derechos reservados.
+          </span>
+          <span>
+            Hecho con <span className="text-[#D1A04D]">♥</span> por el equipo Glaminder
+          </span>
+        </div>
+      </footer>
     </div>
   );
 };

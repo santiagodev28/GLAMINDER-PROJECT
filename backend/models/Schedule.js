@@ -511,9 +511,12 @@ class Schedule {
     duracion_servicio = 30
   ) {
     try {
-      const fechaDate = new Date(fecha);
-      const diaSemana = fechaDate.getDay(); // 0 = Domingo, 1 = Lunes, etc.
-      const diaSemanaNum = diaSemana === 0 ? 7 : diaSemana; // Convertir a formato 1-7 (Lunes-Domingo)
+      // Forzar la fecha a medianoche en Colombia (UTC-5)
+      const [year, month, day] = fecha.split('-');
+      // 5am UTC = 00:00 COT
+      const fechaDate = new Date(Date.UTC(year, month - 1, day, 5, 0, 0));
+      const diaSemana = fechaDate.getUTCDay(); // 0 = Domingo, 1 = Lunes, etc.
+      const diaSemanaNum = diaSemana === 0 ? 7 : diaSemana; // 1=Lunes, 7=Domingo
 
       console.log(
         `🔍 Buscando horarios para empleado ${empleado_id}, fecha ${fecha}, día de semana ${diaSemanaNum}`
@@ -653,6 +656,7 @@ class Schedule {
           tienda_id: schedule.tienda_id,
         });
 
+        // Siempre crear o asegurar la existencia de franjas para la fecha seleccionada
         const slots = await this.generateTimeSlots(
           schedule.horario_inicio,
           schedule.horario_fin,
@@ -663,6 +667,24 @@ class Schedule {
           fecha
         );
         timeSlots.push(...slots);
+      }
+
+      // Si no se generó ningún slot con franja_id, intentar forzar la generación de franjas para la fecha
+      if (timeSlots.length > 0 && !timeSlots.some(slot => slot.franja_id)) {
+        console.log('⚠️ No se generaron franjas, forzando generación para la fecha:', fecha);
+        for (const schedule of processedData) {
+          await this.generateTimeSlots(
+            schedule.horario_inicio,
+            schedule.horario_fin,
+            duracion_servicio,
+            schedule.horario_id,
+            empleado_id,
+            schedule.tienda_id,
+            fecha
+          );
+        }
+        // Volver a consultar los slots
+        return await this.getAvailableSchedulesByEmployee(empleado_id, fecha, duracion_servicio);
       }
 
       console.log(
