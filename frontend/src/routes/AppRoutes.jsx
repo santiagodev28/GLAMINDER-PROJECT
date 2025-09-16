@@ -21,6 +21,7 @@ import BusinessDetail from "../features/client/components/Businesses/BusinessDet
 import AppointmentBooking from "../features/client/components/Appointments/AppointmentBooking";
 import UserAppointments from "../features/client/components/Appointments/UserAppointments";
 import DashboardClient from "../features/client/pages/DashboardClient";
+import Home from "../features/client/pages/Home";
 
 // Importaciones del propietario
 import OwnerDashboard from "../features/owner/pages/OwnerDashboard";
@@ -40,8 +41,11 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/ingresar" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/registrar" element={<Register />} />
 
       {/* Layout de administrador */}

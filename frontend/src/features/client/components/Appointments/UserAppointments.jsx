@@ -105,7 +105,7 @@ const UserAppointments = () => {
         <p className="text-[#B0B3B8] mb-6">{error}</p>
         <button
           onClick={loadAppointments}
-          className="px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           Reintentar
         </button>
@@ -129,15 +129,16 @@ const UserAppointments = () => {
 
   // Filtrar citas por fecha si hay filtro
   const filteredAppointments = filterDate
-    ? appointments.filter((apt) =>
-        new Date(apt.cita_fecha).toISOString().slice(0, 10) === filterDate
+    ? appointments.filter(
+        (apt) =>
+          new Date(apt.cita_fecha).toISOString().slice(0, 10) === filterDate
       )
     : appointments;
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className=" backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center justify-center mb-4 md:mb-0">
             <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg mr-4">
@@ -159,7 +160,7 @@ const UserAppointments = () => {
               type="date"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              className="p-2 rounded-lg bg-[#1F1F1F]/70 border border-[#31343A] text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D]"
+              className="p-2 rounded-lg bg-black/70 border border-white/20 text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D]"
             />
             {filterDate && (
               <button
@@ -183,13 +184,15 @@ const UserAppointments = () => {
             <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
               No tienes citas para esta fecha
             </h3>
-            <p className="text-[#B0B3B8]">Selecciona otra fecha o agenda una nueva cita</p>
+            <p className="text-[#B0B3B8]">
+              Selecciona otra fecha o agenda una nueva cita
+            </p>
           </div>
         ) : (
           filteredAppointments.map((appointment) => (
             <div
               key={appointment.cita_id}
-              className="bg-[#23262B]/90 border border-[#31343A]/50 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col gap-2"
+              className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-500 flex flex-col gap-2 hover:bg-black/90"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
@@ -238,7 +241,7 @@ const UserAppointments = () => {
                   <button
                     onClick={() => handleCancelAppointment(appointment.cita_id)}
                     disabled={cancellingId === appointment.cita_id}
-                    className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow hover:shadow-lg transition-all duration-300"
+                    className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow hover:shadow-lg transition-all duration-500"
                   >
                     {cancellingId === appointment.cita_id ? (
                       <>
@@ -255,8 +258,10 @@ const UserAppointments = () => {
                 )}
                 {appointment.cita_estado === "cancelada" && (
                   <span className="text-xs text-[#B0B3B8]">
-                    Cancelada el {new Date(
-                      appointment.fecha_cancelacion || appointment.fecha_modificacion
+                    Cancelada el{" "}
+                    {new Date(
+                      appointment.fecha_cancelacion ||
+                        appointment.fecha_modificacion
                     ).toLocaleDateString()}
                   </span>
                 )}

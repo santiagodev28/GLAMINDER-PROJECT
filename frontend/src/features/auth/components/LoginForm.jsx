@@ -65,9 +65,21 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#181B20]">
-      <div className="w-full max-w-md">
-        <div className="bg-[#23262B] rounded-2xl shadow-2xl px-10 py-10 border border-[#23262B]/60">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Imagen de fondo */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/login.jpeg')`,
+        }}
+      />
+
+      {/* Overlay oscuro para mejorar legibilidad */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Contenido del formulario */}
+      <div className="relative z-10 w-full max-w-md px-4">
+        <div className="bg-black/90 backdrop-blur-md rounded-3xl shadow-2xl px-10 py-10 border border-[#23262B]/60">
           {/* Logo y título */}
           <div className="flex justify-between items-center mb-8">
             <div>
@@ -179,13 +191,13 @@ const LoginForm = () => {
             </div>
           </form>
         </div>
+      </div>
 
-        {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-[#B0B3B8] text-sm">
-            © 2024 Glaminder. Todos los derechos reservados.
-          </p>
-        </div>
+      {/* Footer */}
+      <div className="absolute bottom-0 left-0 right-0 text-center pb-8 z-10">
+        <p className="text-[#B0B3B8] text-sm drop-shadow-lg">
+          © 2025 Glaminder. Todos los derechos reservados.
+        </p>
       </div>
     </div>
   );

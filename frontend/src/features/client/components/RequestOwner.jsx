@@ -3,6 +3,11 @@ import logo from "../../../assets/images/logo-2.png";
 import {
   ArrowPathIcon,
   BuildingStorefrontIcon,
+  BuildingOfficeIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/solid";
 import { requestOwner } from "../../../services/clientService.js";
 
@@ -57,7 +62,7 @@ const RequestOwner = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#1A1A1A] via-[#23262B] to-[#1F1F1F] flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-lg">
         {/* Logo y título */}
         <div className="text-center mb-8">
@@ -87,10 +92,11 @@ const RequestOwner = () => {
         {/* Formulario */}
         <form
           onSubmit={sendRequest}
-          className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-[#31343A]/50 space-y-6"
+          className="bg-black/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/10 space-y-6 hover:shadow-3xl transition-all duration-500"
         >
           <div>
-            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3 flex items-center">
+              <BuildingOfficeIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
               Nombre del negocio
             </label>
             <input
@@ -99,13 +105,14 @@ const RequestOwner = () => {
               value={business.nombre_negocio}
               onChange={handleChange}
               required
-              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              className="w-full border border-white/20 rounded-xl p-4 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] hover:from-[#3A3429] hover:to-[#2F2A1F] transition-all duration-500 shadow-lg hover:shadow-xl"
               placeholder="Ingresa el nombre de tu negocio"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3 flex items-center">
+              <MapPinIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
               Dirección
             </label>
             <input
@@ -114,13 +121,14 @@ const RequestOwner = () => {
               value={business.direccion_negocio}
               onChange={handleChange}
               required
-              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              className="w-full border border-white/20 rounded-xl p-4 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] hover:from-[#3A3429] hover:to-[#2F2A1F] transition-all duration-500 shadow-lg hover:shadow-xl"
               placeholder="Ingresa la dirección de tu negocio"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3 flex items-center">
+              <PhoneIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
               Teléfono
             </label>
             <input
@@ -128,13 +136,14 @@ const RequestOwner = () => {
               name="telefono_negocio"
               value={business.telefono_negocio}
               onChange={handleChange}
-              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              className="w-full border border-white/20 rounded-xl p-4 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] hover:from-[#3A3429] hover:to-[#2F2A1F] transition-all duration-500 shadow-lg hover:shadow-xl"
               placeholder="Ingresa el teléfono de contacto"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3 flex items-center">
+              <EnvelopeIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
               Correo del negocio
             </label>
             <input
@@ -142,13 +151,14 @@ const RequestOwner = () => {
               name="correo_negocio"
               value={business.correo_negocio}
               onChange={handleChange}
-              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300"
+              className="w-full border border-white/20 rounded-xl p-4 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] hover:from-[#3A3429] hover:to-[#2F2A1F] transition-all duration-500 shadow-lg hover:shadow-xl"
               placeholder="Ingresa el correo del negocio"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3">
+            <label className="block text-sm font-semibold text-[#F5F5F5] mb-3 flex items-center">
+              <DocumentTextIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
               Descripción
             </label>
             <textarea
@@ -156,7 +166,7 @@ const RequestOwner = () => {
               value={business.descripcion_negocio}
               onChange={handleChange}
               rows="4"
-              className="w-full border border-[#31343A] rounded-xl p-4 bg-[#1F1F1F]/50 text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] transition-all duration-300 resize-none"
+              className="w-full border border-white/20 rounded-xl p-4 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-[#D1A04D] hover:from-[#3A3429] hover:to-[#2F2A1F] transition-all duration-500 resize-none shadow-lg hover:shadow-xl"
               placeholder="Describe tu negocio y los servicios que ofreces"
             ></textarea>
           </div>
@@ -164,7 +174,7 @@ const RequestOwner = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 focus:ring-offset-[#23262B] transform transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+            className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 focus:ring-offset-[#23262B] transform transition-all duration-500 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 shadow-2xl hover:shadow-3xl flex items-center justify-center gap-3"
           >
             {isLoading ? (
               <>

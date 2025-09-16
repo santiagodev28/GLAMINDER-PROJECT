@@ -233,8 +233,20 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#181B20] p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Imagen de fondo */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/login.jpeg')`,
+        }}
+      />
+
+      {/* Overlay oscuro para mejorar legibilidad */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Contenido del formulario */}
+      <div className="relative z-10 max-w-2xl w-full">
         {/* Logo y título */}
         <div className="text-center mb-4">
           <div className="flex justify-center">
@@ -253,7 +265,7 @@ const RegisterForm = () => {
         </div>
 
         {/* Formulario */}
-        <div className="bg-[#23262B] rounded-2xl shadow-2xl p-8 border border-[#23262B]/60">
+        <div className="bg-black/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-[#23262B]/60">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Campos de nombre y apellido en fila */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -524,8 +536,8 @@ const RegisterForm = () => {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-[#B0B3B8] text-sm">
-            © 2024 Glaminder. Todos los derechos reservados.
+          <p className="text-[#B0B3B8] text-sm drop-shadow-lg">
+            © 2025 Glaminder. Todos los derechos reservados.
           </p>
         </div>
       </div>

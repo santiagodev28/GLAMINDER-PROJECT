@@ -75,7 +75,7 @@ const BusinessDetail = () => {
   return (
     <div className="space-y-8">
       {/* Header del Negocio */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className=" backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Información del negocio */}
           <div className="flex-1">
@@ -137,10 +137,10 @@ const BusinessDetail = () => {
           stores.map((store) => (
             <div
               key={store.tienda_id}
-              className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 hover:shadow-2xl transition-all duration-300 overflow-hidden"
+              className="bg-black/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/10 hover:shadow-2xl transition-all duration-300 overflow-hidden"
             >
               {/* Header de la tienda */}
-              <div className="bg-gradient-to-r from-[#D1A04D]/10 to-[#B47B1C]/10 p-6 border-b border-[#31343A]/30">
+              <div className="bg-gradient-to-r from-[#D1A04D]/10 to-[#B47B1C]/10 p-6 border-b border-white/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-xl flex items-center justify-center shadow-lg mr-4">
@@ -173,7 +173,7 @@ const BusinessDetail = () => {
                     {employeesByStore[store.tienda_id].map((emp) => (
                       <div
                         key={emp.empleado_id}
-                        className="bg-[#1F1F1F]/50 backdrop-blur-sm rounded-lg p-4 border border-[#31343A]/30 hover:bg-[#1F1F1F]/70 transition-all duration-300"
+                        className="bg-black/50 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-black/70 transition-all duration-300"
                       >
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg mr-3">

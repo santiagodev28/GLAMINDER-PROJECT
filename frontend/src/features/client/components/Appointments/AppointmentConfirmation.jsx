@@ -59,7 +59,7 @@ const AppointmentConfirmation = ({
   return (
     <div className="space-y-8">
       {/* Header de confirmación */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className="bg-gradient-to-br from-[#23262B] to-[#181B20] backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <CheckCircleIcon className="w-10 h-10 text-white" />
@@ -74,7 +74,7 @@ const AppointmentConfirmation = ({
       </div>
 
       {/* Resumen de la cita */}
-      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 p-8">
+      <div className="bg-black/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/10 p-8">
         <h3 className="text-xl font-semibold text-[#F5F5F5] mb-6 flex items-center">
           <CheckCircleIcon className="w-6 h-6 text-[#D1A04D] mr-3" />
           Resumen de tu Cita
@@ -156,7 +156,7 @@ const AppointmentConfirmation = ({
         </div>
 
         {/* Línea divisoria */}
-        <div className="border-t border-[#31343A]/50 my-8"></div>
+        <div className="border-t border-white/20 my-8"></div>
 
         {/* Detalles adicionales */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-lg">
@@ -176,7 +176,7 @@ const AppointmentConfirmation = ({
       </div>
 
       {/* Términos y condiciones */}
-      <div className="bg-[#23262B]/60 backdrop-blur-sm rounded-xl p-6 border border-[#31343A]/30">
+      <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border border-white/10">
         <h4 className="font-medium text-[#F5F5F5] mb-4 text-lg">
           Términos y Condiciones
         </h4>
@@ -187,7 +187,7 @@ const AppointmentConfirmation = ({
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-1 w-5 h-5 text-[#D1A04D] border-[#31343A] rounded focus:ring-[#D1A04D]/50 bg-[#1F1F1F]/50"
+              className="mt-1 w-5 h-5 text-[#D1A04D] border-white/20 rounded focus:ring-[#D1A04D]/50 bg-black/50"
             />
             <span className="text-[#B0B3B8]">
               Acepto los{" "}
@@ -203,7 +203,7 @@ const AppointmentConfirmation = ({
               type="checkbox"
               checked={privacyAccepted}
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
-              className="mt-1 w-5 h-5 text-[#D1A04D] border-[#31343A] rounded focus:ring-[#D1A04D]/50 bg-[#1F1F1F]/50"
+              className="mt-1 w-5 h-5 text-[#D1A04D] border-white/20 rounded focus:ring-[#D1A04D]/50 bg-black/50"
             />
             <span className="text-[#B0B3B8]">
               Acepto la{" "}
@@ -252,7 +252,7 @@ const AppointmentConfirmation = ({
           type="button"
           onClick={onBack}
           disabled={isSubmitting}
-          className="flex-1 px-8 py-4 bg-[#31343A] text-[#F5F5F5] rounded-xl hover:bg-[#2A2A2A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+          className="flex-1 px-8 py-4 bg-black/80 text-[#F5F5F5] rounded-xl hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
         >
           Volver
         </button>

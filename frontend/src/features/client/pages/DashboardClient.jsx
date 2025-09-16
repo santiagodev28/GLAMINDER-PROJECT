@@ -10,10 +10,12 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import appointmentService from "../../../services/appointmentService";
+import ProfileService from "../../../services/profileService";
 
 const DashboardClient = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -29,18 +31,31 @@ const DashboardClient = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await appointmentService.getUserAppointments();
-      setAppointments(data);
+
+      // Cargar datos del usuario y citas en paralelo
+      const [userData, appointmentsData] = await Promise.all([
+        ProfileService.getCurrentUser(),
+        appointmentService.getUserAppointments(),
+      ]);
+
+      setUser(userData);
+      setAppointments(appointmentsData);
 
       // Calcular estadísticas
       const statsData = {
-        total: data.length,
-        pending: data.filter((apt) => apt.cita_estado === "pendiente").length,
-        confirmed: data.filter((apt) => apt.cita_estado === "confirmada")
-          .length,
-        completed: data.filter((apt) => apt.cita_estado === "completada")
-          .length,
-        cancelled: data.filter((apt) => apt.cita_estado === "cancelada").length,
+        total: appointmentsData.length,
+        pending: appointmentsData.filter(
+          (apt) => apt.cita_estado === "pendiente"
+        ).length,
+        confirmed: appointmentsData.filter(
+          (apt) => apt.cita_estado === "confirmada"
+        ).length,
+        completed: appointmentsData.filter(
+          (apt) => apt.cita_estado === "completada"
+        ).length,
+        cancelled: appointmentsData.filter(
+          (apt) => apt.cita_estado === "cancelada"
+        ).length,
       };
       setStats(statsData);
     } catch (error) {
@@ -91,183 +106,347 @@ const DashboardClient = () => {
   return (
     <div className="space-y-8">
       {/* Header del Dashboard */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className=" backdrop-blur-md rounded-3xl p-10 border border-white/10 shadow-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
-              ¡Bienvenido de vuelta!
-            </h1>
-            <p className="text-[#B0B3B8] text-lg">
-              Gestiona tus citas y descubre nuevos negocios de belleza
-            </p>
-          </div>
-          <div className="hidden md:block">
-            <div className="w-24 h-24 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg">
-              <UserIcon className="w-12 h-12 text-white" />
+            {/* Saludo con tipografía especial */}
+            <div className="mb-4">
+              <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F5C76A] via-[#D1A04D] to-[#B47B1C] mb-3 font-serif tracking-wide">
+                ¡Hola, {user?.usuario_nombre || "hermosa"}!
+              </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-full mb-4"></div>
             </div>
+
+            {/* Mensaje cálido */}
+            <p className="text-[#F5F5F5] text-xl font-medium mb-2">
+              Tu belleza merece lo mejor
+            </p>
+            <p className="text-[#B0B3B8] text-lg">
+              Descubre servicios increíbles y agenda tu próxima cita
+            </p>
           </div>
         </div>
       </div>
 
       {/* Acciones rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Nueva Cita - Card principal */}
         <Link
           to="/cliente/nueva-cita"
-          className="group bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-xl p-6 text-white hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          className="group relative bg-gradient-to-br from-[#D1A04D] via-[#B47B1C] to-[#9A6B15] rounded-2xl p-8 text-white hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 transform  hover:-translate-y-2 shadow-2xl hover:shadow-3xl overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-3">
-                <PlusIcon className="w-6 h-6 text-white" />
+          {/* Efecto de brillo de fondo */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center transition-all duration-500">
+                <PlusIcon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Nueva Cita</h3>
-              <p className="text-white/80">Agenda tu próxima cita</p>
             </div>
-            <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
+
+            <h3 className="text-2xl font-bold mb-3 group- transition-transform duration-500">
+              Nueva Cita
+            </h3>
+            <p className="text-white/90 text-lg mb-4">
+              Reserva tu próxima experiencia de belleza
+            </p>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
+                ¡Es gratis!
+              </span>
+              <ArrowRightIcon className="w-6 h-6  transition-transform duration-500" />
+            </div>
           </div>
         </Link>
 
+        {/* Explorar Negocios */}
         <Link
           to="/cliente/negocios"
-          className="group bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:border-[#D1A04D]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          className="group relative bg-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transition-all duration-500 transform  hover:-translate-y-2 overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center mb-3">
-                <BuildingStorefrontIcon className="w-6 h-6 text-white" />
+          {/* Efecto de partículas */}
+          <div className="absolute top-4 right-4 w-2 h-2 bg-[#D1A04D] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute top-8 right-8 w-1 h-1 bg-[#F5C76A] rounded-full opacity-40 group-hover:opacity-80 transition-opacity duration-500"></div>
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center  transition-all duration-500">
+                <BuildingStorefrontIcon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-[#F5F5F5]">
-                Explorar Negocios
-              </h3>
-              <p className="text-[#B0B3B8]">Descubre nuevos lugares</p>
             </div>
-            <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8] group-hover:translate-x-1 transition-transform duration-300" />
+
+            <h3 className="text-2xl font-bold mb-3 text-[#F5F5F5] group- transition-transform duration-500">
+              Explorar Negocios
+            </h3>
+            <p className="text-[#B0B3B8] text-lg mb-4">
+              Descubre salones y spas increíbles cerca de ti
+            </p>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium bg-[#D1A04D]/20 text-[#D1A04D] px-3 py-1 rounded-full">
+                +50 opciones
+              </span>
+              <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8]   transition-all duration-500" />
+            </div>
           </div>
         </Link>
 
+        {/* Mis Citas */}
         <Link
           to="/cliente/mis-citas"
-          className="group bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:border-[#D1A04D]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          className="group relative bg-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transition-all duration-500 transform  hover:-translate-y-2 overflow-hidden"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center mb-3">
-                <CalendarIcon className="w-6 h-6 text-white" />
+          {/* Efecto de partículas */}
+          <div className="absolute top-4 right-4 w-2 h-2 bg-[#D1A04D] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute top-8 right-8 w-1 h-1 bg-[#F5C76A] rounded-full opacity-40 group-hover:opacity-80 transition-opacity duration-500"></div>
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center  transition-all duration-500">
+                <CalendarIcon className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-[#F5F5F5]">
-                Mis Citas
-              </h3>
-              <p className="text-[#B0B3B8]">Gestiona tus reservas</p>
             </div>
-            <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8] group-hover:translate-x-1 transition-transform duration-300" />
+
+            <h3 className="text-2xl font-bold mb-3 text-[#F5F5F5] group- transition-transform duration-500">
+              Mis Citas
+            </h3>
+            <p className="text-[#B0B3B8] text-lg mb-4">
+              Gestiona y revisa todas tus reservas
+            </p>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium bg-[#D1A04D]/20 text-[#D1A04D] px-3 py-1 rounded-full">
+                {stats.pending} pendientes
+              </span>
+              <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8]   transition-all duration-500" />
+            </div>
           </div>
         </Link>
       </div>
 
       {/* Próximas citas */}
-      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl shadow-lg border border-[#31343A]/50">
-        <div className="p-6 border-b border-[#31343A]/50">
+      <div className="bg-black/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 hover:shadow-3xl transition-all duration-500">
+        <div className="p-8 border-b border-white/20">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-[#F5F5F5]">
-              Próximas Citas
-            </h2>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg">
+                <CalendarIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold text-[#F5F5F5] bg-gradient-to-r from-white to-[#F5C76A] bg-clip-text text-transparent">
+                  Próximas Citas
+                </h2>
+                <p className="text-[#B0B3B8] text-lg">Tu agenda de belleza</p>
+              </div>
+            </div>
             <Link
               to="/cliente/mis-citas"
-              className="text-[#D1A04D] hover:text-[#F5C76A] font-medium text-sm flex items-center gap-2 transition-colors duration-300"
+              className="text-[#D1A04D] hover:text-[#F5C76A] font-semibold text-lg flex items-center gap-3 transition-all duration-500  bg-[#D1A04D]/10 px-4 py-2 rounded-xl hover:bg-[#D1A04D]/20"
             >
               Ver todas
-              <ArrowRightIcon className="w-4 h-4" />
+              <ArrowRightIcon className="w-5 h-5" />
             </Link>
           </div>
         </div>
 
-        <div className="p-6">
-          {appointments.filter((apt) => apt.cita_estado === "pendiente").length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <CalendarIcon className="w-10 h-10 text-white" />
+        <div className="p-8">
+          {appointments.filter((apt) => apt.cita_estado === "pendiente")
+            .length === 0 ? (
+            <div className="text-center py-16">
+              <div className="relative mb-8">
+                <div className="w-32 h-32 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto shadow-2xl hover:shadow-3xl transition-all duration-500  hover:rotate-6">
+                  <CalendarIcon className="w-16 h-16 text-white" />
+                </div>
+                {/* Efecto de brillo */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
               </div>
-              <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
-                No tienes citas programadas
+
+              <h3 className="text-3xl font-bold text-[#F5F5F5] mb-4 bg-gradient-to-r from-white to-[#F5C76A] bg-clip-text text-transparent">
+                ¡Tu agenda está vacía!
               </h3>
-              <p className="text-[#B0B3B8] mb-6 max-w-md mx-auto">
-                ¡Agenda tu primera cita y comienza a disfrutar de nuestros
-                servicios!
+              <p className="text-[#B0B3B8] mb-8 max-w-lg mx-auto text-xl">
+                Es hora de consentirte. Descubre servicios increíbles y agenda
+                tu próxima experiencia de belleza.
               </p>
-              <Link
-                to="/cliente/nueva-cita"
-                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                Agendar Cita
-              </Link>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/cliente/nueva-cita"
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-2xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 shadow-2xl hover:shadow-3xl transform  hover:-translate-y-1 font-semibold text-lg"
+                >
+                  <PlusIcon className="w-6 h-6 mr-3" />
+                  Agendar Cita
+                </Link>
+                <Link
+                  to="/cliente/negocios"
+                  className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all duration-500 shadow-2xl hover:shadow-3xl transform  hover:-translate-y-1 font-semibold text-lg border border-white/20"
+                >
+                  <BuildingStorefrontIcon className="w-6 h-6 mr-3" />
+                  Explorar Negocios
+                </Link>
+              </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {appointments
                 .filter((apt) => apt.cita_estado === "pendiente")
                 .slice(0, 3)
-                .map((appointment) => (
-                <div
-                  key={appointment.cita_id}
-                  className="flex items-center justify-between p-4 bg-[#1F1F1F]/50 backdrop-blur-sm rounded-lg hover:bg-[#1F1F1F]/70 transition-all duration-300 border border-[#31343A]/30 hover:border-[#D1A04D]/30"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow-md">
-                      <CalendarIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-[#F5F5F5]">
-                        {appointment.servicio_nombre}
-                      </h4>
-                      <p className="text-sm text-[#B0B3B8]">
-                        {appointment.tienda_nombre}
-                      </p>
-                      <div className="flex items-center space-x-4 mt-1">
-                        <span className="text-xs text-[#B0B3B8]">
-                          {new Date(
-                            appointment.cita_fecha
-                          ).toLocaleDateString()}
-                        </span>
-                        <span className="text-xs text-[#B0B3B8]">
-                          {appointment.horario_hora_inicio}
-                        </span>
+                .map((appointment, index) => {
+                  // Función para obtener el icono del servicio
+                  const getServiceIcon = (serviceName) => {
+                    const name = serviceName.toLowerCase();
+                    if (name.includes("corte") || name.includes("pelo"))
+                      return <UserIcon className="w-8 h-8 text-white" />;
+                    if (name.includes("maquillaje") || name.includes("makeup"))
+                      return <HeartIcon className="w-8 h-8 text-white" />;
+                    if (name.includes("uñas") || name.includes("manicure"))
+                      return <CalendarIcon className="w-8 h-8 text-white" />;
+                    if (name.includes("facial") || name.includes("piel"))
+                      return <HeartIcon className="w-8 h-8 text-white" />;
+                    if (name.includes("masaje") || name.includes("relax"))
+                      return <HeartIcon className="w-8 h-8 text-white" />;
+                    if (name.includes("ceja") || name.includes("brow"))
+                      return <UserIcon className="w-8 h-8 text-white" />;
+                    return <HeartIcon className="w-8 h-8 text-white" />;
+                  };
+
+                  // Función para determinar si es hoy, mañana, etc.
+                  const getTimeIndicator = (date) => {
+                    const today = new Date();
+                    const appointmentDate = new Date(date);
+                    const diffTime = appointmentDate - today;
+                    const diffDays = Math.ceil(
+                      diffTime / (1000 * 60 * 60 * 24)
+                    );
+
+                    if (diffDays === 0)
+                      return {
+                        text: "Hoy",
+                        color: "bg-red-500/20 text-red-400 border-red-500/30",
+                      };
+                    if (diffDays === 1)
+                      return {
+                        text: "Mañana",
+                        color:
+                          "bg-orange-500/20 text-orange-400 border-orange-500/30",
+                      };
+                    if (diffDays <= 7)
+                      return {
+                        text: "Esta semana",
+                        color:
+                          "bg-blue-500/20 text-blue-400 border-blue-500/30",
+                      };
+                    return {
+                      text: "Próximamente",
+                      color: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+                    };
+                  };
+
+                  const timeIndicator = getTimeIndicator(
+                    appointment.cita_fecha
+                  );
+
+                  return (
+                    <div
+                      key={appointment.cita_id}
+                      className="group relative bg-black/80 backdrop-blur-sm rounded-2xl p-6 hover:bg-black/90 transition-all duration-500 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transform  hover:-translate-y-1"
+                    >
+                      {/* Efecto de brillo */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-6">
+                            {/* Icono del servicio */}
+                            <div className="relative">
+                              <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500">
+                                {getServiceIcon(appointment.servicio_nombre)}
+                              </div>
+                              {/* Efecto de brillo en el icono */}
+                              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            </div>
+
+                            <div className="flex-1">
+                              <h4 className="font-bold text-[#F5F5F5] text-xl mb-2 transition-transform duration-500">
+                                {appointment.servicio_nombre}
+                              </h4>
+                              <p className="text-[#B0B3B8] text-lg mb-3">
+                                {appointment.tienda_nombre}
+                              </p>
+
+                              {/* Información de fecha y hora */}
+                              <div className="flex items-center space-x-6">
+                                <div className="flex items-center space-x-2">
+                                  <CalendarIcon className="w-4 h-4 text-[#B0B3B8]" />
+                                  <span className="text-sm text-[#F5F5F5] font-medium">
+                                    {new Date(
+                                      appointment.cita_fecha
+                                    ).toLocaleDateString("es-ES", {
+                                      weekday: "long",
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    })}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <ClockIcon className="w-4 h-4 text-[#B0B3B8]" />
+                                  <span className="text-sm text-[#F5F5F5] font-medium">
+                                    {appointment.horario_hora_inicio}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-4">
+                            {/* Indicador de tiempo */}
+                            <span
+                              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-500 ${timeIndicator.color}`}
+                            >
+                              {timeIndicator.text}
+                            </span>
+
+                            {/* Estado de la cita */}
+                            <span
+                              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-500  ${getStatusColor(
+                                appointment.cita_estado
+                              )}`}
+                            >
+                              {appointment.cita_estado}
+                            </span>
+
+                            {/* Botón de opciones */}
+                            <button className="text-[#B0B3B8] hover:text-[#F5F5F5] transition-all duration-500 p-3 rounded-xl hover:bg-white/10 ">
+                              <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-300 ${getStatusColor(
-                        appointment.cita_estado
-                      )}`}
-                    >
-                      {appointment.cita_estado}
-                    </span>
-                    <button className="text-[#B0B3B8] hover:text-[#F5F5F5] transition-colors duration-300 p-1 rounded-lg hover:bg-[#31343A]/50">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
             </div>
           )}
         </div>
       </div>
 
       {/* Recomendaciones */}
-      <div className="bg-gradient-to-br from-[#23262B] to-[#1F1F1F] rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className="bg-black/90 rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
             <HeartIcon className="w-10 h-10 text-white" />
@@ -280,10 +459,10 @@ const DashboardClient = () => {
             mejores negocios de belleza
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+            <button className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 font-medium shadow-lg hover:shadow-xl transform ">
               Dejar Reseña
             </button>
-            <button className="px-8 py-4 bg-[#23262B]/80 backdrop-blur-md text-[#D1A04D] rounded-lg hover:bg-[#31343A]/50 transition-all duration-300 font-medium border border-[#D1A04D]/30 hover:border-[#D1A04D]/50 shadow-lg hover:shadow-xl transform hover:scale-105">
+            <button className="px-8 py-4 bg-black/80 backdrop-blur-md text-[#D1A04D] rounded-lg hover:bg-black/90 transition-all duration-500 font-medium border border-[#D1A04D]/30 hover:border-[#D1A04D]/50 shadow-lg hover:shadow-xl transform ">
               Compartir Experiencia
             </button>
           </div>
@@ -294,10 +473,12 @@ const DashboardClient = () => {
       <footer className="mt-12 py-8 text-center text-[#B0B3B8] text-sm border-t border-[#31343A]/50">
         <div className="flex flex-col items-center gap-2">
           <span>
-            © {new Date().getFullYear()} Glaminder. Todos los derechos reservados.
+            © {new Date().getFullYear()} Glaminder. Todos los derechos
+            reservados.
           </span>
           <span>
-            Hecho con <span className="text-[#D1A04D]">♥</span> por el equipo Glaminder
+            Hecho con <span className="text-[#D1A04D]">♥</span> por el equipo
+            Glaminder
           </span>
         </div>
       </footer>

@@ -277,7 +277,7 @@ const AppointmentBooking = () => {
   return (
     <div className="space-y-8">
       {/* Header del Negocio */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className=" backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg mr-4">
@@ -296,7 +296,7 @@ const AppointmentBooking = () => {
       </div>
 
       {/* Progress Steps */}
-      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg">
+      <div className="bg-black/90 backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-lg">
         <div className="flex justify-center">
           <div className="flex space-x-4">
             {[1, 2, 3, 4, 5, 6].map((stepNumber) => (
@@ -350,7 +350,7 @@ const AppointmentBooking = () => {
       )}
 
       {/* Form */}
-      <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl shadow-lg border border-[#31343A]/50 p-8">
+      <div className="bg-black/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/10 p-8">
         {/* Paso 1: Seleccionar Tienda */}
         {step === 1 && (
           <div className="mb-8">
@@ -369,7 +369,7 @@ const AppointmentBooking = () => {
                   className={`p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
                     selectedStore?.tienda_id === store.tienda_id
                       ? "border-[#D1A04D] bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 shadow-lg"
-                      : "border-[#31343A] bg-[#1F1F1F]/50 hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                      : "border-white/20 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] hover:border-[#D1A04D]/50 hover:from-[#3A3429] hover:to-[#2F2A1F]"
                   }`}
                 >
                   <div className="flex items-center mb-3">
@@ -407,7 +407,7 @@ const AppointmentBooking = () => {
                   className={`p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
                     selectedService?.servicio_id === service.servicio_id
                       ? "border-[#D1A04D] bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 shadow-lg"
-                      : "border-[#31343A] bg-[#1F1F1F]/50 hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                      : "border-white/20 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] hover:border-[#D1A04D]/50 hover:from-[#3A3429] hover:to-[#2F2A1F]"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -450,7 +450,7 @@ const AppointmentBooking = () => {
                   className={`p-6 border-2 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 ${
                     selectedEmployee?.empleado_id === employee.empleado_id
                       ? "border-[#D1A04D] bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 shadow-lg"
-                      : "border-[#31343A] bg-[#1F1F1F]/50 hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                      : "border-white/20 bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] hover:border-[#D1A04D]/50 hover:from-[#3A3429] hover:to-[#2F2A1F]"
                   }`}
                 >
                   <div className="flex items-center">
@@ -499,7 +499,7 @@ const AppointmentBooking = () => {
                         ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg transform scale-105 border-[#D1A04D]"
                         : day.isToday
                         ? "bg-[#D1A04D]/20 border-[#D1A04D]/50 text-[#D1A04D] hover:bg-[#D1A04D]/30 hover:border-[#D1A04D]"
-                        : "bg-[#1F1F1F]/50 border-[#31343A] text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:bg-[#1F1F1F]/70"
+                        : "bg-gradient-to-br from-[#2A2419] to-[#1F1A0F] border-white/20 text-[#F5F5F5] hover:border-[#D1A04D]/50 hover:from-[#3A3429] hover:to-[#2F2A1F]"
                     }
                   `}
                 >
@@ -523,7 +523,7 @@ const AppointmentBooking = () => {
                 }}
                 min={getMinAppointmentDate()}
                 max={getMaxAppointmentDate()}
-                className="w-full p-3 bg-[#1F1F1F]/50 border border-[#31343A] rounded-lg text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
+                className="w-full p-3 bg-black/70 border border-white/20 rounded-lg text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
                 required
               />
             </div>
@@ -566,7 +566,9 @@ const AppointmentBooking = () => {
                 selectedSchedule={selectedSchedule}
                 onScheduleSelect={(schedule) => {
                   if (!schedule.franja_id) {
-                    setError("El horario seleccionado no es válido. Intenta con otro horario.");
+                    setError(
+                      "El horario seleccionado no es válido. Intenta con otro horario."
+                    );
                     setSelectedSchedule(null);
                     return;
                   }
@@ -581,78 +583,85 @@ const AppointmentBooking = () => {
           </div>
         )}
 
-
         {/* Paso 6: Confirmación y resumen de la cita */}
-  {step === 6 && selectedStore && selectedService && selectedEmployee && selectedDate && selectedSchedule && selectedSchedule.franja_id && (
-          <div className="bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 rounded-xl p-6 mb-8 border border-[#D1A04D]/20">
-            <h3 className="font-semibold text-[#F5F5F5] mb-4 text-lg flex items-center">
-              <CheckCircleIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
-              Resumen de tu cita:
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-3">
-                <p className="flex justify-between">
-                  <span className="font-medium text-[#B0B3B8]">Tienda:</span>
-                  <span className="text-[#F5F5F5]">
-                    {selectedStore.tienda_nombre}
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span className="font-medium text-[#B0B3B8]">
-                    Servicio:
-                  </span>
-                  <span className="text-[#F5F5F5]">
-                    {selectedService.servicio_nombre}
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span className="font-medium text-[#B0B3B8]">
-                    Empleado:
-                  </span>
-                  <span className="text-[#F5F5F5]">
-                    {selectedEmployee.usuario_nombre} {selectedEmployee.usuario_apellido}
-                  </span>
-                </p>
+        {step === 6 &&
+          selectedStore &&
+          selectedService &&
+          selectedEmployee &&
+          selectedDate &&
+          selectedSchedule &&
+          selectedSchedule.franja_id && (
+            <div className="bg-gradient-to-br from-[#D1A04D]/10 to-[#B47B1C]/10 rounded-xl p-6 mb-8 border border-[#D1A04D]/20">
+              <h3 className="font-semibold text-[#F5F5F5] mb-4 text-lg flex items-center">
+                <CheckCircleIcon className="w-5 h-5 mr-2 text-[#D1A04D]" />
+                Resumen de tu cita:
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="space-y-3">
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Tienda:</span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedStore.tienda_nombre}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">
+                      Servicio:
+                    </span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedService.servicio_nombre}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">
+                      Empleado:
+                    </span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedEmployee.usuario_nombre}{" "}
+                      {selectedEmployee.usuario_apellido}
+                    </span>
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Fecha:</span>
+                    <span className="text-[#F5F5F5]">
+                      {formatDateForDisplay(selectedDate)}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Hora:</span>
+                    <span className="text-[#F5F5F5]">
+                      {selectedSchedule.slot_inicio ||
+                        selectedSchedule.horario_hora_inicio}
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="font-medium text-[#B0B3B8]">Precio:</span>
+                    <span className="text-[#D1A04D] font-bold text-lg">
+                      ${selectedService.servicio_precio}
+                    </span>
+                  </p>
+                </div>
               </div>
-              <div className="space-y-3">
-                <p className="flex justify-between">
-                  <span className="font-medium text-[#B0B3B8]">Fecha:</span>
-                  <span className="text-[#F5F5F5]">
-                    {formatDateForDisplay(selectedDate)}
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span className="font-medium text-[#B0B3B8]">Hora:</span>
-                  <span className="text-[#F5F5F5]">
-                    {selectedSchedule.slot_inicio || selectedSchedule.horario_hora_inicio}
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span className="font-medium text-[#B0B3B8]">Precio:</span>
-                  <span className="text-[#D1A04D] font-bold text-lg">
-                    ${selectedService.servicio_precio}
-                  </span>
-                </p>
-              </div>
+              <form onSubmit={handleSubmit} className="mt-8 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      Agendando...
+                    </>
+                  ) : (
+                    "Confirmar Cita"
+                  )}
+                </button>
+              </form>
             </div>
-            <form onSubmit={handleSubmit} className="mt-8 flex justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    Agendando...
-                  </>
-                ) : (
-                  "Confirmar Cita"
-                )}
-              </button>
-            </form>
-          </div>
-        )}
+          )}
 
         {/* Botones de navegación */}
         <div className="flex justify-between">
@@ -662,7 +671,7 @@ const AppointmentBooking = () => {
               if (step > 1) setStep(step - 1);
             }}
             disabled={step === 1}
-            className="px-8 py-4 bg-[#31343A] text-[#F5F5F5] rounded-xl hover:bg-[#2A2A2A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
+            className="px-8 py-4 bg-black/80 text-[#F5F5F5] rounded-xl hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100"
           >
             Anterior
           </button>
