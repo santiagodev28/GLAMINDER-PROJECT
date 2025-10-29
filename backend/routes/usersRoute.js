@@ -32,7 +32,7 @@ userRoutes.post("/", verifyToken, authorizeRoles(1), UserController.createUser);
 userRoutes.put(
   "/:usuario_id",
   verifyToken,
-  authorizeSelfOrRoles(1, 2),
+  authorizeSelfOrRoles(1, 2, 3, 4),
   UserController.updateUser
 );
 

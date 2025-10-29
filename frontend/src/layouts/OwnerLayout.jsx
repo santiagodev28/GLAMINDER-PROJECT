@@ -87,7 +87,7 @@ const LayoutOwner = ({ children }) => {
     <div className="min-h-screen flex app-background">
       {showModal && (
         <RoleChangeModal onClose={handleCloseModal} title="¡Felicidades!">
-          <p className="text-lg text-gray-700">
+          <p className="text-lg text-white mb-4">
             Tu rol ha sido actualizado a <strong>Propietario</strong>. Ahora
             puedes gestionar tu(s) negocio(s) desde este panel.
           </p>

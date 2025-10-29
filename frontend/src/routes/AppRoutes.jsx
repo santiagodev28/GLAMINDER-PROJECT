@@ -7,6 +7,8 @@ import EmployeeLayout from "../layouts/EmployeeLayout";
 // Importación de las páginas y componentes
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
+import ForgotPassword from "../features/auth/components/ForgotPassword";
+import ResetPassword from "../features/auth/components/ResetPassword";
 import AdminDashboard from "../features/admin/pages/AdminDashboard";
 import UserAdmin from "../features/admin/pages/UserAdmin";
 import BussinesAdmin from "../features/admin/pages/BussinesAdmin";
@@ -47,6 +49,11 @@ const AppRoutes = () => {
       <Route path="/ingresar" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/registrar" element={<Register />} />
+
+      {/* Rutas de recuperación de contraseña */}
+      <Route path="/olvide-contrasena" element={<ForgotPassword />} />
+      <Route path="/restablecer-contrasena/:token" element={<ResetPassword />} />
+
 
       {/* Layout de administrador */}
       <Route path="/admin" element={<AdminLayout />}>

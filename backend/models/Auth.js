@@ -1,5 +1,6 @@
-import { executeQuery, executeTransaction } from "../database/connectiondb.js";
+import { executeQuery } from "../database/connectiondb.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 class Auth {
     // Buscar usuario por correo electrónico
@@ -257,6 +258,55 @@ class Auth {
         // Remover contraseña del objeto de respuesta
         const { usuario_contrasena: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
+    }
+
+    // Recuperacion de contraseñas...
+
+    // Guardar token de restablecimiento (hasheado) con expiración
+    static async saveResetToken(usuario_id, rawToken) {
+        const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+        // 1 hora de validez
+        const updateQuery = `
+      UPDATE usuarios 
+      SET reset_token = ?, reset_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR)
+      WHERE usuario_id = ?
+    `;
+        const result = await executeQuery(updateQuery, [hashedToken, usuario_id]);
+        if (!result.success) {
+            throw new Error(`Error al guardar token de restablecimiento: ${result.error}`);
+        }
+        return true;
+    }
+
+    // Buscar usuario por token válido
+    static async findByToken(rawToken) {
+        const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+        const findQuery = `
+      SELECT * 
+      FROM usuarios 
+      WHERE reset_token = ? AND reset_expires IS NOT NULL AND reset_expires > NOW()
+      LIMIT 1
+    `;
+        const result = await executeQuery(findQuery, [hashedToken]);
+        if (!result.success) {
+            throw new Error(`Error al buscar por token: ${result.error}`);
+        }
+        return result.data[0] || null;
+    }
+
+    // Actualizar contraseña y limpiar token
+    static async updatePassword(usuario_id, newPassword) {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updateQuery = `
+      UPDATE usuarios
+      SET usuario_contrasena = ?, reset_token = NULL, reset_expires = NULL
+      WHERE usuario_id = ?
+    `;
+        const result = await executeQuery(updateQuery, [hashedPassword, usuario_id]);
+        if (!result.success) {
+            throw new Error(`Error al actualizar contraseña: ${result.error}`);
+        }
+        return true;
     }
 }
 

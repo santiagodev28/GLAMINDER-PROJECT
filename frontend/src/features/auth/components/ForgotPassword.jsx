@@ -1,64 +1,40 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../../services/authService.js";
+import { useState } from "react";
+import { forgotPassword } from "../../../services/authService.js";
 import { Link } from "react-router-dom";
-import SuccessMessage from "./SuccessMessage";
 import logo from "../../../assets/images/logo-2.png";
 import {
-  ExclamationCircleIcon,
-  ArrowPathIcon,
   AtSymbolIcon,
-  LockClosedIcon,
+  ArrowPathIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 
-// Componente para el formulario de login
-const LoginForm = () => {
+const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const registerSuccess = localStorage.getItem("registroExitoso");
-    if (registerSuccess === "true") {
-      setSuccess("¡Registro exitoso!");
-      setShowSuccess(true);
-      localStorage.removeItem("registroExitoso");
-
-      setTimeout(() => setShowSuccess(false), 2500);
-
-      setTimeout(() => setSuccess(""), 3000);
-    }
-  }, []);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setIsLoading(true);
 
     try {
-      const data = await loginUser(email, password);
-      if (!data) {
-        setError("Credenciales incorrectas.");
-        return;
+      const result = await forgotPassword(email);
+      
+      if (result.ok) {
+        setSuccess(
+          result.message || 
+          "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña."
+        );
+        setEmail("");
+      } else {
+        setError(result.message || "Error al enviar el correo de restablecimiento.");
       }
-
-      const { token, usuario } = data;
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("usuario", JSON.stringify(data.usuario));
-      localStorage.setItem("usuario_nombre", usuario.usuario_nombre);
-      localStorage.setItem("usuario_apellido", usuario.usuario_apellido);
-      localStorage.setItem("rol_id", usuario.rol_id);
-
-      if (usuario.rol_id === 1) navigate("/admin/dashboard");
-      else if (usuario.rol_id === 2) navigate("/propietario");
-      else if (usuario.rol_id === 3) navigate("/empleado");
-      else if (usuario.rol_id === 4) navigate("/cliente");
-    } catch (error) {
-      setError("Error al iniciar sesión. Inténtalo de nuevo.");
+    } catch (err) {
+      setError("Ocurrió un error inesperado. Inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -84,10 +60,10 @@ const LoginForm = () => {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-4xl font-bold text-[#F5F5F5] mb-1">
-                Bienvenido
+                ¿Olvidaste tu contraseña?
               </h1>
               <p className="text-[#B0B3B8] text-lg">
-                Inicie sesión en su cuenta
+                Te enviaremos un enlace de recuperación
               </p>
             </div>
             <img
@@ -96,9 +72,6 @@ const LoginForm = () => {
               className="h-30 w-auto drop-shadow-lg"
             />
           </div>
-
-          {/* Mensaje de éxito */}
-          {success && <SuccessMessage show={showSuccess} message={success} />}
 
           {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -122,50 +95,27 @@ const LoginForm = () => {
                   required
                   autoFocus
                   className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
-                  placeholder="@gmail.com"
+                  placeholder="tu@correo.com"
                 />
               </div>
             </div>
 
-            {/* Campo de contraseña */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-[#B0B3B8] mb-2"
-              >
-                Contraseña
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
+            {/* Mensaje de éxito */}
+            {success && (
+              <div className="bg-green-50/10 border border-green-500/30 rounded-xl p-4">
+                <div className="flex gap-2">
+                  <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
+                  <p className="text-sm text-green-300">{success}</p>
                 </div>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
-                  placeholder="••••••••"
-                />
               </div>
-              <div className="mt-2 text-center">
-                {/* Enlace de olvido de contraseña */}
-                <Link
-                  to="/olvide-contrasena"
-                  className="text-sm text-[#F5C76A] hover:text-[#D1A04D] transition-colors duration-200 underline decoration-2 underline-offset-2"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-            </div>
+            )}
 
             {/* Mensaje de error */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="bg-red-50/10 border border-red-500/30 rounded-xl p-4">
                 <div className="flex gap-2">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 " />
-                  <p className="text-sm text-red-600">{error}</p>
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+                  <p className="text-sm text-red-300">{error}</p>
                 </div>
               </div>
             )}
@@ -179,22 +129,22 @@ const LoginForm = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                  Iniciando sesión...
+                  Enviando...
                 </div>
               ) : (
-                "Iniciar sesión"
+                "Enviar enlace de recuperación"
               )}
             </button>
 
-            {/* Enlace de registro */}
+            {/* Enlace para regresar */}
             <div className="text-center pt-4">
               <p className="text-[#B0B3B8]">
-                ¿No tienes una cuenta?{" "}
+                ¿Recordaste tu contraseña?{" "}
                 <Link
-                  to="/registrar"
+                  to="/login"
                   className="font-semibold text-[#F5C76A] hover:text-[#D1A04D] transition-colors duration-200 underline decoration-2 underline-offset-2"
                 >
-                  Regístrese aquí
+                  Inicia sesión aquí
                 </Link>
               </p>
             </div>
@@ -212,4 +162,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default ForgotPassword;

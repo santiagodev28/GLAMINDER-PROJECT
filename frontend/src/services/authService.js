@@ -30,7 +30,39 @@ export const registerUser = async (userData) => {
     }
 };
 
+export const forgotPassword = async (email) => {
+    try {
+        const res = await api.post("/auth/olvide-contrasena", { usuario_correo: email });
+        return { ok: true, message: res.data.message };
+    } catch (error) {
+        console.error("Error al enviar correo de restablecimiento:", error);
+        return {
+            ok: false,
+            message:
+                error.response.data.message || "Error al enviar correo de restablecimiento",
+        };
+    }
+};
 
+export const resetPassword = async (token, newPassword, confirmNewPassword) => {
+    if (newPassword !== confirmNewPassword) {
+        return { ok: false, message: "Las contraseñas no coinciden." };
+    }
+    try {
+        const res = await api.post(`/auth/restablecer-contrasena/${token}`, {
+            newPassword,
+            confirmNewPassword,
+        });
+        return { ok: true, message: res.data.message };
+    } catch (error) {
+        console.error("Error al restablecer contraseña:", error);
+        return {
+            ok: false,
+            message:
+                error.response.data.message || "Error al restablecer contraseña",
+        };
+    }
+};
 
 function useAuth() {
   const navigate = useNavigate();

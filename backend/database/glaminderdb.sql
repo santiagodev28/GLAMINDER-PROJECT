@@ -26,7 +26,7 @@ CREATE TABLE `usuarios` (
   `usuario_nombre` VARCHAR(100),
   `usuario_apellido` VARCHAR(100),
   `usuario_correo` VARCHAR(150) UNIQUE,
-  `usuario_telefono` VARCHAR(10),
+  `usuario_telefono` VARCHAR(20),
   `usuario_contrasena` VARCHAR(255),
   `usuario_fecha_registro` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `usuario_estado` BOOLEAN DEFAULT 1,  
@@ -133,7 +133,7 @@ CREATE TABLE `tiendas` (
   `tienda_hora_apertura` TIME,
   `tienda_hora_cierre` TIME,
   `tienda_fecha_apertura` DATE,
-  `tienda_estado` BOOLEAN DEFAULT 1,
+  `tienda_estado` BOOLEAN DEFAULT 1
 );
 
 -- Datos Tiendas
@@ -315,6 +315,14 @@ ALTER TABLE `franjas_horarias` ADD FOREIGN KEY (`empleado_id`) REFERENCES `emple
 ALTER TABLE `franjas_horarias` ADD FOREIGN KEY (`tienda_id`) REFERENCES `tiendas`(`tienda_id`);
 
 ALTER TABLE `solicitudes_propietario` ADD FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`);
+
+
+-- Agregar campos para restablecimiento de contraseña
+ALTER TABLE usuarios
+  ADD COLUMN reset_token VARCHAR(64) NULL,
+  ADD COLUMN reset_expires DATETIME NULL,
+  ADD INDEX idx_reset_token (reset_token),
+  ADD INDEX idx_reset_expires (reset_expires);
 
 COMMIT;
 -- -- Fin de la transacción
