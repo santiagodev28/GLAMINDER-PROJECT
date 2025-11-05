@@ -1,7 +1,8 @@
+import 'dotenv/config';
 import app from "./app.js";
 import { testConnection } from "./database/connectiondb.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT
 
 // Inicialización del servidor
 app.listen(PORT, async () => {
