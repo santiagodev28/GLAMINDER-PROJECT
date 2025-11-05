@@ -10,7 +10,7 @@ npm-debug.log*
 .DS_Store
 
 # Variables de entorno
-.env
+.env.local
 
 # Producción
 dist/
