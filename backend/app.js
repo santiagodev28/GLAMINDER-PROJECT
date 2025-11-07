@@ -1,6 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import helmet from "helmet";
+import csrf from "csurf";
+import { apiLimiter } from "./middlewares/rateLimiter.js";
 
 // Importar rutas
 import userRoutes from "./routes/usersRoute.js";
@@ -21,18 +24,47 @@ import servicioCategoriaRoutes from "./routes/servicioCategoriaRoute.js";
 
 const app = express();
 
-// Middleware
-app.use(express.json());
+// Configuración de dotenv (debe ir primero)
+dotenv.config();
+
+// Configuración de Helmet para seguridad de headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Permitir recursos externos si es necesario
+}));
 
 // Configuración de CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true, // Necesario para CSRF
   })
 );
 
-// Configuración de dotenv
-dotenv.config();
+// Middleware para parsear JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Configuración de CSRF (solo para rutas que lo requieran)
+// Nota: CSRF puede causar problemas con APIs REST puras, 
+// así que lo aplicaremos selectivamente si es necesario
+const csrfProtection = csrf({ 
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  }
+});
+
+// Rate limiting general para todas las rutas
+app.use('/api', apiLimiter);
 
 // Rutas
 app.use("/api/usuarios", userRoutes);

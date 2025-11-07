@@ -1,13 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { resetPassword } from "../../../services/authService.js";
+import { toast } from "react-toastify";
 import logo from "../../../assets/images/logo-2.png";
-import {
-  LockClosedIcon,
-  ArrowPathIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { LockClosedIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -15,43 +11,77 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [passwordReset, setPasswordReset] = useState(false);
+
+  // Decodificar el token si viene codificado en la URL
+  useEffect(() => {
+    if (token) {
+      try {
+        // El token puede venir codificado, intentar decodificarlo
+        const decodedToken = decodeURIComponent(token);
+        // Si el token cambió, actualizar la URL (aunque esto no es necesario si el backend lo maneja)
+      } catch (error) {
+        console.error("Error al decodificar token:", error);
+      }
+    }
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    e.stopPropagation();
 
     // Validaciones básicas
     if (newPassword.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres.");
+      toast.error("La contraseña debe tener al menos 8 caracteres.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
-      setError("Las contraseñas no coinciden.");
+      toast.error("Las contraseñas no coinciden.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const result = await resetPassword(token, newPassword, confirmNewPassword);
-      
+      // Decodificar el token antes de enviarlo
+      const decodedToken = token ? decodeURIComponent(token) : token;
+      const result = await resetPassword(
+        decodedToken,
+        newPassword,
+        confirmNewPassword
+      );
+
       if (result.ok) {
-        setSuccess(
-          result.message || "Contraseña restablecida exitosamente."
+        setPasswordReset(true);
+        toast.success(
+          result.message || "Contraseña restablecida exitosamente.",
+          {
+            position: "top-right",
+            autoClose: 3000,
+          }
         );
         // Redirigir al login después de 2 segundos
         setTimeout(() => {
-          navigate("/login");
+          navigate("/ingresar");
         }, 2000);
       } else {
-        setError(result.message || "Error al restablecer la contraseña.");
+        toast.error(result.message || "Error al restablecer la contraseña.", {
+          position: "top-right",
+          autoClose: 5000,
+        });
       }
     } catch (err) {
-      setError("Ocurrió un error inesperado. Inténtalo de nuevo.");
+      toast.error("Ocurrió un error inesperado. Inténtalo de nuevo.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -141,30 +171,15 @@ const ResetPassword = () => {
               </div>
             </div>
 
-            {/* Mensaje de éxito */}
-            {success && (
-              <div className="bg-green-50/10 border border-green-500/30 rounded-xl p-4">
-                <div className="flex gap-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
-                  <p className="text-sm text-green-300">{success}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Mensaje de error */}
-            {error && (
-              <div className="bg-red-50/10 border border-red-500/30 rounded-xl p-4">
-                <div className="flex gap-2">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
-                  <p className="text-sm text-red-300">{error}</p>
-                </div>
-              </div>
+            {/* Mensaje informativo después de restablecer */}
+            {passwordReset && (
+              <div className="bg-green-50/10 border border-green-500/30 rounded-xl p-4"></div>
             )}
 
             {/* Botón de envío */}
             <button
               type="submit"
-              disabled={isLoading || success}
+              disabled={isLoading || passwordReset}
               className="w-full font-semibold py-3 px-6 rounded-xl bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               {isLoading ? (
@@ -172,7 +187,7 @@ const ResetPassword = () => {
                   <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                   Restableciendo...
                 </div>
-              ) : success ? (
+              ) : passwordReset ? (
                 "Redirigiendo al login..."
               ) : (
                 "Restablecer contraseña"
@@ -184,7 +199,7 @@ const ResetPassword = () => {
               <p className="text-[#B0B3B8]">
                 ¿Recordaste tu contraseña?{" "}
                 <Link
-                  to="/login"
+                  to="/ingresar"
                   className="font-semibold text-[#F5C76A] hover:text-[#D1A04D] transition-colors duration-200 underline decoration-2 underline-offset-2"
                 >
                   Inicia sesión aquí

@@ -1,12 +1,18 @@
 import Auth from "../models/Auth.js";
+import RefreshToken from "../models/RefreshToken.js";
+import TokenBlacklist from "../models/TokenBlacklist.js";
+import Audit from "../models/Audit.js";
 import crypto from "crypto";
-import { sendResetEmail } from "../utils/emailService.js";
+import { sendResetEmail, sendVerificationEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
 // Controlador de autenticación
 class AuthController {
   static async userLogin(req, res) {
     const { usuario_correo, usuario_contrasena } = req.body;
+    const ip_address = req.ip || req.connection.remoteAddress;
+    const user_agent = req.get('user-agent');
 
     if (!usuario_correo || !usuario_contrasena) {
       return res
@@ -21,19 +27,121 @@ class AuthController {
       );
 
       if (!result.success) {
+        // Intentar obtener el usuario_id si el email existe (para auditoría)
+        let usuario_id_audit = null;
+        try {
+          const userByEmail = await Auth.findUserByEmail(usuario_correo);
+          if (userByEmail) {
+            usuario_id_audit = userByEmail.usuario_id;
+          }
+        } catch (err) {
+          // Si no se puede obtener, usar null
+          console.log('[userLogin] No se pudo obtener usuario_id para auditoría');
+        }
+
+        // Registrar intento fallido de login
+        try {
+          await Audit.logAction({
+            usuario_id: usuario_id_audit,
+            accion: 'LOGIN_FAILED',
+            tabla_afectada: 'usuarios',
+            registro_id: usuario_id_audit,
+            datos_nuevos: {
+              intento_email: usuario_correo,
+              razon: result.message || 'Credenciales incorrectas'
+            },
+            ip_address,
+            user_agent,
+          });
+        } catch (auditError) {
+          console.error('Error al registrar auditoría:', auditError.message || auditError);
+        }
         return res.status(401).json({ message: result.message });
       }
 
       const user = result.user;
-      const token = jwt.sign(
-        { usuario_id: user.usuario_id, rol: user.rol_id },
+
+      // Verificar si el email está verificado
+      if (!user.email_verificado) {
+        // Registrar intento de login con email no verificado
+        try {
+          await Audit.logAction({
+            usuario_id: user.usuario_id,
+            accion: 'LOGIN_FAILED',
+            tabla_afectada: 'usuarios',
+            registro_id: user.usuario_id,
+            datos_nuevos: {
+              razon: 'Email no verificado'
+            },
+            ip_address,
+            user_agent,
+          });
+        } catch (auditError) {
+          console.error('Error al registrar auditoría:', auditError.message || auditError);
+        }
+        return res.status(403).json({ 
+          message: "Por favor verifica tu correo electrónico antes de iniciar sesión.",
+          email_verificado: false
+        });
+      }
+
+      // Generar JTI único para el access token
+      const accessJti = uuidv4();
+      const accessToken = jwt.sign(
+        { 
+          usuario_id: user.usuario_id, 
+          rol: user.rol_id,
+          jti: accessJti,
+          type: 'access'
+        },
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
 
+      // Generar refresh token
+      const refreshJti = uuidv4();
+      const refreshToken = jwt.sign(
+        {
+          usuario_id: user.usuario_id,
+          rol: user.rol_id,
+          jti: refreshJti,
+          type: 'refresh'
+        },
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      // Guardar refresh token en BD
+      const refreshExpires = new Date();
+      refreshExpires.setDate(refreshExpires.getDate() + 7); // 7 días
+
+      await RefreshToken.saveToken({
+        usuario_id: user.usuario_id,
+        token: refreshToken,
+        jti: refreshJti,
+        fecha_expiracion: refreshExpires,
+        ip_address,
+        user_agent,
+      });
+
+      // Registrar login exitoso en auditoría
+      try {
+        await Audit.logAction({
+          usuario_id: user.usuario_id,
+          accion: 'LOGIN',
+          tabla_afectada: 'usuarios',
+          registro_id: user.usuario_id,
+          ip_address,
+          user_agent,
+        });
+      } catch (auditError) {
+        console.error('Error al registrar auditoría:', auditError);
+      }
+
       res.status(200).json({
         message: "Inicio de sesión exitoso.",
-        token,
+        accessToken,
+        refreshToken,
         usuario: user,
       });
     } catch (error) {
@@ -53,7 +161,11 @@ class AuthController {
         rol_id,
         tienda_id,
         empleado_especialidad,
+        acepta_terminos,
       } = req.body;
+
+      const ip_address = req.ip || req.connection.remoteAddress;
+      const user_agent = req.get('user-agent');
 
       // Validar campos obligatorios
       if (
@@ -68,6 +180,13 @@ class AuthController {
         });
       }
 
+      // Validar aceptación de términos
+      if (!acepta_terminos) {
+        return res.status(400).json({
+          message: "Debes aceptar los términos y condiciones para registrarte.",
+        });
+      }
+
       // Crear el usuario
       const result = await Auth.createUser({
         usuario_nombre,
@@ -78,11 +197,62 @@ class AuthController {
         rol_id,
         tienda_id,
         empleado_especialidad,
+        acepta_terminos,
+        ip_address,
+        user_agent,
       });
 
+      // Enviar correo de verificación
+      const appBase = process.env.APP_BASE_URL || "http://localhost:5173";
+      // El token ya viene sin hashear desde Auth.createUser
+      const rawToken = result.data.emailVerificationToken;
+      console.log(`[userRegister] Token sin hashear (primeros 8 chars): ${rawToken ? rawToken.substring(0, 8) : 'null'}...`);
+      
+      // Codificar el token para la URL
+      const encodedToken = encodeURIComponent(rawToken);
+      const verificationURL = `${appBase}/verificar-email/${encodedToken}`;
+      
+      console.log(`[userRegister] URL de verificación generada: ${verificationURL.substring(0, 80)}...`);
+
+      try {
+        await sendVerificationEmail(
+          result.data.usuario_correo,
+          verificationURL,
+          result.data.usuario_nombre
+        );
+        console.log(`[userRegister] ✅ Correo de verificación enviado a ${result.data.usuario_correo}`);
+      } catch (mailErr) {
+        console.log(`[DEV] ⚠️ No se pudo enviar correo de verificación (${mailErr.message})`);
+        console.log(`[DEV] 🔗 Enlace de verificación para ${result.data.usuario_correo}:`);
+        console.log(`[DEV] ${verificationURL}`);
+      }
+
+      // Registrar creación de usuario en auditoría
+      try {
+        await Audit.logAction({
+          usuario_id: result.data.userId,
+          accion: 'CREATE',
+          tabla_afectada: 'usuarios',
+          registro_id: result.data.userId,
+          datos_nuevos: {
+            usuario_nombre,
+            usuario_apellido,
+            usuario_correo,
+            rol_id: rol_id || 4,
+          },
+          ip_address: req.ip || req.connection.remoteAddress,
+          user_agent: req.get('user-agent'),
+        });
+      } catch (auditError) {
+        console.error('Error al registrar auditoría:', auditError);
+      }
+
       res.status(201).json({
-        message: "Usuario registrado exitosamente.",
-        data: result.data,
+        message: "Usuario registrado exitosamente. Por favor verifica tu correo electrónico.",
+        data: {
+          ...result.data,
+          emailVerificationToken: undefined, // No enviar el token en la respuesta
+        },
       });
     } catch (error) {
       if (error.message.includes("registrado")) {
@@ -169,7 +339,9 @@ class AuthController {
 
       // Usa tu URL de frontend y la ruta que ya mapeaste (/restablecer-contrasena/:token)
       const appBase = process.env.APP_BASE_URL || "http://localhost:5173";
-      const resetURL = `${appBase}/restablecer-contrasena/${token}`;
+      // Codificar el token para la URL
+      const encodedToken = encodeURIComponent(token);
+      const resetURL = `${appBase}/restablecer-contrasena/${encodedToken}`;
       console.log(`[forgotPassword] URL de reset generada: ${resetURL}`);
 
       // Enviar correo (si tienes EMAIL_USER/EMAIL_PASS configurados)
@@ -194,10 +366,17 @@ class AuthController {
   }
 
   static async resetPassword(req, res) {
-    const { token } = req.params;
+    let { token } = req.params;
     const { newPassword, confirmNewPassword } = req.body;
 
-    console.log(`[resetPassword] Token recibido (primeros 8 chars): ${token.substring(0, 8)}...`);
+    // Decodificar el token si viene codificado en la URL
+    try {
+      token = decodeURIComponent(token);
+    } catch (error) {
+      console.log('[resetPassword] Token ya decodificado o error al decodificar');
+    }
+
+    console.log(`[resetPassword] Token recibido (primeros 8 chars): ${token ? token.substring(0, 8) : 'null'}...`);
     console.log(`[resetPassword] Contraseñas coinciden: ${newPassword === confirmNewPassword}`);
 
     if (newPassword !== confirmNewPassword) {
@@ -213,11 +392,240 @@ class AuthController {
       console.log(`[resetPassword] Usuario encontrado: ${user.usuario_id}`);
       await Auth.updatePassword(user.usuario_id, newPassword);
       console.log('[resetPassword] Contraseña actualizada exitosamente');
+
+      // Registrar cambio de contraseña en auditoría
+      try {
+        await Audit.logAction({
+          usuario_id: user.usuario_id,
+          accion: 'PASSWORD_RESET',
+          tabla_afectada: 'usuarios',
+          registro_id: user.usuario_id,
+          ip_address: req.ip || req.connection.remoteAddress,
+          user_agent: req.get('user-agent'),
+        });
+      } catch (auditError) {
+        console.error('Error al registrar auditoría:', auditError);
+      }
+
       res.json({ message: "Contraseña restablecida exitosamente." });
     } catch (error) {
       console.error("[resetPassword] ❌ ERROR:", error.message);
       console.error(error.stack);
       res.status(500).json({ message: "Error al restablecer contraseña." });
+    }
+  }
+
+  // Verificar email con token
+  static async verifyEmail(req, res) {
+    let { token } = req.params;
+
+    console.log(`[verifyEmail] Token recibido en params (raw): ${token ? token.substring(0, 20) : 'null'}...`);
+
+    // Decodificar el token si está codificado en la URL
+    try {
+      const decoded = decodeURIComponent(token);
+      console.log(`[verifyEmail] Token después de decodeURIComponent: ${decoded ? decoded.substring(0, 20) : 'null'}...`);
+      token = decoded;
+    } catch (e) {
+      // Si falla la decodificación, usar el token original
+      console.log('[verifyEmail] Token no necesita decodificación o ya está decodificado');
+    }
+
+    console.log(`[verifyEmail] Token final a procesar (primeros 8 chars): ${token ? token.substring(0, 8) : 'null'}...`);
+
+    if (!token || token.trim() === '') {
+      return res.status(400).json({ message: "Token de verificación no proporcionado." });
+    }
+
+    try {
+      const result = await Auth.verifyEmail(token);
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.message });
+      }
+
+      res.json({ message: result.message });
+    } catch (error) {
+      console.error("Error al verificar email:", error.message);
+      res.status(500).json({ message: "Error al verificar email." });
+    }
+  }
+
+  // Reenviar token de verificación
+  static async resendVerificationEmail(req, res) {
+    const { usuario_correo } = req.body;
+
+    if (!usuario_correo) {
+      return res.status(400).json({ message: "Correo electrónico requerido." });
+    }
+
+    try {
+      const result = await Auth.resendVerificationToken(usuario_correo);
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.message });
+      }
+
+      // Enviar correo
+      const appBase = process.env.APP_BASE_URL || "http://localhost:5173";
+      // Codificar el token para la URL
+      const encodedToken = encodeURIComponent(result.emailVerificationToken);
+      const verificationURL = `${appBase}/verificar-email/${encodedToken}`;
+
+      try {
+        const user = await Auth.findUserByEmail(usuario_correo);
+        await sendVerificationEmail(
+          usuario_correo,
+          verificationURL,
+          user.usuario_nombre
+        );
+      } catch (mailErr) {
+        console.log(`[DEV] ⚠️ No se pudo enviar correo (${mailErr.message})`);
+        console.log(`[DEV] 🔗 Enlace de verificación: ${verificationURL}`);
+      }
+
+      res.json({ message: "Token de verificación reenviado. Por favor revisa tu correo." });
+    } catch (error) {
+      console.error("Error al reenviar token:", error.message);
+      res.status(500).json({ message: "Error al reenviar token de verificación." });
+    }
+  }
+
+  // Refresh access token
+  static async refreshToken(req, res) {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token requerido." });
+    }
+
+    try {
+      // Verificar que el refresh token existe y es válido
+      const storedToken = await RefreshToken.findByToken(refreshToken);
+
+      if (!storedToken) {
+        return res.status(401).json({ message: "Refresh token inválido o expirado." });
+      }
+
+      // Verificar el JWT
+      let decoded;
+      try {
+        decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET);
+      } catch (jwtError) {
+        return res.status(401).json({ message: "Refresh token inválido." });
+      }
+
+      // Verificar que el JTI coincide
+      if (decoded.jti !== storedToken.jti) {
+        return res.status(401).json({ message: "Refresh token inválido." });
+      }
+
+      // Generar nuevo access token
+      const accessJti = uuidv4();
+      const newAccessToken = jwt.sign(
+        {
+          usuario_id: decoded.usuario_id,
+          rol: decoded.rol,
+          jti: accessJti,
+          type: 'access'
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      res.json({
+        accessToken: newAccessToken,
+        message: "Token renovado exitosamente."
+      });
+    } catch (error) {
+      console.error("Error al refrescar token:", error.message);
+      res.status(500).json({ message: "Error al refrescar token." });
+    }
+  }
+
+  // Cerrar sesión (invalidar tokens)
+  static async logout(req, res) {
+    const user = req.user; // Del middleware verifyToken
+    const { refreshToken } = req.body;
+
+    try {
+      // Si se proporciona refresh token, revocarlo
+      if (refreshToken) {
+        await RefreshToken.revokeToken(refreshToken);
+      }
+
+      // Si hay un token en el header, agregarlo a la blacklist
+      const token = req.headers["authorization"]?.split(" ")[1];
+      if (token && user) {
+        try {
+          const decoded = jwt.decode(token);
+          if (decoded && decoded.jti) {
+            const expiresAt = new Date(decoded.exp * 1000);
+            await TokenBlacklist.addToken({
+              token_jti: decoded.jti,
+              usuario_id: user.usuario_id,
+              token_type: 'access',
+              fecha_expiracion: expiresAt,
+            });
+          }
+        } catch (error) {
+          console.error('Error al agregar token a blacklist:', error);
+        }
+      }
+
+      // Registrar logout en auditoría
+      if (user) {
+        try {
+          await Audit.logAction({
+            usuario_id: user.usuario_id,
+            accion: 'LOGOUT',
+            tabla_afectada: 'usuarios',
+            registro_id: user.usuario_id,
+            ip_address: req.ip || req.connection.remoteAddress,
+            user_agent: req.get('user-agent'),
+          });
+        } catch (auditError) {
+          console.error('Error al registrar auditoría:', auditError);
+        }
+      }
+
+      res.json({ message: "Sesión cerrada exitosamente." });
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error.message);
+      res.status(500).json({ message: "Error al cerrar sesión." });
+    }
+  }
+
+  // Cerrar sesión en todos los dispositivos
+  static async logoutAll(req, res) {
+    const user = req.user; // Del middleware verifyToken
+
+    if (!user) {
+      return res.status(401).json({ message: "Usuario no autenticado." });
+    }
+
+    try {
+      // Invalidar todos los tokens del usuario
+      await TokenBlacklist.blacklistAllUserTokens(user.usuario_id);
+
+      // Registrar logout en auditoría
+      try {
+        await Audit.logAction({
+          usuario_id: user.usuario_id,
+          accion: 'LOGOUT_ALL',
+          tabla_afectada: 'usuarios',
+          registro_id: user.usuario_id,
+          ip_address: req.ip || req.connection.remoteAddress,
+          user_agent: req.get('user-agent'),
+        });
+      } catch (auditError) {
+        console.error('Error al registrar auditoría:', auditError);
+      }
+
+      res.json({ message: "Sesiones cerradas en todos los dispositivos exitosamente." });
+    } catch (error) {
+      console.error("Error al cerrar todas las sesiones:", error.message);
+      res.status(500).json({ message: "Error al cerrar todas las sesiones." });
     }
   }
 }

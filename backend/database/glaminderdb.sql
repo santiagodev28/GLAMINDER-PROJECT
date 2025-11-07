@@ -324,5 +324,113 @@ ALTER TABLE usuarios
   ADD INDEX idx_reset_token (reset_token),
   ADD INDEX idx_reset_expires (reset_expires);
 
+-- Agregar campos para verificación de email
+ALTER TABLE usuarios
+  ADD COLUMN email_verificado BOOLEAN DEFAULT 0,
+  ADD COLUMN email_verification_token VARCHAR(64) NULL,
+  ADD COLUMN email_verification_expires DATETIME NULL,
+  ADD INDEX idx_email_verification_token (email_verification_token),
+  ADD INDEX idx_email_verification_expires (email_verification_expires);
+
+-- Tabla de auditoría para rastrear acciones críticas
+CREATE TABLE IF NOT EXISTS `auditoria` (
+  `auditoria_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT NULL COMMENT 'NULL para acciones sin usuario (ej: login fallido)',
+  `accion` VARCHAR(100) NOT NULL COMMENT 'CREATE, UPDATE, DELETE, LOGIN, LOGOUT, LOGIN_FAILED, etc.',
+  `tabla_afectada` VARCHAR(100) NOT NULL COMMENT 'usuarios, negocios, citas, etc.',
+  `registro_id` INT NULL COMMENT 'ID del registro afectado',
+  `datos_anteriores` JSON NULL COMMENT 'Datos antes de la modificación',
+  `datos_nuevos` JSON NULL COMMENT 'Datos después de la modificación',
+  `ip_address` VARCHAR(45) NULL,
+  `user_agent` TEXT NULL,
+  `fecha_accion` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_usuario_id (usuario_id),
+  INDEX idx_tabla_afectada (tabla_afectada),
+  INDEX idx_fecha_accion (fecha_accion),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabla para blacklist de tokens (invalidación de tokens)
+CREATE TABLE IF NOT EXISTS `token_blacklist` (
+  `token_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `token_jti` VARCHAR(255) NOT NULL COMMENT 'JWT ID del token',
+  `usuario_id` INT NOT NULL,
+  `token_type` ENUM('access', 'refresh') DEFAULT 'access',
+  `fecha_expiracion` DATETIME NOT NULL,
+  `fecha_creacion` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_token_jti (token_jti),
+  INDEX idx_usuario_id (usuario_id),
+  INDEX idx_fecha_expiracion (fecha_expiracion),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabla para refresh tokens
+CREATE TABLE IF NOT EXISTS `refresh_tokens` (
+  `refresh_token_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT NOT NULL,
+  `token` VARCHAR(255) NOT NULL UNIQUE,
+  `jti` VARCHAR(255) NOT NULL UNIQUE COMMENT 'JWT ID único',
+  `fecha_creacion` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `fecha_expiracion` DATETIME NOT NULL,
+  `revocado` BOOLEAN DEFAULT 0,
+  `ip_address` VARCHAR(45) NULL,
+  `user_agent` TEXT NULL,
+  INDEX idx_usuario_id (usuario_id),
+  INDEX idx_token (token),
+  INDEX idx_jti (jti),
+  INDEX idx_fecha_expiracion (fecha_expiracion),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabla para almacenar consentimientos de usuarios
+CREATE TABLE IF NOT EXISTS `consentimientos` (
+  `consentimiento_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT NOT NULL,
+  `tipo_consentimiento` VARCHAR(100) NOT NULL COMMENT 'TERMINOS_CONDICIONES, POLITICA_PRIVACIDAD, MARKETING, etc.',
+  `version` VARCHAR(20) NOT NULL COMMENT 'Versión del documento aceptado (ej: 1.0, 2025-01)',
+  `aceptado` BOOLEAN DEFAULT 1,
+  `ip_address` VARCHAR(45) NULL,
+  `user_agent` TEXT NULL,
+  `fecha_consentimiento` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `fecha_revocacion` DATETIME NULL COMMENT 'Fecha en que el usuario revocó el consentimiento',
+  INDEX idx_usuario_id (usuario_id),
+  INDEX idx_tipo_consentimiento (tipo_consentimiento),
+  INDEX idx_fecha_consentimiento (fecha_consentimiento),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Modificar la columna usuario_id para permitir NULL
+ALTER TABLE `auditoria` 
+  MODIFY COLUMN `usuario_id` INT NULL COMMENT 'NULL para acciones sin usuario (ej: login fallido)';
+
+-- Eliminar la foreign key existente
+ALTER TABLE `auditoria` 
+  DROP FOREIGN KEY `auditoria_ibfk_1`;
+
+-- Recrear la foreign key con ON DELETE SET NULL
+ALTER TABLE `auditoria` 
+  ADD CONSTRAINT `fk_auditoria_usuario` 
+  FOREIGN KEY (`usuario_id`) 
+  REFERENCES `usuarios`(`usuario_id`) 
+  ON DELETE SET NULL;
+
+-- Tabla para almacenar consentimientos de usuarios
+CREATE TABLE IF NOT EXISTS `consentimientos` (
+  `consentimiento_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id` INT NOT NULL,
+  `tipo_consentimiento` VARCHAR(100) NOT NULL COMMENT 'TERMINOS_CONDICIONES, POLITICA_PRIVACIDAD, MARKETING, etc.',
+  `version` VARCHAR(20) NOT NULL COMMENT 'Versión del documento aceptado (ej: 1.0, 2025-01)',
+  `aceptado` BOOLEAN DEFAULT 1,
+  `ip_address` VARCHAR(45) NULL,
+  `user_agent` TEXT NULL,
+  `fecha_consentimiento` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `fecha_revocacion` DATETIME NULL COMMENT 'Fecha en que el usuario revocó el consentimiento',
+  INDEX idx_usuario_id (usuario_id),
+  INDEX idx_tipo_consentimiento (tipo_consentimiento),
+  INDEX idx_fecha_consentimiento (fecha_consentimiento),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`usuario_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+  
 COMMIT;
 -- -- Fin de la transacción

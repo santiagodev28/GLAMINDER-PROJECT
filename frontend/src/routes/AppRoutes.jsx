@@ -9,6 +9,9 @@ import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
 import ForgotPassword from "../features/auth/components/ForgotPassword";
 import ResetPassword from "../features/auth/components/ResetPassword";
+import VerifyEmail from "../features/auth/components/VerifyEmail";
+import TerminosCondiciones from "../features/legal/pages/TerminosCondiciones";
+import PoliticaPrivacidad from "../features/legal/pages/PoliticaPrivacidad";
 import AdminDashboard from "../features/admin/pages/AdminDashboard";
 import UserAdmin from "../features/admin/pages/UserAdmin";
 import BussinesAdmin from "../features/admin/pages/BussinesAdmin";
@@ -54,6 +57,12 @@ const AppRoutes = () => {
       <Route path="/olvide-contrasena" element={<ForgotPassword />} />
       <Route path="/restablecer-contrasena/:token" element={<ResetPassword />} />
 
+      {/* Rutas de verificación de email */}
+      <Route path="/verificar-email/:token" element={<VerifyEmail />} />
+
+      {/* Rutas legales */}
+      <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
+      <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
 
       {/* Layout de administrador */}
       <Route path="/admin" element={<AdminLayout />}>

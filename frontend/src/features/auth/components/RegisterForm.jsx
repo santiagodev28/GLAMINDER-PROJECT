@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../../services/authService.js";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import logo from "../../../assets/images/logo-2.png";
 import {
   UserIcon,
@@ -24,12 +25,11 @@ const RegisterForm = () => {
     phone: "",
     password: "",
     confirmPassword: "",
+    aceptaTerminos: false,
   });
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -98,6 +98,12 @@ const RegisterForm = () => {
         }
         break;
 
+      case "aceptaTerminos":
+        if (!value) {
+          errorMsg = "Debes aceptar los términos y condiciones";
+        }
+        break;
+
       default:
         break;
     }
@@ -120,15 +126,39 @@ const RegisterForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Formatear teléfono automáticamente (300-000-0000)
+  const formatPhone = (value) => {
+    // Remover todo excepto números
+    const numbers = value.replace(/\D/g, '');
+    
+    // Limitar a 10 dígitos
+    const limitedNumbers = numbers.slice(0, 10);
+    
+    // Aplicar formato 300-000-0000
+    if (limitedNumbers.length <= 3) {
+      return limitedNumbers;
+    } else if (limitedNumbers.length <= 6) {
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
+    } else {
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3, 6)}-${limitedNumbers.slice(6)}`;
+    }
+  };
+
   // Manejar cambios en los campos
   const handleChange = (e) => {
-    const { id, value } = e.target;
+    const { id, value, type, checked } = e.target;
+    let fieldValue = type === "checkbox" ? checked : value;
 
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    // Formatear teléfono automáticamente
+    if (id === "phone" && type !== "checkbox") {
+      fieldValue = formatPhone(value);
+    }
+
+    setFormData((prev) => ({ ...prev, [id]: fieldValue }));
 
     // Solo validar si el campo ha sido tocado
     if (touched[id]) {
-      const errorMsg = validateField(id, value);
+      const errorMsg = validateField(id, fieldValue);
       setErrors((prev) => ({ ...prev, [id]: errorMsg }));
     }
   };
@@ -162,8 +192,6 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
     // Marcar todos los campos como tocados
     const allTouched = {};
@@ -174,6 +202,10 @@ const RegisterForm = () => {
 
     // Validar formulario
     if (!validateForm()) {
+      toast.error("Por favor corrige los errores en el formulario.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
@@ -186,17 +218,32 @@ const RegisterForm = () => {
         usuario_correo: formData.email,
         usuario_contrasena: formData.password,
         usuario_telefono: formData.phone,
+        acepta_terminos: formData.aceptaTerminos,
       });
 
       if (res?.ok) {
-        setSuccess(res.message || "Usuario registrado exitosamente.");
+        toast.success(
+          res.message || 
+          "Usuario registrado exitosamente. Por favor verifica tu correo electrónico antes de iniciar sesión.",
+          {
+            position: "top-right",
+            autoClose: 6000,
+          }
+        );
         localStorage.setItem("registroExitoso", "true");
-        setTimeout(() => navigate("/ingresar"), 1000);
+        localStorage.setItem("emailRegistrado", formData.email);
+        setTimeout(() => navigate("/ingresar"), 3000);
       } else {
-        setError(res?.message || "Error al registrar el usuario.");
+        toast.error(res?.message || "Error al registrar el usuario.", {
+          position: "top-right",
+          autoClose: 5000,
+        });
       }
     } catch (error) {
-      setError("Error al registrar el usuario. Inténtalo de nuevo.");
+      toast.error("Error al registrar el usuario. Inténtalo de nuevo.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -205,7 +252,7 @@ const RegisterForm = () => {
   // Función para obtener la clase del borde del input
   const getInputBorderClass = (fieldName) => {
     if (!touched[fieldName]) {
-      return "border-gray-300";
+      return "border-[#31343A]";
     }
     if (errors[fieldName]) {
       return "border-red-500 focus:border-red-500 focus:ring-red-500";
@@ -233,7 +280,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-4">
       {/* Imagen de fondo */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -246,29 +293,29 @@ const RegisterForm = () => {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Contenido del formulario */}
-      <div className="relative z-10 max-w-2xl w-full">
+      <div className="relative z-10 max-w-2xl w-full px-4">
         {/* Logo y título */}
         <div className="text-center mb-4">
           <div className="flex justify-center">
             <img
               src={logo}
               alt="Glaminder Logo"
-              className="h-28 w-auto drop-shadow-lg"
+              className="h-20 w-auto drop-shadow-lg"
             />
           </div>
-          <h1 className="text-4xl font-bold text-[#F5F5F5] mb-1">
+          <h1 className="text-3xl font-bold text-[#F5F5F5] mb-1">
             Crear cuenta
           </h1>
-          <p className="text-[#B0B3B8] text-lg">
+          <p className="text-[#B0B3B8] text-base">
             Únete a Glaminder y comienza tu experiencia
           </p>
         </div>
 
         {/* Formulario */}
-        <div className="bg-black/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-[#23262B]/60">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-black/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 border border-[#23262B]/60">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Campos de nombre y apellido en fila */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="name"
@@ -289,7 +336,7 @@ const RegisterForm = () => {
                     onFocus={handleFocus}
                     required
                     autoFocus
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "name"
                     )}`}
                     placeholder="Ingresa tu nombre"
@@ -323,7 +370,7 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "lastName"
                     )}`}
                     placeholder="Ingresa tu apellido"
@@ -359,7 +406,7 @@ const RegisterForm = () => {
                   onBlur={handleBlur}
                   onFocus={handleFocus}
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                  className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                     "email"
                   )}`}
                   placeholder="usuario@dominio.com"
@@ -394,7 +441,8 @@ const RegisterForm = () => {
                   onBlur={handleBlur}
                   onFocus={handleFocus}
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                  maxLength={12}
+                  className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                     "phone"
                   )}`}
                   placeholder="300-000-0000"
@@ -410,7 +458,7 @@ const RegisterForm = () => {
             </div>
 
             {/* Campos de contraseña en fila */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="password"
@@ -430,7 +478,7 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "password"
                     )}`}
                     placeholder="Mínimo 8 caracteres"
@@ -464,7 +512,7 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
                       "confirmPassword"
                     )}`}
                     placeholder="Repite tu contraseña"
@@ -480,37 +528,68 @@ const RegisterForm = () => {
               </div>
             </div>
 
-            {/* Mensajes de error y éxito */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <div className="flex">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 mr-2" />
-                  <p className="text-sm text-red-600">{error}</p>
+            {/* Checkbox de términos y condiciones */}
+            <div>
+              <div className="flex items-start">
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="aceptaTerminos"
+                    type="checkbox"
+                    checked={formData.aceptaTerminos}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    required
+                    className="w-4 h-4 text-[#D1A04D] bg-transparent border-[#31343A] rounded focus:ring-[#D1A04D] focus:ring-2"
+                  />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label
+                    htmlFor="aceptaTerminos"
+                    className="text-[#B0B3B8] cursor-pointer leading-relaxed"
+                  >
+                    Acepto los{" "}
+                    <Link
+                      to="/terminos-condiciones"
+                      target="_blank"
+                      className="text-[#F5C76A] hover:text-[#D1A04D] underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      términos y condiciones
+                    </Link>{" "}
+                    y la{" "}
+                    <Link
+                      to="/politica-privacidad"
+                      target="_blank"
+                      className="text-[#F5C76A] hover:text-[#D1A04D] underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      política de privacidad
+                    </Link>
+                  </label>
+                  {errors.aceptaTerminos && touched.aceptaTerminos && (
+                    <p className="text-red-500 text-sm mt-1 flex items-center">
+                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
+                      {errors.aceptaTerminos}
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
-
-            {success && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <div className="flex">
-                  <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
-                  <p className="text-sm text-green-600">{success}</p>
-                </div>
-              </div>
-            )}
+            </div>
 
             {/* Botones */}
-            <div className="space-y-4">
+            <div className="space-y-3 pt-2">
               <button
                 type="submit"
                 disabled={
-                  isLoading || Object.keys(errors).some((key) => errors[key])
+                  isLoading || 
+                  Object.keys(errors).some((key) => errors[key]) ||
+                  !formData.aceptaTerminos
                 }
-                className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] font-semibold py-3 px-6 rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl text-base"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                    <ArrowPathIcon className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" />
                     Registrando...
                   </div>
                 ) : (
@@ -521,7 +600,7 @@ const RegisterForm = () => {
 
             {/* Enlace de login */}
             <div className="text-center pt-2">
-              <p className="text-[#B0B3B8]">
+              <p className="text-[#B0B3B8] text-sm">
                 ¿Ya tienes una cuenta?{" "}
                 <Link
                   to="/ingresar"
@@ -535,7 +614,7 @@ const RegisterForm = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-4">
           <p className="text-[#B0B3B8] text-sm drop-shadow-lg">
             © 2025 Glaminder. Todos los derechos reservados.
           </p>

@@ -1,40 +1,48 @@
 import { useState } from "react";
 import { forgotPassword } from "../../../services/authService.js";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import logo from "../../../assets/images/logo-2.png";
-import {
-  AtSymbolIcon,
-  ArrowPathIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { AtSymbolIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    e.stopPropagation();
     setIsLoading(true);
 
     try {
       const result = await forgotPassword(email);
-      
+
       if (result.ok) {
-        setSuccess(
-          result.message || 
-          "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña."
-        );
+        setEmailSent(true);
         setEmail("");
+        toast.success(
+          result.message ||
+            "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.",
+          {
+            position: "top-right",
+            autoClose: 6000,
+          }
+        );
       } else {
-        setError(result.message || "Error al enviar el correo de restablecimiento.");
+        toast.error(
+          result.message || "Error al enviar el correo de restablecimiento.",
+          {
+            position: "top-right",
+            autoClose: 5000,
+          }
+        );
       }
     } catch (err) {
-      setError("Ocurrió un error inesperado. Inténtalo de nuevo.");
+      toast.error("Ocurrió un error inesperado. Inténtalo de nuevo.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -100,30 +108,20 @@ const ForgotPassword = () => {
               </div>
             </div>
 
-            {/* Mensaje de éxito */}
-            {success && (
-              <div className="bg-green-50/10 border border-green-500/30 rounded-xl p-4">
-                <div className="flex gap-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
-                  <p className="text-sm text-green-300">{success}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Mensaje de error */}
-            {error && (
-              <div className="bg-red-50/10 border border-red-500/30 rounded-xl p-4">
-                <div className="flex gap-2">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
-                  <p className="text-sm text-red-300">{error}</p>
-                </div>
+            {/* Mensaje informativo después de enviar */}
+            {emailSent && (
+              <div className="bg-blue-50/10 border border-blue-500/30 rounded-xl p-4">
+                <p className="text-sm text-blue-300 text-center">
+                  Revisa tu correo electrónico. Si el correo está registrado,
+                  recibirás un enlace para restablecer tu contraseña.
+                </p>
               </div>
             )}
 
             {/* Botón de envío */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || emailSent}
               className="w-full font-semibold py-3 px-6 rounded-xl bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] hover:from-[#B47B1C] hover:to-[#D1A04D] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               {isLoading ? (
@@ -131,6 +129,8 @@ const ForgotPassword = () => {
                   <ArrowPathIcon className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                   Enviando...
                 </div>
+              ) : emailSent ? (
+                "Enlace enviado ✓"
               ) : (
                 "Enviar enlace de recuperación"
               )}
@@ -141,7 +141,7 @@ const ForgotPassword = () => {
               <p className="text-[#B0B3B8]">
                 ¿Recordaste tu contraseña?{" "}
                 <Link
-                  to="/login"
+                  to="/ingresar"
                   className="font-semibold text-[#F5C76A] hover:text-[#D1A04D] transition-colors duration-200 underline decoration-2 underline-offset-2"
                 >
                   Inicia sesión aquí

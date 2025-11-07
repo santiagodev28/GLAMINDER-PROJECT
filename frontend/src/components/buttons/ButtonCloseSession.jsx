@@ -1,15 +1,32 @@
-import useAuth from "../../services/authService";
+import { logout } from "../../services/authService.js";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-const ButtonCloseSession = ({ token, onClose }) => {
+const ButtonCloseSession = ({ logoutAll = false }) => {
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const { logout } = useAuth();
+    const handleLogout = async () => {
+        setIsLoading(true);
+        try {
+            await logout(logoutAll);
+            navigate("/");
+        } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+            // Redirigir de todas formas
+            navigate("/");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <button
-            onClick={logout}
-            className="bg-red-400 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+            onClick={handleLogout}
+            disabled={isLoading}
+            className="bg-red-400 text-white px-4 py-2 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
-            Cerrar sesión
+            {isLoading ? "Cerrando..." : logoutAll ? "Cerrar sesión en todos los dispositivos" : "Cerrar sesión"}
         </button>
     );
 };

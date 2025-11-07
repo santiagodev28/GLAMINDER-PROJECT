@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   UserIcon,
@@ -7,10 +7,13 @@ import {
 } from "@heroicons/react/24/outline";
 import EditProfileModal from "../components/modals/EditProfileModal";
 import ProfileService from "../services/profileService";
+import { logout } from "../services/authService.js";
 
 const AdminLayout = () => {
   const [user, setUser] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadUserData();
@@ -25,10 +28,17 @@ const AdminLayout = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("usuario");
-    window.location.href = "/";
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout(false);
+      navigate("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      navigate("/");
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const handleProfileSave = (updatedUser) => {
@@ -91,10 +101,11 @@ const AdminLayout = () => {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
+            disabled={isLoggingOut}
+            className="w-full flex items-center justify-center space-x-2 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowRightOnRectangleIcon className="h-4 w-4" />
-            <span>Cerrar sesión</span>
+            <span>{isLoggingOut ? "Cerrando..." : "Cerrar sesión"}</span>
           </button>
         </div>
       </aside>
