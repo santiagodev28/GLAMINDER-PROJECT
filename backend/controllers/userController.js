@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { sendAccountDeletionEmail } from "../utils/emailService.js";
 
 // Controlador para los usuarios
 
@@ -100,7 +101,24 @@ class UserController {
     static async deleteUser(req, res) {
         try {
             const { usuario_id } = req.params;
+            
+            // Obtener información del usuario antes de eliminarlo
+            const user = await User.getUserById(usuario_id);
+            if (!user) {
+                return res.status(404).json({ error: "Usuario no encontrado" });
+            }
+
             const result = await User.deleteUser(usuario_id);
+            
+            // Enviar correo de confirmación de eliminación
+            try {
+                const nombreCompleto = `${user.usuario_nombre || ''} ${user.usuario_apellido || ''}`.trim() || 'Usuario';
+                await sendAccountDeletionEmail(user.usuario_correo, nombreCompleto);
+            } catch (emailError) {
+                console.error('Error al enviar correo de eliminación:', emailError);
+                // No fallar la operación si el email falla
+            }
+
             res.json(result);
         } catch (error) {
             if (error.message === "Usuario no encontrado") {

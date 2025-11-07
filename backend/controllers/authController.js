@@ -3,7 +3,7 @@ import RefreshToken from "../models/RefreshToken.js";
 import TokenBlacklist from "../models/TokenBlacklist.js";
 import Audit from "../models/Audit.js";
 import crypto from "crypto";
-import { sendResetEmail, sendVerificationEmail } from "../utils/emailService.js";
+import { sendResetEmail, sendVerificationEmail, sendPasswordChangeEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
@@ -283,6 +283,24 @@ class AuthController {
         currentPassword,
         newPassword
       );
+
+      // Obtener información del usuario para enviar email
+      try {
+        const user = await Auth.getUserWithRole(usuario_id);
+        if (user && user.usuario_correo) {
+          const nombreCompleto = `${user.usuario_nombre || ''} ${user.usuario_apellido || ''}`.trim() || 'Usuario';
+          await sendPasswordChangeEmail(
+            user.usuario_correo,
+            nombreCompleto,
+            req.ip || req.connection.remoteAddress,
+            req.get('user-agent')
+          );
+        }
+      } catch (emailError) {
+        console.error('Error al enviar correo de cambio de contraseña:', emailError);
+        // No fallar la operación si el email falla
+      }
+
       res.json({ message: result.message });
     } catch (error) {
       if (
@@ -405,6 +423,22 @@ class AuthController {
         });
       } catch (auditError) {
         console.error('Error al registrar auditoría:', auditError);
+      }
+
+      // Enviar correo de confirmación de cambio de contraseña
+      try {
+        if (user.usuario_correo) {
+          const nombreCompleto = `${user.usuario_nombre || ''} ${user.usuario_apellido || ''}`.trim() || 'Usuario';
+          await sendPasswordChangeEmail(
+            user.usuario_correo,
+            nombreCompleto,
+            req.ip || req.connection.remoteAddress,
+            req.get('user-agent')
+          );
+        }
+      } catch (emailError) {
+        console.error('Error al enviar correo de cambio de contraseña:', emailError);
+        // No fallar la operación si el email falla
       }
 
       res.json({ message: "Contraseña restablecida exitosamente." });

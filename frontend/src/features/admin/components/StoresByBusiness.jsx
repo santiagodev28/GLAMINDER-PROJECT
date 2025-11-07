@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import AdminService from "../../../services/adminService.js";
 import { useParams, Link } from "react-router-dom";
-import ButtonBack  from "../../../components/buttons/ButtonBack";
+import ButtonBack from "../../../components/buttons/ButtonBack";
+import DataTable from "../../../components/common/DataTable";
+import Breadcrumbs from "../../../components/common/Breadcrumbs";
 // Componente para mostrar las tiendas de un negocio
 const StoresByBusinessTable = () => {
     const { negocio_id } = useParams();
@@ -19,50 +21,56 @@ const StoresByBusinessTable = () => {
         loadStores();
     }, [negocio_id]);
 
+    // Configuración de columnas para DataTable
+    const columns = [
+        { key: "tienda_nombre", label: "Nombre", sortable: true },
+        { key: "tienda_direccion", label: "Dirección", sortable: true },
+        { key: "tienda_telefono", label: "Teléfono", sortable: true },
+        { key: "tienda_correo", label: "Correo", sortable: true },
+        { key: "tienda_ciudad", label: "Ciudad", sortable: true },
+        { key: "tienda_activa", label: "Estado", sortable: true },
+        {
+            key: "acciones",
+            label: "Acciones",
+            sortable: false,
+            render: (_, row) => (
+                <Link
+                    to={`/admin/negocios/${negocio_id}/tiendas/${row.tienda_id}/empleados`}
+                >
+                    <button className="text-blue-600 hover:underline mr-2">
+                        Ver Empleados
+                    </button>
+                </Link>
+            ),
+        },
+    ];
+
     return (
         <div className="min-h-screen bg-gray-100 p-6 flex flex-col gap-4">
             <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-            <h1 className="text-2xl font-bold mb-4">Tiendas del Negocio</h1>
-
-            <table className="w-full border-collapse border border-gray-300 mb-4 ">
-                <thead className="bg-gray-100">
-                    <tr className="border border-gray-300">
-                        <th className="p-2 border">Nombre</th>
-                        <th className="p-2 border">Dirección</th>
-                        <th className="p-2 border">Teléfono</th>
-                        <th className="p-2 border">Correo</th>
-                        <th className="p-2 border">Ciudad</th>
-                        <th className="p-2 border">Estado</th>
-                        <th className="p-2 border">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody >
-                    {stores.map((s) => (
-                        <tr key={s.tienda_id}>
-                            <td className="p-2 border">{s.tienda_nombre}</td>
-                            <td className="p-2 border">{s.tienda_direccion}</td>
-                            <td className="p-2 border">{s.tienda_telefono}</td>
-                            <td className="p-2 border">{s.tienda_correo}</td>
-                            <td className="p-2 border">{s.tienda_ciudad}</td>
-                            <td className="p-2 border">{s.tienda_activa}</td>
-                            <td className="p-2 border">
-
-                               <Link to={`/admin/negocios/${negocio_id}/tiendas/${s.tienda_id}/empleados`}>
-                                <button className="text-blue-600 hover:underline mr-2">
-                                    Ver Empleados
-                                </button> 
-                               </Link>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <ButtonBack to="/admin/negocios" />
+                <Breadcrumbs
+                    items={[
+                        { label: "Negocios", path: "/admin/negocios" },
+                        {
+                            label: "Tiendas",
+                            path: `/admin/negocios/${negocio_id}/tiendas`,
+                        },
+                    ]}
+                    homePath="/admin/dashboard"
+                />
+                <h1 className="text-2xl font-bold mb-4">Tiendas del Negocio</h1>
+                <DataTable
+                    data={stores}
+                    columns={columns}
+                    itemsPerPage={10}
+                    emptyMessage="No hay tiendas para mostrar"
+                />
+                <div className="mt-4">
+                    <ButtonBack to="/admin/negocios" />
+                </div>
             </div>
-            
         </div>
-
-    )
+    );
 }
 
 export default StoresByBusinessTable;

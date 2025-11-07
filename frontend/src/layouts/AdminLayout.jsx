@@ -6,13 +6,13 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import EditProfileModal from "../components/modals/EditProfileModal";
+import LogoutModal from "../components/modals/LogoutModal";
 import ProfileService from "../services/profileService";
-import { logout } from "../services/authService.js";
 
 const AdminLayout = () => {
   const [user, setUser] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,17 +28,8 @@ const AdminLayout = () => {
     }
   };
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout(false);
-      navigate("/");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-      navigate("/");
-    } finally {
-      setIsLoggingOut(false);
-    }
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
   };
 
   const handleProfileSave = (updatedUser) => {
@@ -100,12 +91,11 @@ const AdminLayout = () => {
 
           {/* Logout Button */}
           <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="w-full flex items-center justify-center space-x-2 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleLogoutClick}
+            className="w-full flex items-center justify-center space-x-2 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
           >
             <ArrowRightOnRectangleIcon className="h-4 w-4" />
-            <span>{isLoggingOut ? "Cerrando..." : "Cerrar sesión"}</span>
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
@@ -120,6 +110,12 @@ const AdminLayout = () => {
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
         onSave={handleProfileSave}
+      />
+
+      {/* Logout Modal */}
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
       />
     </div>
   );

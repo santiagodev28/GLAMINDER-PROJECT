@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import AdminService from "../../../services/adminService.js";
 import RoleFilter from "./RoleFilter";
 import EditUserModal from "../../../components/modals/EditUserModal";
-import ButtonBack  from "../../../components/buttons/ButtonBack";
+import ConfirmDeleteModal from "../../../components/modals/ConfirmDeleteModal";
+import ButtonBack from "../../../components/buttons/ButtonBack";
+import DataTable from "../../../components/common/DataTable";
+import Breadcrumbs from "../../../components/common/Breadcrumbs";
+import { toast } from "react-toastify";
 
 // Componente para mostrar la tabla de usuarios
 const UserAdmin = () => {
@@ -11,6 +15,8 @@ const UserAdmin = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDeletedUsers, setShowDeletedUsers] = useState(false);
     const [selectedRole, setSelectedRole] = useState("todos");
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
 
     const getUsers = async () => {
         try {
@@ -40,28 +46,85 @@ const UserAdmin = () => {
         getUsers(); // Recargar la tabla
     };
 
-    const handleUserDelete = async (usuario_id) => {
-        const confirmDelete = window.confirm(
-            "¿Estás seguro de eliminar este usuario?"
-        );
-        if (!confirmDelete) return;
+    const handleDeleteClick = (user) => {
+        setUserToDelete(user);
+        setShowDeleteModal(true);
+    };
+
+    const handleUserDelete = async () => {
+        if (!userToDelete) return;
 
         try {
-            const userDeleted = await AdminService.deleteUser(usuario_id);
-            console.log("Usuario eliminado:", userDeleted);
-           
-                alert("Usuario eliminado con éxito");
-                getUsers();
+            await AdminService.deleteUser(userToDelete.usuario_id);
+            toast.success("Usuario eliminado con éxito", {
+                position: "top-right",
+                autoClose: 3000,
+            });
+            getUsers();
+            setShowDeleteModal(false);
+            setUserToDelete(null);
         } catch (error) {
-            alert("No se pudo eliminar el usuario");
+            toast.error("No se pudo eliminar el usuario", {
+                position: "top-right",
+                autoClose: 5000,
+            });
             console.error("Error al eliminar el usuario:", error);
         }
     };
- 
+
+    // Filtrar usuarios por rol
+    const filteredUsers = users.filter(
+        (u) => selectedRole === "todos" || u.rol_id === parseInt(selectedRole)
+    );
+
+    // Configuración de columnas para DataTable
+    const columns = [
+        { key: "usuario_id", label: "ID", sortable: true },
+        { key: "usuario_nombre", label: "Nombre", sortable: true },
+        { key: "usuario_apellido", label: "Apellido", sortable: true },
+        { key: "usuario_correo", label: "Correo", sortable: true },
+        {
+            key: "rol_id",
+            label: "Rol",
+            sortable: true,
+            render: (value) => (value ? rolToString(value) : "-"),
+        },
+        {
+            key: "acciones",
+            label: "Acciones",
+            sortable: false,
+            render: (_, row) => (
+                <div>
+                    <button
+                        className="text-blue-600 hover:underline mr-2"
+                        onClick={() => handleEdit(row)}
+                    >
+                        Editar
+                    </button>
+                    <button
+                        className="text-red-600 hover:underline"
+                        onClick={() => handleDeleteClick(row)}
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            ),
+        },
+    ];
+
     return (
         <div className="p-6">
+            <Breadcrumbs
+                items={[
+                    { label: "Usuarios", path: "/admin/usuarios" },
+                ]}
+                homePath="/admin/dashboard"
+            />
             <div className="flex justify-between items-center mb-4">
-                <label htmlFor="role-filter" className="font-semibold"> Filtar por rol:</label>
+                <label htmlFor="role-filter" className="font-semibold">
+                    {" "}
+                    Filtar por rol:
+                </label>
                 <RoleFilter selected={selectedRole} onChange={setSelectedRole} />
             </div>
             <h2 className="text-2xl font-bold mb-4">
@@ -69,47 +132,12 @@ const UserAdmin = () => {
                     ? "Usuarios Eliminados"
                     : "Usuarios Registrados"}
             </h2>
-            <table className="w-full border text-left">
-                <thead className="bg-gray-100">
-                    <tr>
-                        <th className="p-2 border">ID</th>
-                        <th className="p-2 border">Nombre</th>
-                        <th className="p-2 border">Apellido</th>
-                        <th className="p-2 border">Correo</th>
-                        <th className="p-2 border">Rol</th>
-                        <th className="p-2 border">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.filter((u) => selectedRole === "todos" || u.rol_id === parseInt(selectedRole)).map((u) => (
-                        <tr key={u.usuario_id}>
-                            <td className="p-2 border">{u.usuario_id}</td>
-                            <td className="p-2 border">{u.usuario_nombre}</td>
-                            <td className="p-2 border">{u.usuario_apellido}</td>
-                            <td className="p-2 border">{u.usuario_correo}</td>
-                            <td className="p-2 border">
-                                {u.rol_id && rolToString(u.rol_id)}
-                            </td>
-                            <td className="p-2 border">
-                                <button
-                                    className="text-blue-600 hover:underline mr-2"
-                                    onClick={() => handleEdit(u)}
-                                >
-                                    Editar
-                                </button>
-                                <button
-                                    className="text-red-600 hover:underline"
-                                    onClick={() =>
-                                        handleUserDelete(u.usuario_id)
-                                    }
-                                >
-                                    Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <DataTable
+                data={filteredUsers}
+                columns={columns}
+                itemsPerPage={10}
+                emptyMessage="No hay usuarios para mostrar"
+            />
 
             <div className="flex flex-col gap-2 py-4">
                 <button
@@ -127,6 +155,19 @@ const UserAdmin = () => {
                 onClose={handleCloseModal}
                 user={selectedUser}
                 onSave={handleUserUpdated}
+            />
+
+            <ConfirmDeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => {
+                    setShowDeleteModal(false);
+                    setUserToDelete(null);
+                }}
+                onConfirm={handleUserDelete}
+                title="Eliminar Usuario"
+                message={`¿Estás seguro de que deseas eliminar al usuario "${userToDelete?.usuario_nombre} ${userToDelete?.usuario_apellido}"? Esta acción no se puede deshacer.`}
+                confirmText="Eliminar Usuario"
+                itemName={userToDelete ? `${userToDelete.usuario_nombre} ${userToDelete.usuario_apellido}`.toUpperCase() : ""}
             />
         </div>
     );
