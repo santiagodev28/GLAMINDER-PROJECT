@@ -16,12 +16,12 @@ const Home = () => {
 
   // Imágenes de salones de estética y barbería
   const salonImages = [
-    "./public/home-1.jpg",
-    "./public/home-2.jpg",
-    "./public/home-3.jpg",
-    "./public/home-4.jpg",
-    "./public/home-5.jpg",
-    "./public/home-6.jpg",
+    "./home-1.jpg",
+    "./home-2.jpg",
+    "./home-3.jpg",
+    "./home-4.jpg",
+    "./home-5.jpg",
+    "./home-6.jpg",
   ];
 
   // Carrusel automático

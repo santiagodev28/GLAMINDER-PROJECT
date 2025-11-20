@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build: ./backend
+    container_name: glaminder-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MYSQLHOST=db
+      - MYSQLUSER=root
+      - MYSQLPASSWORD=root
+      - MYSQLDATABASE=glaminder
+      - MYSQLPORT=3306
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3000/api
+    container_name: glaminder-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    container_name: glaminder-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: glaminder
+    ports:
+      - "3306:3306"

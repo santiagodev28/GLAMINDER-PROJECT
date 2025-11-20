@@ -17,17 +17,30 @@ const pool = mysql.createPool({
 const promisePool = pool.promise();
 
 // Función para testear la conexión
+const MAX_RETRIES = 20;
+const RETRY_DELAY = 10000; // 10 segundos
+
 const testConnection = async () => {
-  try {
-    const connection = await promisePool.getConnection();
-    console.log('Conexión a MySQL establecida correctamente');
-    connection.release();
-    return true;
-  } catch (error) {
-    console.error('Error al conectar con MySQL:', error.message);
-    return false;
+  let retries = 0;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      const connection = await promisePool.getConnection();
+      console.log("Conexión a MySQL establecida correctamente");
+      connection.release();
+      return true;
+
+    } catch (error) {
+      retries++;
+      console.log(`MySQL no está listo. Reintentando (${retries}/${MAX_RETRIES})...`);
+      await new Promise(res => setTimeout(res, RETRY_DELAY));
+    }
   }
+
+  console.error("No fue posible conectarse a MySQL después de múltiples intentos.");
+  return false;
 };
+
 
 // Función para ejecutar queries de forma segura
 const executeQuery = async (query, params = []) => {
