@@ -8,7 +8,6 @@ import Breadcrumbs from "../../../components/common/Breadcrumbs";
 // Componente para mostrar la lista de empleados
 const EmployeeList = () => {
     const [employees, setEmployees] = useState([]);
-    const [showDeletedEmployees, setShowDeletedEmployees] = useState(false);
     const { tienda_id, negocio_id } = useParams();
   
 
@@ -23,11 +22,10 @@ const EmployeeList = () => {
 
     useEffect(() => {
         loadEmployees();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tienda_id]);
 
-    const filteredEmployees = showDeletedEmployees
-        ? employees
-        : employees.filter((e) => e.empleado_estado !== "eliminado");
+    const filteredEmployees = employees.filter((e) => e.empleado_estado !== "eliminado");
 
     // Configuración de columnas para DataTable
     const columns = [
@@ -40,48 +38,54 @@ const EmployeeList = () => {
     ];
 
     return (
-        <div className="p-4">
-            <Breadcrumbs
-                items={[
-                    { label: "Negocios", path: "/admin/negocios" },
-                    {
-                        label: "Tiendas",
-                        path: `/admin/negocios/${negocio_id}/tiendas`,
-                    },
-                    {
-                        label: "Empleados",
-                        path: `/admin/negocios/${negocio_id}/tiendas/${tienda_id}/empleados`,
-                    },
-                ]}
-                homePath="/admin/dashboard"
-            />
-            <h1 className="text-xl font-bold mb-4">Lista de Empleados</h1>
-            <DataTable
-                data={filteredEmployees}
-                columns={columns}
-                itemsPerPage={10}
-                emptyMessage="No hay empleados para mostrar"
-                renderRow={(row, index) => (
-                    <tr
-                        key={row.empleado_id}
-                        className={
-                            row.empleado_estado === "eliminado"
-                                ? "bg-red-100"
-                                : "hover:bg-gray-50 transition-colors"
-                        }
-                    >
-                        {columns.map((column) => (
-                            <td key={column.key} className="p-3 border border-gray-300">
-                                {column.render
-                                    ? column.render(row[column.key], row)
-                                    : row[column.key] ?? "-"}
-                            </td>
-                        ))}
-                    </tr>
-                )}
-            />
-            <div className="mt-4">
-                <ButtonBack to={`/admin/negocios/${negocio_id}/tiendas`} />
+        <div className="min-h-screen bg-[#23262B] p-6">
+            <div className="max-w-7xl mx-auto">
+                <Breadcrumbs
+                    items={[
+                        { label: "Negocios", path: "/admin/negocios" },
+                        {
+                            label: "Tiendas",
+                            path: `/admin/negocios/${negocio_id}/tiendas`,
+                        },
+                        {
+                            label: "Empleados",
+                            path: `/admin/negocios/${negocio_id}/tiendas/${tienda_id}/empleados`,
+                        },
+                    ]}
+                    homePath="/admin/dashboard"
+                />
+                <h1 className="text-3xl font-bold mb-6 text-[#F5F5F5]">Lista de Empleados</h1>
+                
+                <div className="bg-[#2A2D35] rounded-xl border border-[#31343A] shadow-lg overflow-hidden">
+                    <DataTable
+                        data={filteredEmployees}
+                        columns={columns}
+                        itemsPerPage={10}
+                        emptyMessage="No hay empleados para mostrar"
+                        renderRow={(row) => (
+                            <tr
+                                key={row.empleado_id}
+                                className={
+                                    row.empleado_estado === "eliminado"
+                                        ? "bg-red-900/20 border-red-500/20"
+                                        : "hover:bg-[#31343A]/30 transition-colors"
+                                }
+                            >
+                                {columns.map((column) => (
+                                    <td key={column.key} className="p-3 border-b border-[#31343A] text-[#F5F5F5]">
+                                        {column.render
+                                            ? column.render(row[column.key], row)
+                                            : row[column.key] ?? "-"}
+                                    </td>
+                                ))}
+                            </tr>
+                        )}
+                    />
+                </div>
+                
+                <div className="mt-6">
+                    <ButtonBack to={`/admin/negocios/${negocio_id}/tiendas`} />
+                </div>
             </div>
         </div>
     );

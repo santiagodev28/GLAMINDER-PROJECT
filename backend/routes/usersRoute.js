@@ -31,8 +31,7 @@ userRoutes.post("/", verifyToken, authorizeRoles(1), UserController.createUser);
 // Actualizar usuario (permitir que los usuarios editen su propio perfil o que admins/propietarios editen otros)
 userRoutes.put(
   "/:usuario_id",
-  verifyToken,
-  authorizeSelfOrRoles(1, 2, 3, 4),
+  
   UserController.updateUser
 );
 

@@ -19,38 +19,49 @@ const VerifyEmail = () => {
   const hasVerifiedRef = useRef(false); // Ref para evitar múltiples verificaciones
 
   useEffect(() => {
+    // Validar que hay token antes de proceder
+    if (!token) {
+      setStatus("error");
+      setMessage("Token de verificación no proporcionado.");
+      return;
+    }
+
     // Solo verificar una vez si hay token y no se ha verificado aún
-    if (token && !hasVerifiedRef.current && status === "verifying") {
-      console.log('[VerifyEmail] Token recibido de useParams:', token ? token.substring(0, 8) + '...' : 'null');
+    if (!hasVerifiedRef.current) {
+      console.log('[VerifyEmail] Iniciando verificación de email...');
       
       hasVerifiedRef.current = true; // Marcar como verificado inmediatamente para evitar múltiples llamadas
 
       const verify = async () => {
         try {
+          // Mantener el estado en "verifying" hasta que la verificación se complete
           const result = await verifyEmail(token);
+          
+          // Solo cambiar el estado después de recibir la respuesta del servidor
           if (result.ok) {
+            console.log('[VerifyEmail] ✅ Verificación exitosa');
             setStatus("success");
             setMessage(result.message || "Email verificado exitosamente");
+            
+            // Redirigir al login después de 3 segundos
             setTimeout(() => {
               navigate("/ingresar");
             }, 3000);
           } else {
+            console.log('[VerifyEmail] ❌ Error en verificación:', result.message);
             setStatus("error");
             setMessage(result.message || "Error al verificar email");
           }
         } catch (error) {
-          console.error('[VerifyEmail] Error:', error);
+          console.error('[VerifyEmail] ❌ Error inesperado:', error);
           setStatus("error");
           setMessage("Error al verificar email. Por favor intenta de nuevo.");
         }
       };
 
       verify();
-    } else if (!token) {
-      setStatus("error");
-      setMessage("Token de verificación no proporcionado.");
     }
-  }, [token, status, navigate]);
+  }, [token, navigate]);
 
   const handleResend = async () => {
     if (!email) {
@@ -69,7 +80,7 @@ const VerifyEmail = () => {
       } else {
         setMessage(result.message || "Error al reenviar correo");
       }
-    } catch (error) {
+    } catch {
       setMessage("Error al reenviar correo. Por favor intenta de nuevo.");
     } finally {
       setResending(false);

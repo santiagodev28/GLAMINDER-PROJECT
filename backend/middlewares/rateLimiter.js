@@ -1,12 +1,14 @@
 import rateLimit from 'express-rate-limit';
 
-// Rate limiter general para API
+// Rate limiter general para API - Aumentado para desarrollo
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests por IP en 15 minutos
+  max: 300, // máximo 300 requests por IP en 15 minutos (aumentado de 100)
   message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
   standardHeaders: true,
   legacyHeaders: false,
+  // En desarrollo, skipFailedRequests ayuda a evitar bloqueos por errores de red
+  skipFailedRequests: process.env.NODE_ENV === 'development',
 });
 
 // Rate limiter estricto para login

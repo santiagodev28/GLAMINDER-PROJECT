@@ -364,160 +364,116 @@ class Auth {
 
   // Verificar email con token
   static async verifyEmail(token) {
+    console.log('[Auth.verifyEmail] ========== INICIO VERIFICACIÓN EN MODELO ==========');
+    
+    // Validar el token
     if (!token || typeof token !== "string" || token.trim() === "") {
+      console.log('[Auth.verifyEmail] ❌ Token inválido o vacío');
       return { success: false, message: "Token de verificación inválido" };
     }
 
-    // Limpiar el token (eliminar espacios, saltos de línea, etc.)
+    // Limpiar el token
     const cleanToken = token.trim();
+    console.log(`[Auth.verifyEmail] Token limpio (primeros 16 chars): ${cleanToken.substring(0, 16)}...`);
+    console.log(`[Auth.verifyEmail] Token limpio (longitud): ${cleanToken.length} caracteres`);
 
-    // Hashear el token para compararlo con el almacenado
+    // Hashear el token para compararlo con el almacenado en la BD
     const hashedToken = crypto
       .createHash("sha256")
       .update(cleanToken)
       .digest("hex");
 
-    console.log(
-      `[Auth.verifyEmail] Token recibido (primeros 8 chars): ${cleanToken.substring(
-        0,
-        8
-      )}...`
-    );
-    console.log(
-      `[Auth.verifyEmail] Token hasheado (primeros 8 chars): ${hashedToken.substring(
-        0,
-        8
-      )}...`
-    );
+    console.log(`[Auth.verifyEmail] Token hasheado (primeros 16 chars): ${hashedToken.substring(0, 16)}...`);
+    console.log(`[Auth.verifyEmail] Token hasheado (longitud): ${hashedToken.length} caracteres`);
 
-    // Primero verificar si existe algún token que coincida (para debugging)
-    const debugQuery = `
-      SELECT usuario_id, email_verification_token, email_verification_expires, email_verificado
+    // Primero, verificar si el usuario ya está verificado con este token
+    const checkUserQuery = `
+      SELECT usuario_id, email_verificado, email_verification_expires, email_verification_token
       FROM usuarios 
-      WHERE email_verification_token IS NOT NULL
-      LIMIT 5
+      WHERE email_verification_token = ?
+      LIMIT 1
     `;
-    const debugResult = await executeQuery(debugQuery, []);
-    if (debugResult.success) {
-      console.log(
-        `[Auth.verifyEmail] Tokens en BD (primeros 5):`,
-        debugResult.data.map((u) => ({
-          id: u.usuario_id,
-          token_stored: u.email_verification_token
-            ? u.email_verification_token.substring(0, 16) + "..."
-            : null,
-          expires: u.email_verification_expires,
-          verified: u.email_verificado,
-        }))
-      );
+    
+    const checkUserResult = await executeQuery(checkUserQuery, [hashedToken]);
+    
+    if (!checkUserResult.success) {
+      console.error('[Auth.verifyEmail] ❌ Error en query de verificación:', checkUserResult.error);
+      throw new Error(`Error al verificar email: ${checkUserResult.error}`);
     }
 
-    const query = `
-            UPDATE usuarios 
-            SET email_verificado = 1, 
-                email_verification_token = NULL, 
-                email_verification_expires = NULL
-            WHERE email_verification_token = ? 
-            AND email_verification_expires > NOW()
-        `;
-
-    console.log(
-      `[Auth.verifyEmail] Buscando token hasheado: ${hashedToken.substring(
-        0,
-        16
-      )}...`
-    );
-
-    const result = await executeQuery(query, [hashedToken]);
-
-    if (!result.success) {
-      throw new Error(`Error al verificar email: ${result.error}`);
-    }
-
-    console.log(
-      `[Auth.verifyEmail] Filas afectadas: ${result.data.affectedRows}`
-    );
-
-    if (result.data.affectedRows === 0) {
-      // Verificar si el usuario ya está verificado (token ya fue usado)
-      const checkVerifiedQuery = `
-        SELECT usuario_id, email_verificado, email_verification_token 
-        FROM usuarios 
-        WHERE email_verification_token = ?
-        LIMIT 1
+    // Si no se encuentra el token
+    if (checkUserResult.data.length === 0) {
+      console.log('[Auth.verifyEmail] ❌ Token no encontrado en la base de datos');
+      
+      // Verificar si algún usuario ya fue verificado (token fue limpiado)
+      const checkAnyVerifiedQuery = `
+        SELECT COUNT(*) as count FROM usuarios 
+        WHERE email_verificado = 1 
+        AND email_verification_token IS NULL
       `;
-      const checkVerifiedResult = await executeQuery(checkVerifiedQuery, [
-        hashedToken,
-      ]);
-
-      if (checkVerifiedResult.success && checkVerifiedResult.data.length > 0) {
-        const user = checkVerifiedResult.data[0];
-        if (user.email_verificado) {
-          console.log(
-            `[Auth.verifyEmail] Token ya fue utilizado. Usuario ${user.usuario_id} ya está verificado.`
-          );
-          return {
-            success: true,
-            message: "Email ya verificado anteriormente.",
-          };
-        }
-      }
-
-      // Verificar si el token existe pero expiró
-      const checkExpiredQuery = `
-        SELECT usuario_id, email_verification_expires FROM usuarios 
-        WHERE email_verification_token = ?
-        LIMIT 1
-      `;
-      const checkExpiredResult = await executeQuery(checkExpiredQuery, [
-        hashedToken,
-      ]);
-
-      if (checkExpiredResult.success && checkExpiredResult.data.length > 0) {
-        const user = checkExpiredResult.data[0];
-        console.log(
-          `[Auth.verifyEmail] Token encontrado pero expirado. Expira: ${user.email_verification_expires}`
-        );
+      const anyVerifiedResult = await executeQuery(checkAnyVerifiedQuery, []);
+      
+      if (anyVerifiedResult.success && anyVerifiedResult.data[0].count > 0) {
+        console.log('[Auth.verifyEmail] ℹ️ Posible token ya utilizado');
         return {
           success: false,
-          message:
-            "Token de verificación expirado. Por favor solicita uno nuevo.",
+          message: "Token de verificación inválido o ya utilizado.",
         };
       }
-
-      // Verificar si hay algún token similar (para debugging)
-      const similarQuery = `
-        SELECT usuario_id, email_verification_token 
-        FROM usuarios 
-        WHERE email_verification_token LIKE ?
-        LIMIT 1
-      `;
-      const similarResult = await executeQuery(similarQuery, [
-        `${hashedToken.substring(0, 8)}%`,
-      ]);
-      if (similarResult.success && similarResult.data.length > 0) {
-        console.log(
-          `[Auth.verifyEmail] ⚠️ Token similar encontrado pero no coincide exactamente`
-        );
-        console.log(
-          `[Auth.verifyEmail] Token en BD: ${similarResult.data[0].email_verification_token.substring(
-            0,
-            16
-          )}...`
-        );
-        console.log(
-          `[Auth.verifyEmail] Token recibido: ${hashedToken.substring(
-            0,
-            16
-          )}...`
-        );
-      }
-
+      
       return {
         success: false,
         message: "Token de verificación inválido o ya utilizado.",
       };
     }
+
+    const user = checkUserResult.data[0];
+    console.log(`[Auth.verifyEmail] Usuario encontrado: ID ${user.usuario_id}`);
+    console.log(`[Auth.verifyEmail] Email verificado: ${user.email_verificado ? 'Sí' : 'No'}`);
+    console.log(`[Auth.verifyEmail] Token expira: ${user.email_verification_expires}`);
+
+    // Verificar si ya está verificado
+    if (user.email_verificado === 1) {
+      console.log('[Auth.verifyEmail] ℹ️ Usuario ya verificado anteriormente');
+      return {
+        success: true,
+        message: "Email ya verificado anteriormente.",
+      };
+    }
+
+    // Verificar si el token expiró
+    const now = new Date();
+    const expirationDate = new Date(user.email_verification_expires);
+    
+    if (expirationDate <= now) {
+      console.log(`[Auth.verifyEmail] ❌ Token expirado`);
+      console.log(`[Auth.verifyEmail] Expira: ${expirationDate}, Ahora: ${now}`);
+      return {
+        success: false,
+        message: "Token de verificación expirado. Por favor solicita uno nuevo.",
+      };
+    }
+
+    // Todo está bien, actualizar el usuario
+    console.log('[Auth.verifyEmail] ✅ Token válido, actualizando usuario...');
+    
+    const updateQuery = `
+      UPDATE usuarios 
+      SET email_verificado = 1, 
+          email_verification_token = NULL, 
+          email_verification_expires = NULL
+      WHERE usuario_id = ?
+    `;
+
+    const updateResult = await executeQuery(updateQuery, [user.usuario_id]);
+
+    if (!updateResult.success) {
+      console.error('[Auth.verifyEmail] ❌ Error al actualizar usuario:', updateResult.error);
+      throw new Error(`Error al verificar email: ${updateResult.error}`);
+    }
+
+    console.log(`[Auth.verifyEmail] ✅ Usuario ${user.usuario_id} verificado exitosamente`);
+    console.log('[Auth.verifyEmail] ========== FIN VERIFICACIÓN EN MODELO ==========');
 
     return { success: true, message: "Email verificado exitosamente" };
   }

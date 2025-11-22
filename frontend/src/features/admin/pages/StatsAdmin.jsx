@@ -2,23 +2,21 @@ import UserTrendChart from "../components/AdminStats/UserTrendChart.jsx";
 import StatsOverview from "../components/AdminStats/StatsOverview.jsx";
 import TopEmployeesByBussines from "../components/AdminStats/TopEmployeesByBusiness.jsx";
 import TopRatedBusiness from "../components/AdminStats/TopRatedBusiness.jsx";
-import ButtonBack from "../../../components/buttons/ButtonBack.jsx";
-import { Link } from "react-router-dom";
 
 // Página para mostrar las estadísticas
 const StatsAdmin = () => {
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Estadísticas</h1>
-                <Link to="/admin" className="text-blue-500 hover:text-blue-700 font-bold">
-                    <ButtonBack/>
-                </Link>
+        <div className="min-h-screen bg-[#23262B] p-6">
+            <div className="max-w-7xl mx-auto space-y-6">
+                <div className="bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-xl p-6 shadow-lg">
+                    <h1 className="text-3xl font-bold text-white">Estadísticas del Sistema</h1>
+                </div>
+                
+                <StatsOverview />
+                <UserTrendChart />
+                <TopEmployeesByBussines />
+                <TopRatedBusiness />
             </div>
-            <StatsOverview />
-            <UserTrendChart/>
-            <TopEmployeesByBussines/>
-            <TopRatedBusiness/>
         </div>
     )
 }

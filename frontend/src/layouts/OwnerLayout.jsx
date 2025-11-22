@@ -17,7 +17,7 @@ import ProfileService from "../services/profileService";
 import api from "../api/api";
 import { messageChangeRole } from "../services/clientService";
 
-const LayoutOwner = ({ children }) => {
+const LayoutOwner = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [user, setUser] = useState(() => {
@@ -38,12 +38,18 @@ const LayoutOwner = ({ children }) => {
       navigate("/login");
       return;
     }
+
+    let isMounted = true;
+
     // Consulta el usuario actualizado al backend
     const fetchUser = async () => {
       try {
         const res = await api.get(`/usuarios/${user.usuario_id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        if (!isMounted) return;
+        
         const updatedUser = Array.isArray(res.data) ? res.data[0] : res.data;
         localStorage.setItem("usuario", JSON.stringify(updatedUser));
         setUser(updatedUser);
@@ -51,10 +57,17 @@ const LayoutOwner = ({ children }) => {
           setShowModal(true);
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error("Error al obtener usuario actualizado:", error);
       }
     };
+
     fetchUser();
+
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCloseModal = async () => {

@@ -5,6 +5,8 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   LockClosedIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import api from "../../api/api";
 
@@ -19,23 +21,23 @@ const EditProfileModal = ({ isOpen, onClose, onSave }) => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [user, setUser] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Cargar datos del usuario actual
   useEffect(() => {
     if (isOpen) {
       loadCurrentUser();
+      setSuccessMessage("");
+      setErrors({});
     }
   }, [isOpen]);
 
   const loadCurrentUser = async () => {
     try {
-      const token = localStorage.getItem("token");
       const userData = localStorage.getItem("usuario");
 
       if (userData) {
         const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
         setFormData({
           usuario_nombre: parsedUser.usuario_nombre || "",
           usuario_apellido: parsedUser.usuario_apellido || "",
@@ -104,6 +106,8 @@ const EditProfileModal = ({ isOpen, onClose, onSave }) => {
     }
 
     setLoading(true);
+    setSuccessMessage("");
+    
     try {
       const token = localStorage.getItem("token");
       const userData = JSON.parse(localStorage.getItem("usuario"));
@@ -143,8 +147,13 @@ const EditProfileModal = ({ isOpen, onClose, onSave }) => {
         };
         localStorage.setItem("usuario", JSON.stringify(updatedUser));
 
-        onSave(updatedUser);
-        onClose();
+        setSuccessMessage("Perfil actualizado exitosamente");
+        
+        // Esperar un momento antes de cerrar para que el usuario vea el mensaje
+        setTimeout(() => {
+          onSave(updatedUser);
+          onClose();
+        }, 1500);
       }
     } catch (error) {
       console.error("Error al actualizar perfil:", error);
@@ -161,145 +170,179 @@ const EditProfileModal = ({ isOpen, onClose, onSave }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#23262B] rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-[#31343A]">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-[#31343A]">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <UserIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-xl">
+              <UserIcon className="h-6 w-6 text-[#F5F5F5]" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-2xl font-bold text-[#F5F5F5]">
               Editar Perfil
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-[#31343A] rounded-lg transition-colors"
           >
-            <XMarkIcon className="h-5 w-5 text-gray-500" />
+            <XMarkIcon className="h-6 w-6 text-[#B0B3B8]" />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Mensaje de éxito */}
+          {successMessage && (
+            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center space-x-3">
+              <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm text-green-400">{successMessage}</p>
+            </div>
+          )}
+
           {/* Error general */}
           {errors.general && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errors.general}</p>
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center space-x-3">
+              <ExclamationCircleIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+              <p className="text-sm text-red-400">{errors.general}</p>
             </div>
           )}
 
           {/* Nombre */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-[#B0B3B8] mb-2">
               Nombre *
             </label>
-            <input
-              type="text"
-              name="usuario_nombre"
-              value={formData.usuario_nombre}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.usuario_nombre ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="Ingresa tu nombre"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <UserIcon className="h-5 w-5 text-[#B0B3B8]" />
+              </div>
+              <input
+                type="text"
+                name="usuario_nombre"
+                value={formData.usuario_nombre}
+                onChange={handleChange}
+                className={`block w-full pl-10 pr-3 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${
+                  errors.usuario_nombre ? "border-red-500/50" : "border-[#31343A]"
+                }`}
+                placeholder="Ingresa tu nombre"
+              />
+            </div>
             {errors.usuario_nombre && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.usuario_nombre}
+              <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                <ExclamationCircleIcon className="h-4 w-4" />
+                <span>{errors.usuario_nombre}</span>
               </p>
             )}
           </div>
 
           {/* Apellido */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-[#B0B3B8] mb-2">
               Apellido *
             </label>
-            <input
-              type="text"
-              name="usuario_apellido"
-              value={formData.usuario_apellido}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.usuario_apellido ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="Ingresa tu apellido"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <UserIcon className="h-5 w-5 text-[#B0B3B8]" />
+              </div>
+              <input
+                type="text"
+                name="usuario_apellido"
+                value={formData.usuario_apellido}
+                onChange={handleChange}
+                className={`block w-full pl-10 pr-3 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${
+                  errors.usuario_apellido ? "border-red-500/50" : "border-[#31343A]"
+                }`}
+                placeholder="Ingresa tu apellido"
+              />
+            </div>
             {errors.usuario_apellido && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.usuario_apellido}
+              <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                <ExclamationCircleIcon className="h-4 w-4" />
+                <span>{errors.usuario_apellido}</span>
               </p>
             )}
           </div>
 
           {/* Correo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-[#B0B3B8] mb-2">
               Correo Electrónico *
             </label>
             <div className="relative">
-              <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <EnvelopeIcon className="h-5 w-5 text-[#B0B3B8]" />
+              </div>
               <input
                 type="email"
                 name="usuario_correo"
                 value={formData.usuario_correo}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.usuario_correo ? "border-red-300" : "border-gray-300"
+                className={`block w-full pl-10 pr-3 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${
+                  errors.usuario_correo ? "border-red-500/50" : "border-[#31343A]"
                 }`}
                 placeholder="correo@ejemplo.com"
               />
             </div>
             {errors.usuario_correo && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.usuario_correo}
+              <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                <ExclamationCircleIcon className="h-4 w-4" />
+                <span>{errors.usuario_correo}</span>
               </p>
             )}
           </div>
 
           {/* Teléfono */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-[#B0B3B8] mb-2">
               Teléfono
             </label>
             <div className="relative">
-              <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <PhoneIcon className="h-5 w-5 text-[#B0B3B8]" />
+              </div>
               <input
                 type="tel"
                 name="usuario_telefono"
                 value={formData.usuario_telefono}
                 onChange={handleChange}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
                 placeholder="Número de teléfono"
               />
             </div>
           </div>
 
+          {/* Divider */}
+          <div className="border-t border-[#31343A] pt-4">
+            <p className="text-sm text-[#B0B3B8] mb-4">
+              Cambiar contraseña (opcional)
+            </p>
+          </div>
+
           {/* Contraseña */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-[#B0B3B8] mb-2">
               Nueva Contraseña
             </label>
             <div className="relative">
-              <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
+              </div>
               <input
                 type="password"
                 name="usuario_contrasena"
                 value={formData.usuario_contrasena}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.usuario_contrasena
-                    ? "border-red-300"
-                    : "border-gray-300"
+                className={`block w-full pl-10 pr-3 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${
+                  errors.usuario_contrasena ? "border-red-500/50" : "border-[#31343A]"
                 }`}
                 placeholder="Dejar vacío para no cambiar"
               />
             </div>
             {errors.usuario_contrasena && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.usuario_contrasena}
+              <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                <ExclamationCircleIcon className="h-4 w-4" />
+                <span>{errors.usuario_contrasena}</span>
               </p>
             )}
           </div>
@@ -307,38 +350,39 @@ const EditProfileModal = ({ isOpen, onClose, onSave }) => {
           {/* Confirmar Contraseña */}
           {formData.usuario_contrasena && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-[#B0B3B8] mb-2">
                 Confirmar Nueva Contraseña
               </label>
               <div className="relative">
-                <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
+                </div>
                 <input
                   type="password"
                   name="confirmar_contrasena"
                   value={formData.confirmar_contrasena}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.confirmar_contrasena
-                      ? "border-red-300"
-                      : "border-gray-300"
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${
+                    errors.confirmar_contrasena ? "border-red-500/50" : "border-[#31343A]"
                   }`}
                   placeholder="Confirma tu nueva contraseña"
                 />
               </div>
               {errors.confirmar_contrasena && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmar_contrasena}
+                <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                  <ExclamationCircleIcon className="h-4 w-4" />
+                  <span>{errors.confirmar_contrasena}</span>
                 </p>
               )}
             </div>
           )}
 
           {/* Botones */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-3 pt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="flex-1 px-4 py-3 text-[#B0B3B8] bg-[#31343A] hover:bg-[#3A3D42] rounded-xl transition-colors font-semibold"
               disabled={loading}
             >
               Cancelar
@@ -346,9 +390,19 @@ const EditProfileModal = ({ isOpen, onClose, onSave }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-[#F5F5F5] hover:from-[#B47B1C] hover:to-[#D1A04D] rounded-xl transition-all duration-200 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Guardando..." : "Guardar Cambios"}
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Guardando...</span>
+                </div>
+              ) : (
+                "Guardar Cambios"
+              )}
             </button>
           </div>
         </form>

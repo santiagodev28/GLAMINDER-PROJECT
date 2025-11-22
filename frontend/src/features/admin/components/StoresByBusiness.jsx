@@ -37,7 +37,7 @@ const StoresByBusinessTable = () => {
                 <Link
                     to={`/admin/negocios/${negocio_id}/tiendas/${row.tienda_id}/empleados`}
                 >
-                    <button className="text-blue-600 hover:underline mr-2">
+                    <button className="text-[#D1A04D] hover:text-[#B47B1C] font-medium transition-colors">
                         Ver Empleados
                     </button>
                 </Link>
@@ -46,8 +46,8 @@ const StoresByBusinessTable = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6 flex flex-col gap-4">
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <div className="min-h-screen bg-[#23262B] p-6">
+            <div className="max-w-7xl mx-auto">
                 <Breadcrumbs
                     items={[
                         { label: "Negocios", path: "/admin/negocios" },
@@ -58,14 +58,18 @@ const StoresByBusinessTable = () => {
                     ]}
                     homePath="/admin/dashboard"
                 />
-                <h1 className="text-2xl font-bold mb-4">Tiendas del Negocio</h1>
-                <DataTable
-                    data={stores}
-                    columns={columns}
-                    itemsPerPage={10}
-                    emptyMessage="No hay tiendas para mostrar"
-                />
-                <div className="mt-4">
+                <h1 className="text-3xl font-bold mb-6 text-[#F5F5F5]">Tiendas del Negocio</h1>
+                
+                <div className="bg-[#2A2D35] rounded-xl border border-[#31343A] shadow-lg overflow-hidden">
+                    <DataTable
+                        data={stores}
+                        columns={columns}
+                        itemsPerPage={10}
+                        emptyMessage="No hay tiendas para mostrar"
+                    />
+                </div>
+                
+                <div className="mt-6">
                     <ButtonBack to="/admin/negocios" />
                 </div>
             </div>

@@ -1,9 +1,14 @@
 import { Outlet } from "react-router-dom";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   UserIcon,
   ArrowRightOnRectangleIcon,
+  ChartBarIcon,
+  UsersIcon,
+  BuildingStorefrontIcon,
+  DocumentTextIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 import EditProfileModal from "../components/modals/EditProfileModal";
 import LogoutModal from "../components/modals/LogoutModal";
@@ -13,7 +18,6 @@ const AdminLayout = () => {
   const [user, setUser] = useState(null);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadUserData();
@@ -37,51 +41,74 @@ const AdminLayout = () => {
     setShowEditProfile(false);
   };
 
+  const navItems = [
+    { to: "/admin/dashboard", label: "Dashboard", icon: HomeIcon },
+    { to: "/admin/estadisticas", label: "Estadísticas", icon: ChartBarIcon },
+    { to: "/admin/usuarios", label: "Usuarios", icon: UsersIcon },
+    { to: "/admin/negocios", label: "Negocios", icon: BuildingStorefrontIcon },
+    { to: "/admin/solicitudes", label: "Solicitudes", icon: DocumentTextIcon },
+  ];
+
   return (
-    <div className="flex min-h-screen app-background">
+    <div className="flex min-h-screen bg-[#23262B]">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-4 flex flex-col justify-between">
-        <div>
-          <h1 className="text-2xl font-bold mb-6">GLAMINDER</h1>
+      <aside className="w-72 bg-[#2A2D35] border-r border-[#31343A] shadow-xl flex flex-col">
+        <div className="flex-1 p-6">
+          {/* Logo */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] bg-clip-text text-transparent">
+              GLAMINDER
+            </h1>
+            <p className="text-[#B0B3B8] text-sm mt-1">Panel de Administración</p>
+          </div>
+
+          {/* Navigation */}
           <nav className="space-y-2">
-            <Link to="/admin/dashboard" className="block">
-              Estadísticas generales
-            </Link>
-            <Link to="/admin/usuarios" className="block">
-              Usuarios
-            </Link>
-            <Link to="/admin/negocios" className="block">
-              Negocios
-            </Link>
-            <Link to="/admin/solicitudes" className="block">
-              Solicitudes
-            </Link>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = window.location.pathname === item.to;
+              
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg shadow-[#D1A04D]/20"
+                      : "text-[#B0B3B8] hover:bg-[#31343A] hover:text-[#F5F5F5]"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
         {/* User Info & Actions */}
-        <div className="space-y-4">
+        <div className="p-6 space-y-3 border-t border-[#31343A]">
           {/* User Profile Card */}
           {user && (
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
+            <div className="bg-[#23262B] rounded-xl p-4 border border-[#31343A]">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-sm font-bold">
                     {ProfileService.getInitials(user)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-semibold text-[#F5F5F5] truncate">
                     {ProfileService.getFullName(user)}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[#D1A04D]">
                     {ProfileService.getRoleText(user.rol_id)}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowEditProfile(true)}
-                className="w-full flex items-center justify-center space-x-2 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-xs text-[#D1A04D] hover:text-[#B47B1C] transition-colors py-2 px-3 rounded-lg hover:bg-[#31343A] font-medium"
               >
                 <UserIcon className="h-4 w-4" />
                 <span>Editar Perfil</span>
@@ -92,16 +119,16 @@ const AdminLayout = () => {
           {/* Logout Button */}
           <button
             onClick={handleLogoutClick}
-            className="w-full flex items-center justify-center space-x-2 bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg hover:shadow-lg hover:shadow-red-500/20 transition-all duration-300 font-medium"
           >
-            <ArrowRightOnRectangleIcon className="h-4 w-4" />
+            <ArrowRightOnRectangleIcon className="h-5 w-5" />
             <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>
 
       {/* Contenido principal */}
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
 

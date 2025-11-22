@@ -74,13 +74,28 @@ export const registerUser = async (userData) => {
 // Verificar email con token
 export const verifyEmail = async (token) => {
     try {
-        // El token ya viene decodificado de useParams, pero lo codificamos para la URL
-        // para asegurar que caracteres especiales se manejen correctamente
+        console.log('[authService.verifyEmail] Iniciando verificación...');
+        
+        // Validar que el token existe
+        if (!token || token.trim() === '') {
+            console.error('[authService.verifyEmail] Token vacío o inválido');
+            return {
+                ok: false,
+                message: "Token de verificación inválido",
+            };
+        }
+
+        // El token viene de useParams (React Router lo decodifica automáticamente)
+        // Pero al enviarlo en una petición HTTP, debemos codificarlo para la URL
         const encodedToken = encodeURIComponent(token);
+        console.log('[authService.verifyEmail] Token codificado para URL');
+        
         const res = await api.get(`/auth/verificar-email/${encodedToken}`);
+        
+        console.log('[authService.verifyEmail] ✅ Respuesta exitosa del servidor');
         return { ok: true, message: res.data.message };
     } catch (error) {
-        console.error("Error al verificar email:", error);
+        console.error("[authService.verifyEmail] ❌ Error:", error);
         return {
             ok: false,
             message: error.response?.data?.message || "Error al verificar email",
@@ -198,16 +213,3 @@ export const resetPassword = async (token, newPassword, confirmNewPassword) => {
         };
     }
 };
-
-function useAuth() {
-  const navigate = useNavigate();
-
-  const handleLogout = async (logoutAll = false) => {
-    await logout(logoutAll);
-    navigate("/");
-  };
-
-  return { logout: handleLogout };
-}
-
-export default useAuth;

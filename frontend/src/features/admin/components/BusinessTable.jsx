@@ -34,7 +34,7 @@ const BusinessTable = () => {
     if (!confirmDelete) return;
 
     try {
-      const res = await deleteBusiness(negocio_id);
+      const res = await AdminService.deleteBusiness(negocio_id);
 
       if (res.status === 200) {
         alert("Negocio eliminado con éxito");
@@ -53,7 +53,7 @@ const BusinessTable = () => {
     );
     if (!confirmReactivate) return;
     try {
-      const res = await reactivateBusiness(negocio_id);
+      const res = await AdminService.reactivateBusiness(negocio_id);
       if (res.status === 200) {
         alert("Negocio reactivado con éxito");
         await loadBusinesses();
@@ -90,27 +90,27 @@ const BusinessTable = () => {
       render: (_, row) => (
         <div>
           <Link to={`/admin/negocios/${row.negocio_id}/tiendas`}>
-            <button className="text-blue-600 hover:underline mr-2">
+            <button className="text-[#D1A04D] hover:text-[#B47B1C] font-medium mr-3 transition-colors">
               Ver Tiendas
             </button>
           </Link>
 
           <Link to={`/admin/negocios/${row.negocio_id}/estadisticas`}>
-            <button className="text-green-600 hover:underline mr-2">
+            <button className="text-green-400 hover:text-green-300 font-medium mr-3 transition-colors">
               Ver Estadísticas
             </button>
           </Link>
 
           {!showDeletedBusinesses ? (
             <button
-              className="text-red-600 hover:underline"
+              className="text-red-400 hover:text-red-300 font-medium transition-colors"
               onClick={() => handleBusinessDelete(row.negocio_id)}
             >
               Eliminar
             </button>
           ) : (
             <button
-              className="text-green-600 hover:underline"
+              className="text-green-400 hover:text-green-300 font-medium transition-colors"
               onClick={() => handleReactivate(row.negocio_id)}
             >
               Reactivar
@@ -122,28 +122,34 @@ const BusinessTable = () => {
   ];
 
   return (
-    <div>
-      <Breadcrumbs
-        items={[{ label: "Negocios", path: "/admin/negocios" }]}
-        homePath="/admin/dashboard"
-      />
-      <h2 className="text-2xl font-bold mb-4">Negocios Registrados</h2>
-      <DataTable
-        data={filteredBusinesses}
-        columns={columns}
-        itemsPerPage={10}
-        emptyMessage="No hay negocios para mostrar"
-      />
-      <div className="flex flex-col gap-2 py-4">
-        <button
-          className="text-center w-full bg-slate-600 py-2 px-4 rounded text-white hover:bg-slate-700"
-          onClick={() => setShowDeletedBusinesses(!showDeletedBusinesses)}
-        >
-          {showDeletedBusinesses
-            ? "Mostrar Negocios Activos"
-            : "Mostrar Negocios Eliminados"}
-        </button>
-        <ButtonBack to="/admin/dashboard" />
+    <div className="min-h-screen bg-[#23262B] p-6">
+      <div className="max-w-7xl mx-auto">
+        <Breadcrumbs
+          items={[{ label: "Negocios", path: "/admin/negocios" }]}
+          homePath="/admin/dashboard"
+        />
+        <h2 className="text-3xl font-bold mb-6 text-[#F5F5F5]">Negocios Registrados</h2>
+        
+        <div className="bg-[#2A2D35] rounded-xl border border-[#31343A] shadow-lg overflow-hidden">
+          <DataTable
+            data={filteredBusinesses}
+            columns={columns}
+            itemsPerPage={10}
+            emptyMessage="No hay negocios para mostrar"
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 py-6">
+          <button
+            className="text-center w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] py-3 px-6 rounded-lg text-white font-semibold hover:shadow-lg hover:shadow-[#D1A04D]/20 transition-all duration-300"
+            onClick={() => setShowDeletedBusinesses(!showDeletedBusinesses)}
+          >
+            {showDeletedBusinesses
+              ? "Mostrar Negocios Activos"
+              : "Mostrar Negocios Eliminados"}
+          </button>
+          <ButtonBack to="/admin/dashboard" />
+        </div>
       </div>
     </div>
   );

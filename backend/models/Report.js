@@ -53,7 +53,7 @@ class Reports {
     }
 
     if (filters.tienda_id) {
-      conditions.push("c.tienda_id = ?");
+      conditions.push("fh.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
@@ -107,7 +107,7 @@ class Reports {
     const conditions = [];
 
     if (filters.tienda_id) {
-      conditions.push("c.tienda_id = ?");
+      conditions.push("fh.tienda_id = ?");
       params.push(filters.tienda_id);
     }
 
@@ -154,7 +154,8 @@ class Reports {
 
     // Aplicar filtros
     if (filters.negocio_id) {
-      query += " LEFT JOIN tiendas t ON c.tienda_id = t.tienda_id";
+      query += " LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id";
+      query += " LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id";
       conditions.push("t.negocio_id = ?");
       params.push(filters.negocio_id);
     }
@@ -280,7 +281,8 @@ class Reports {
         COUNT(DISTINCT e.empleado_id) as total_empleados
       FROM tiendas t
       JOIN negocios n ON t.negocio_id = n.negocio_id
-      LEFT JOIN citas c ON t.tienda_id = c.tienda_id
+      LEFT JOIN franjas_horarias fh ON t.tienda_id = fh.tienda_id
+      LEFT JOIN citas c ON fh.franja_id = c.franja_id
       LEFT JOIN servicios s ON c.servicio_id = s.servicio_id
       LEFT JOIN empleados e ON t.tienda_id = e.tienda_id AND e.empleado_estado = 1
     `;
@@ -340,7 +342,8 @@ class Reports {
       LEFT JOIN calificaciones_negocios cn ON n.negocio_id = cn.negocio_id
       LEFT JOIN calificaciones c ON cn.calificacion_id = c.calificacion_id
       LEFT JOIN tiendas t ON n.negocio_id = t.negocio_id AND t.tienda_estado = 1
-      LEFT JOIN citas ci ON t.tienda_id = ci.tienda_id
+      LEFT JOIN franjas_horarias fh ON t.tienda_id = fh.tienda_id
+      LEFT JOIN citas ci ON fh.franja_id = ci.franja_id
       WHERE n.negocio_estado = 1
       GROUP BY n.negocio_id
       HAVING total_calificaciones > 0
@@ -378,7 +381,8 @@ class Reports {
     const conditions = [];
 
     if (negocio_id) {
-      query += " JOIN tiendas t ON c.tienda_id = t.tienda_id";
+      query += " LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id";
+      query += " LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id";
       conditions.push("t.negocio_id = ?");
       params.push(negocio_id);
     }
@@ -458,12 +462,12 @@ class Reports {
     if (negocio_id) {
       query = `
         SELECT 
-          (SELECT COUNT(DISTINCT c.usuario_id) FROM citas c JOIN tiendas t ON c.tienda_id = t.tienda_id WHERE t.negocio_id = ?) AS total_clientes,
+          (SELECT COUNT(DISTINCT c.usuario_id) FROM citas c LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id WHERE t.negocio_id = ?) AS total_clientes,
           (SELECT COUNT(*) FROM tiendas WHERE negocio_id = ? AND tienda_estado = 1) AS total_tiendas,
           (SELECT COUNT(*) FROM empleados e JOIN tiendas t ON e.tienda_id = t.tienda_id WHERE t.negocio_id = ? AND e.empleado_estado = 1) AS total_empleados,
           (SELECT COUNT(*) FROM servicios s JOIN tiendas t ON s.tienda_id = t.tienda_id WHERE t.negocio_id = ? AND s.servicio_estado = 1) AS total_servicios,
-          (SELECT COUNT(*) FROM citas c JOIN tiendas t ON c.tienda_id = t.tienda_id WHERE t.negocio_id = ?) AS total_citas,
-          (SELECT SUM(s.servicio_precio) FROM citas c JOIN servicios s ON c.servicio_id = s.servicio_id JOIN tiendas t ON c.tienda_id = t.tienda_id WHERE t.negocio_id = ? AND c.cita_estado = 'completada') AS ingresos_totales
+          (SELECT COUNT(*) FROM citas c LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id WHERE t.negocio_id = ?) AS total_citas,
+          (SELECT SUM(s.servicio_precio) FROM citas c JOIN servicios s ON c.servicio_id = s.servicio_id LEFT JOIN franjas_horarias fh ON c.franja_id = fh.franja_id LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id WHERE t.negocio_id = ? AND c.cita_estado = 'completada') AS ingresos_totales
       `;
     }
 
@@ -509,7 +513,7 @@ class Reports {
     params.push(fecha_desde, fecha_hasta);
 
     if (negocio_id) {
-      query += " JOIN tiendas t ON c.tienda_id = t.tienda_id";
+      query += " LEFT JOIN tiendas t ON fh.tienda_id = t.tienda_id";
       conditions.push("t.negocio_id = ?");
       params.push(negocio_id);
     }

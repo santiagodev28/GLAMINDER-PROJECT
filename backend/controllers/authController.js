@@ -453,34 +453,43 @@ class AuthController {
   static async verifyEmail(req, res) {
     let { token } = req.params;
 
-    console.log(`[verifyEmail] Token recibido en params (raw): ${token ? token.substring(0, 20) : 'null'}...`);
+    console.log(`[verifyEmail] ========== INICIO VERIFICACIÓN ==========`);
+    console.log(`[verifyEmail] Token recibido (primeros 16 chars): ${token ? token.substring(0, 16) : 'null'}...`);
 
-    // Decodificar el token si está codificado en la URL
-    try {
-      const decoded = decodeURIComponent(token);
-      console.log(`[verifyEmail] Token después de decodeURIComponent: ${decoded ? decoded.substring(0, 20) : 'null'}...`);
-      token = decoded;
-    } catch (e) {
-      // Si falla la decodificación, usar el token original
-      console.log('[verifyEmail] Token no necesita decodificación o ya está decodificado');
-    }
-
-    console.log(`[verifyEmail] Token final a procesar (primeros 8 chars): ${token ? token.substring(0, 8) : 'null'}...`);
-
+    // Validar que el token existe
     if (!token || token.trim() === '') {
+      console.log('[verifyEmail] ❌ Token vacío o no proporcionado');
       return res.status(400).json({ message: "Token de verificación no proporcionado." });
     }
 
     try {
-      const result = await Auth.verifyEmail(token);
+      // Express NO decodifica automáticamente los parámetros de URL
+      // Debemos decodificarlo manualmente
+      let decodedToken = token;
+      try {
+        decodedToken = decodeURIComponent(token);
+        console.log(`[verifyEmail] Token decodificado (primeros 16 chars): ${decodedToken.substring(0, 16)}...`);
+      } catch (decodeError) {
+        console.log('[verifyEmail] Token no requiere decodificación o ya está decodificado');
+      }
+
+      // Limpiar espacios en blanco
+      const cleanToken = decodedToken.trim();
+      console.log(`[verifyEmail] Token limpio (longitud): ${cleanToken.length} caracteres`);
+
+      const result = await Auth.verifyEmail(cleanToken);
 
       if (!result.success) {
+        console.log(`[verifyEmail] ❌ Verificación fallida: ${result.message}`);
         return res.status(400).json({ message: result.message });
       }
 
+      console.log(`[verifyEmail] ✅ Verificación exitosa: ${result.message}`);
+      console.log(`[verifyEmail] ========== FIN VERIFICACIÓN ==========`);
       res.json({ message: result.message });
     } catch (error) {
-      console.error("Error al verificar email:", error.message);
+      console.error("[verifyEmail] ❌ Error inesperado:", error.message);
+      console.error(error.stack);
       res.status(500).json({ message: "Error al verificar email." });
     }
   }
@@ -585,41 +594,62 @@ class AuthController {
     try {
       // Si se proporciona refresh token, revocarlo
       if (refreshToken) {
-        await RefreshToken.revokeToken(refreshToken);
+        try {
+          await RefreshToken.revokeToken(refreshToken);
+        } catch (error) {
+          console.error('Error al revocar refresh token:', error);
+          // No fallar el logout si esto falla
+        }
       }
 
       // Si hay un token en el header, agregarlo a la blacklist
       const token = req.headers["authorization"]?.split(" ")[1];
-      if (token && user) {
+      if (token && user && user.usuario_id) {
         try {
-          const decoded = jwt.decode(token);
-          if (decoded && decoded.jti) {
-            const expiresAt = new Date(decoded.exp * 1000);
-            await TokenBlacklist.addToken({
-              token_jti: decoded.jti,
-              usuario_id: user.usuario_id,
-              token_type: 'access',
-              fecha_expiracion: expiresAt,
-            });
+          // Verificar que el usuario existe antes de agregar a blacklist
+          const userExists = await Auth.getUserWithRole(user.usuario_id);
+          
+          if (userExists) {
+            const decoded = jwt.decode(token);
+            if (decoded && decoded.jti) {
+              const expiresAt = new Date(decoded.exp * 1000);
+              await TokenBlacklist.addToken({
+                token_jti: decoded.jti,
+                usuario_id: user.usuario_id,
+                token_type: 'access',
+                fecha_expiracion: expiresAt,
+              });
+            }
+          } else {
+            console.log(`[logout] Usuario ${user.usuario_id} no existe, omitiendo blacklist`);
           }
         } catch (error) {
           console.error('Error al agregar token a blacklist:', error);
+          // No fallar el logout si esto falla
         }
       }
 
       // Registrar logout en auditoría
-      if (user) {
+      if (user && user.usuario_id) {
         try {
-          await Audit.logAction({
-            usuario_id: user.usuario_id,
-            accion: 'LOGOUT',
-            tabla_afectada: 'usuarios',
-            registro_id: user.usuario_id,
-            ip_address: req.ip || req.connection.remoteAddress,
-            user_agent: req.get('user-agent'),
-          });
+          // Verificar que el usuario existe antes de registrar auditoría
+          const userExists = await Auth.getUserWithRole(user.usuario_id);
+          
+          if (userExists) {
+            await Audit.logAction({
+              usuario_id: user.usuario_id,
+              accion: 'LOGOUT',
+              tabla_afectada: 'usuarios',
+              registro_id: user.usuario_id,
+              ip_address: req.ip || req.connection.remoteAddress,
+              user_agent: req.get('user-agent'),
+            });
+          } else {
+            console.log(`[logout] Usuario ${user.usuario_id} no existe, omitiendo auditoría`);
+          }
         } catch (auditError) {
           console.error('Error al registrar auditoría:', auditError);
+          // No fallar el logout si esto falla
         }
       }
 
@@ -634,13 +664,26 @@ class AuthController {
   static async logoutAll(req, res) {
     const user = req.user; // Del middleware verifyToken
 
-    if (!user) {
+    if (!user || !user.usuario_id) {
       return res.status(401).json({ message: "Usuario no autenticado." });
     }
 
     try {
+      // Verificar que el usuario existe
+      const userExists = await Auth.getUserWithRole(user.usuario_id);
+      
+      if (!userExists) {
+        console.log(`[logoutAll] Usuario ${user.usuario_id} no existe`);
+        return res.status(404).json({ message: "Usuario no encontrado." });
+      }
+
       // Invalidar todos los tokens del usuario
-      await TokenBlacklist.blacklistAllUserTokens(user.usuario_id);
+      try {
+        await TokenBlacklist.blacklistAllUserTokens(user.usuario_id);
+      } catch (error) {
+        console.error('Error al invalidar tokens:', error);
+        // Continuar aunque falle
+      }
 
       // Registrar logout en auditoría
       try {
@@ -654,6 +697,7 @@ class AuthController {
         });
       } catch (auditError) {
         console.error('Error al registrar auditoría:', auditError);
+        // No fallar la operación si esto falla
       }
 
       res.json({ message: "Sesiones cerradas en todos los dispositivos exitosamente." });

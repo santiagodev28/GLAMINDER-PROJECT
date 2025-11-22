@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   BuildingStorefrontIcon,
@@ -17,16 +17,13 @@ const StoreManagement = () => {
   const [businesses, setBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingStore, setEditingStore] = useState(null);
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      
       const user = JSON.parse(localStorage.getItem("usuario"));
       const ownerData = await OwnerService.getOwnerByUserId(user.usuario_id);
 
@@ -52,11 +49,26 @@ const StoreManagement = () => {
       setStores(allStores);
     } catch (error) {
       console.error("Error al cargar datos:", error);
-      setError("Error al cargar los datos");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+  
+  useEffect(() => {
+    let isMounted = true;
+
+    const initData = async () => {
+      if (isMounted) {
+        await loadData();
+      }
+    };
+
+    initData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadData]);
 
   const handleCreateStore = async (storeData) => {
     try {
@@ -160,23 +172,23 @@ const StoreManagement = () => {
   );
 };
 
-const StoreCard = ({ store, onEdit, onUpdate }) => {
+const StoreCard = ({ store, onEdit }) => {
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
-  const loadStats = async () => {
-    try {
-      setLoadingStats(true);
-      const storeStats = await OwnerService.getStoreStats(store.tienda_id);
-      setStats(storeStats);
-    } catch (error) {
-      console.error("Error al cargar estadísticas:", error);
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
   useEffect(() => {
+    const loadStats = async () => {
+      try {
+        setLoadingStats(true);
+        const storeStats = await OwnerService.getStoreStats(store.tienda_id);
+        setStats(storeStats);
+      } catch (error) {
+        console.error("Error al cargar estadísticas:", error);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
     loadStats();
   }, [store.tienda_id]);
 

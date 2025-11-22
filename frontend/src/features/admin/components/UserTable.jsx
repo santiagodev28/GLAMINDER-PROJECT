@@ -30,6 +30,7 @@ const UserAdmin = () => {
 
     useEffect(() => {
         getUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showDeletedUsers]);
 
     const handleEdit = (user) => {
@@ -94,15 +95,15 @@ const UserAdmin = () => {
             label: "Acciones",
             sortable: false,
             render: (_, row) => (
-                <div>
+                <div className="flex gap-3">
                     <button
-                        className="text-blue-600 hover:underline mr-2"
+                        className="text-[#D1A04D] hover:text-[#B47B1C] font-medium transition-colors"
                         onClick={() => handleEdit(row)}
                     >
                         Editar
                     </button>
                     <button
-                        className="text-red-600 hover:underline"
+                        className="text-red-400 hover:text-red-300 font-medium transition-colors"
                         onClick={() => handleDeleteClick(row)}
                     >
                         Eliminar
@@ -113,62 +114,70 @@ const UserAdmin = () => {
     ];
 
     return (
-        <div className="p-6">
-            <Breadcrumbs
-                items={[
-                    { label: "Usuarios", path: "/admin/usuarios" },
-                ]}
-                homePath="/admin/dashboard"
-            />
-            <div className="flex justify-between items-center mb-4">
-                <label htmlFor="role-filter" className="font-semibold">
-                    {" "}
-                    Filtar por rol:
-                </label>
-                <RoleFilter selected={selectedRole} onChange={setSelectedRole} />
-            </div>
-            <h2 className="text-2xl font-bold mb-4">
-                {showDeletedUsers
-                    ? "Usuarios Eliminados"
-                    : "Usuarios Registrados"}
-            </h2>
-            <DataTable
-                data={filteredUsers}
-                columns={columns}
-                itemsPerPage={10}
-                emptyMessage="No hay usuarios para mostrar"
-            />
+        <div className="min-h-screen bg-[#23262B] p-6">
+            <div className="max-w-7xl mx-auto">
+                <Breadcrumbs
+                    items={[
+                        { label: "Usuarios", path: "/admin/usuarios" },
+                    ]}
+                    homePath="/admin/dashboard"
+                />
+                
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-3xl font-bold text-[#F5F5F5]">
+                        {showDeletedUsers
+                            ? "Usuarios Eliminados"
+                            : "Usuarios Registrados"}
+                    </h2>
+                    <div className="flex items-center gap-3">
+                        <label htmlFor="role-filter" className="text-[#F5F5F5] font-medium">
+                            Filtrar por rol:
+                        </label>
+                        <RoleFilter selected={selectedRole} onChange={setSelectedRole} />
+                    </div>
+                </div>
+                
+                <div className="bg-[#2A2D35] rounded-xl border border-[#31343A] shadow-lg overflow-hidden">
+                    <DataTable
+                        data={filteredUsers}
+                        columns={columns}
+                        itemsPerPage={10}
+                        emptyMessage="No hay usuarios para mostrar"
+                    />
+                </div>
 
-            <div className="flex flex-col gap-2 py-4">
-                <button
-                    className="text-center w-full bg-slate-600 py-2 px-4 rounded text-white hover:bg-slate-700"
-                    onClick={() => setShowDeletedUsers(!showDeletedUsers)}
-                >
-                    {showDeletedUsers
-                        ? "Mostrar Usuarios Activos"
-                        : "Mostrar Usuarios Eliminados"}
-                </button>
-                <ButtonBack to="/admin/dashboard" />
-            </div>
-            <EditUserModal
-                isOpen={isEditModalOpen}
-                onClose={handleCloseModal}
-                user={selectedUser}
-                onSave={handleUserUpdated}
-            />
+                <div className="flex flex-col gap-3 py-6">
+                    <button
+                        className="text-center w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] py-3 px-6 rounded-lg text-white font-semibold hover:shadow-lg hover:shadow-[#D1A04D]/20 transition-all duration-300"
+                        onClick={() => setShowDeletedUsers(!showDeletedUsers)}
+                    >
+                        {showDeletedUsers
+                            ? "Mostrar Usuarios Activos"
+                            : "Mostrar Usuarios Eliminados"}
+                    </button>
+                    <ButtonBack to="/admin/dashboard" />
+                </div>
+                
+                <EditUserModal
+                    isOpen={isEditModalOpen}
+                    onClose={handleCloseModal}
+                    user={selectedUser}
+                    onSave={handleUserUpdated}
+                />
 
-            <ConfirmDeleteModal
-                isOpen={showDeleteModal}
-                onClose={() => {
-                    setShowDeleteModal(false);
-                    setUserToDelete(null);
-                }}
-                onConfirm={handleUserDelete}
-                title="Eliminar Usuario"
-                message={`¿Estás seguro de que deseas eliminar al usuario "${userToDelete?.usuario_nombre} ${userToDelete?.usuario_apellido}"? Esta acción no se puede deshacer.`}
-                confirmText="Eliminar Usuario"
-                itemName={userToDelete ? `${userToDelete.usuario_nombre} ${userToDelete.usuario_apellido}`.toUpperCase() : ""}
-            />
+                <ConfirmDeleteModal
+                    isOpen={showDeleteModal}
+                    onClose={() => {
+                        setShowDeleteModal(false);
+                        setUserToDelete(null);
+                    }}
+                    onConfirm={handleUserDelete}
+                    title="Eliminar Usuario"
+                    message={`¿Estás seguro de que deseas eliminar al usuario "${userToDelete?.usuario_nombre} ${userToDelete?.usuario_apellido}"? Esta acción no se puede deshacer.`}
+                    confirmText="Eliminar Usuario"
+                    itemName={userToDelete ? `${userToDelete.usuario_nombre} ${userToDelete.usuario_apellido}`.toUpperCase() : ""}
+                />
+            </div>
         </div>
     );
 };

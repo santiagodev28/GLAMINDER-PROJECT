@@ -2,11 +2,7 @@ import BusinessTable from "../components/BusinessTable";
 
 // Página para administrar los negocios
 const BussinesAdmin = () => {
-    return (
-        <div className="p-6">
-            <BusinessTable />
-        </div>
-    );
+    return <BusinessTable />;
 };
 
 export default BussinesAdmin;
