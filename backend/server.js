@@ -5,7 +5,19 @@ import { testConnection } from "./database/connectiondb.js";
 const PORT = process.env.PORT
 
 // Inicialización del servidor
-app.listen(PORT, async () => {
-  await testConnection();
-  console.log(`Conexión a la base de datos exitosa en el puerto ${PORT}`);
-});
+const startServer = async () => {
+  console.log("⏳ Probando conexión a la base de datos...");
+
+  const ok = await testConnection();
+
+  if (!ok) {
+    console.error("❌No se pudo iniciar el backend porque MySQL no está disponible.");
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Servidor backend iniciado en el puerto ${PORT}`);
+  });
+};
+
+startServer();
