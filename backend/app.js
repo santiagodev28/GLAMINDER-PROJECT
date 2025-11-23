@@ -47,7 +47,7 @@ app.use(helmet({
 // Permitir múltiples orígenes
 const allowedOrigins = [
   'http://localhost:5173', // desarrollo local
-  'https://glaminder-project-production.up.railway.app/' // frontend en Railway
+  'https://glaminder-project-olx3ym6ro-santiago-s-projects-b9272573.vercel.app/' // frontend en Vercel
 ];
 
 app.use(cors({
