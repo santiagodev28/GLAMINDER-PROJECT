@@ -151,6 +151,13 @@ class AuthController {
   }
 
   static async userRegister(req, res) {
+  console.log('📧 Configuración EMAIL:', {
+    user: process.env.EMAIL_USER ? 'SET' : 'NOT SET',
+    pass: process.env.EMAIL_PASS ? 'SET' : 'NOT SET',
+    frontend_url: process.env.FRONTEND_URL,
+    app_base_url: process.env.APP_BASE_URL
+  });
+  
   try {
     const {
       usuario_nombre,

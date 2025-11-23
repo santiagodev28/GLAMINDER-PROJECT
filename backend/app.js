@@ -44,14 +44,17 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false, // Permitir recursos externos si es necesario
 }));
 
-// Permitir múltiples orígenes
+// Permitir múltiples orígenes - CORREGIDO
 const allowedOrigins = [
   'http://localhost:5173', // desarrollo local
-  'https://glaminder-project-olx3ym6ro-santiago-s-projects-b9272573.vercel.app/' // frontend en Vercel
+  'https://glaminder-project-olx3ym6ro-santiago-s-projects-b9272573.vercel.app', // SIN BARRA AL FINAL
+  'https://vercel.live' // Agregar dominio de Vercel Live
 ];
 
 app.use(cors({
   origin: function(origin, callback){
+    console.log('🔍 Origin recibido:', origin); // Para debug
+    
     // Permitir requests sin origen (Postman, curl, etc)
     if(!origin) return callback(null, true);
 
@@ -61,15 +64,17 @@ app.use(cors({
     }
 
     // Permitir cualquier subdominio de Vercel automáticamente
-    if (/\.vercel\.app$/.test(origin)) {
+    if (/\.vercel\.app$/.test(origin) || /\.vercel\.live$/.test(origin)) {
       return callback(null, true);
     }
 
     // Si no coincide, rechazar
-    console.log('CORS blocked origin:', origin);
+    console.log('❌ CORS blocked origin:', origin);
     return callback(new Error('El CORS no permite este origen'), false);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Middleware para parsear JSON

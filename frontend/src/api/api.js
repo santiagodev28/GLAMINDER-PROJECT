@@ -3,6 +3,8 @@ import { refreshAccessToken } from '../services/authService.js';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  timeout: 30000, // 30 segundos timeout
+  withCredentials: true // Importante para CORS con credenciales
 });
 
 // Interceptor de request: agregar token a todas las peticiones
@@ -31,7 +33,24 @@ const processQueue = (error, token = null) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Log para debug
+    console.error('🔥 API Error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message,
+      url: error.config?.url,
+      origin: window.location.origin
+    });
+
     const originalRequest = error.config;
+
+    // Manejar errores CORS específicamente
+    if (error.code === 'ERR_NETWORK') {
+      console.error('❌ Error de red - posible problema CORS');
+      return Promise.reject({
+        ...error,
+        message: 'Error de conexión. Verifica tu conexión a internet.'
+      });
+    }
 
     // Manejar errores 429 (Rate Limit) - NO recargar página
     if (error.response?.status === 429) {
