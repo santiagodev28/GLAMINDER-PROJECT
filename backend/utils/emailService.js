@@ -2,22 +2,17 @@ import nodemailer from 'nodemailer';
 
 // Configurar el transporte de nodemailer - MEJORADO
 const getTransporter = () => {
-  return nodemailer.createTransporter({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false, // true para 465, false para otros puertos
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: false, // siempre false en puerto 587
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    },
-    tls: {
-      rejectUnauthorized: false // Para evitar problemas con certificados
-    },
-    connectionTimeout: 60000, // 60 segundos
-    greetingTimeout: 30000, // 30 segundos
-    socketTimeout: 60000 // 60 segundos
+    }
   });
 };
+
 
 export const sendResetEmail = async (email, resetURL) => {
   const transporter = getTransporter();
