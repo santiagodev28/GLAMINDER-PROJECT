@@ -2,7 +2,7 @@ import 'dotenv/config';
 import app from "./app.js";
 import { testConnection } from "./database/connectiondb.js";
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3000
 
 // Inicialización del servidor
 const startServer = async () => {
@@ -15,7 +15,7 @@ const startServer = async () => {
     process.exit(1);
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor backend iniciado en el puerto ${PORT}`);
   });
 };

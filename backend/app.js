@@ -70,6 +70,11 @@ const csrfProtection = csrf({
 // Rate limiting general para todas las rutas
 app.use('/api', apiLimiter);
 
+
+app.get("/", (req, res) => {
+  res.send("Backend funcionando ✔️");
+});
+
 // Rutas
 app.use("/api/usuarios", userRoutes);
 app.use("/api/auth", authRoutes);
