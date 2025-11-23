@@ -47,7 +47,7 @@ app.use(helmet({
 // Permitir múltiples orígenes - CORREGIDO
 const allowedOrigins = [
   'http://localhost:5173', // desarrollo local
-  'https://glaminder-project-olx3ym6ro-santiago-s-projects-b9272573.vercel.app', // SIN BARRA AL FINAL
+  'https://glaminder-project.vercel.app/', // SIN BARRA AL FINAL
   'https://vercel.live' // Agregar dominio de Vercel Live
 ];
 
