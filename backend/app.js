@@ -52,13 +52,22 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback){
-    // permitir requests sin origen (postman, curl)
+    // Permitir requests sin origen (Postman, curl, etc)
     if(!origin) return callback(null, true);
-    if(allowedOrigins.indexOf(origin) === -1){
-      const msg = 'El CORS no permite este origen';
-      return callback(new Error(msg), false);
+
+    // Permitir localhost y Vercel
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-    return callback(null, true);
+
+    // Permitir cualquier subdominio de Vercel automáticamente
+    if (/\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Si no coincide, rechazar
+    console.log('CORS blocked origin:', origin);
+    return callback(new Error('El CORS no permite este origen'), false);
   },
   credentials: true
 }));
