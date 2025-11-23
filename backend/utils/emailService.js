@@ -4,14 +4,15 @@ import nodemailer from 'nodemailer';
 const getTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false, // siempre false en puerto 587
+    port: parseInt(process.env.EMAIL_PORT), // 2525
+    secure: false, // obligatorio para 2525
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
     }
   });
 };
+
 
 
 export const sendResetEmail = async (email, resetURL) => {
