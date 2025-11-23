@@ -151,11 +151,10 @@ class AuthController {
   }
 
   static async userRegister(req, res) {
-  console.log('📧 Configuración EMAIL:', {
-    user: process.env.EMAIL_USER ? 'SET' : 'NOT SET',
-    pass: process.env.EMAIL_PASS ? 'SET' : 'NOT SET',
+  // Debug de variables de entorno
+  console.log('📧 Configuración EMAIL (Brevo):', {
+    brevo_key: process.env.BREVO_API_KEY ? 'SET ✅' : 'NOT SET ❌',
     frontend_url: process.env.FRONTEND_URL,
-    app_base_url: process.env.APP_BASE_URL
   });
   
   try {
@@ -184,6 +183,8 @@ class AuthController {
       return res.status(400).json({ message: "Debes aceptar los términos y condiciones para registrarte." });
     }
 
+    console.log('[userRegister] 🚀 Iniciando creación de usuario...');
+
     // Crear usuario
     const result = await Auth.createUser({
       usuario_nombre,
@@ -199,26 +200,37 @@ class AuthController {
       user_agent,
     });
 
-    // ⚡ Protección contra token undefined
+    // Obtener token y datos del resultado
     const rawToken = result?.data?.emailVerificationToken || null;
     const userId = result?.data?.userId || null;
+    const userEmail = result?.data?.usuario_correo || usuario_correo;
+    const userName = result?.data?.usuario_nombre || usuario_nombre;
 
+    console.log(`[userRegister] Token generado: ${rawToken ? rawToken.substring(0,8) + '...' : 'null'}`);
+    console.log(`[userRegister] Usuario ID: ${userId}`);
+    console.log(`[userRegister] Email: ${userEmail}`);
+
+    // Construir URL de verificación
     const appBase = process.env.FRONTEND_URL || "http://localhost:5173";
-    const encodedToken = rawToken ? encodeURIComponent(rawToken) : null;
-    const verificationURL = encodedToken ? `${appBase}/verificar-email/${encodedToken}` : null;
+    const verificationURL = rawToken ? `${appBase}/verificar-email/${rawToken}` : null;
 
-    console.log(`[userRegister] Token generado: ${rawToken ? rawToken.substring(0,8) : 'null'}`);
-    console.log(`[userRegister] URL de verificación: ${verificationURL || 'null'}`);
+    console.log(`[userRegister] URL de verificación: ${verificationURL}`);
 
-    // Enviar correo (no rompe si falla)
-    if (rawToken) {
+    // Enviar correo de verificación usando Brevo
+    if (rawToken && verificationURL) {
       try {
-        await sendVerificationEmail(result.data.usuario_correo, verificationURL, result.data.usuario_nombre);
-        console.log(`[userRegister] Correo de verificación enviado a ${result.data.usuario_correo}`);
+        console.log('[userRegister] 📧 Enviando correo con Brevo...');
+        await sendVerificationEmail(userEmail, verificationURL, userName);
+        console.log(`[userRegister] ✅ Correo enviado exitosamente a ${userEmail}`);
       } catch (mailErr) {
-        console.warn(`[userRegister] ⚠️ No se pudo enviar correo: ${mailErr.message}`);
-        console.log(`[userRegister] Link de verificación: ${verificationURL}`);
+        console.error(`[userRegister] ❌ Error enviando correo:`, mailErr);
+        console.log(`[userRegister] 🔗 URL de verificación para debug: ${verificationURL}`);
+        
+        // No fallar el registro si el email falla
+        console.log('[userRegister] ⚠️ Continuando registro sin email...');
       }
+    } else {
+      console.warn('[userRegister] ⚠️ No se pudo generar token o URL para verificación');
     }
 
     // Auditoría segura
@@ -233,8 +245,9 @@ class AuthController {
           ip_address,
           user_agent,
         });
+        console.log('[userRegister] ✅ Auditoría registrada');
       } catch (auditError) {
-        console.warn('Error al registrar auditoría:', auditError);
+        console.warn('[userRegister] ⚠️ Error en auditoría:', auditError.message);
       }
     }
 
@@ -242,12 +255,12 @@ class AuthController {
       message: "Usuario registrado exitosamente. Por favor verifica tu correo electrónico.",
       data: {
         ...result.data,
-        emailVerificationToken: undefined,
+        emailVerificationToken: undefined, // No exponer el token en la respuesta
       },
     });
 
   } catch (error) {
-    console.error("Error al registrar el usuario:", error);
+    console.error("[userRegister] ❌ Error general:", error);
     if (error.message.includes("registrado")) {
       return res.status(400).json({ message: error.message });
     }
@@ -321,7 +334,7 @@ class AuthController {
 
   static async forgotPassword(req, res) {
     try {
-      console.log('[forgotPassword] Iniciando proceso de recuperación');
+      console.log('[forgotPassword] 🚀 Iniciando proceso de recuperación');
       const { usuario_correo } = req.body;
       console.log(`[forgotPassword] Correo recibido: ${usuario_correo}`);
       
@@ -330,13 +343,11 @@ class AuthController {
 
       // Mensaje genérico, no revelar si existe o no
       const genericResponse = {
-        message:
-          "Si el correo está registrado, te enviaremos un enlace para restablecer la contraseña.",
+        message: "Si el correo está registrado, te enviaremos un enlace para restablecer la contraseña.",
       };
 
       if (!user) {
         console.log('[forgotPassword] Usuario no encontrado, retornando respuesta genérica');
-        // Siempre 200 para evitar enumeración
         return res.json(genericResponse);
       }
 
@@ -346,30 +357,25 @@ class AuthController {
       await Auth.saveResetToken(user.usuario_id, token);
       console.log('[forgotPassword] Token guardado en BD');
 
-      // Usa tu URL de frontend y la ruta que ya mapeaste (/restablecer-contrasena/:token)
-      const appBase = process.env.APP_BASE_URL || "http://localhost:5173";
-      // Codificar el token para la URL
-      const encodedToken = encodeURIComponent(token);
-      const resetURL = `${appBase}/restablecer-contrasena/${encodedToken}`;
+      // Construir URL de reset
+      const appBase = process.env.FRONTEND_URL || "http://localhost:5173";
+      const resetURL = `${appBase}/restablecer-contrasena/${token}`;
       console.log(`[forgotPassword] URL de reset generada: ${resetURL}`);
 
-      // Enviar correo (si tienes EMAIL_USER/EMAIL_PASS configurados)
+      // Enviar correo usando Brevo
       try {
-        console.log('[forgotPassword] Intentando enviar correo...');
+        console.log('[forgotPassword] 📧 Enviando correo con Brevo...');
         await sendResetEmail(usuario_correo, resetURL);
-        console.log('[forgotPassword] Correo enviado exitosamente');
+        console.log('[forgotPassword] ✅ Correo enviado exitosamente');
       } catch (mailErr) {
-        // En desarrollo, puedes loguear el enlace si no hay SMTP
-        console.log(`[DEV] ⚠️ No se pudo enviar correo (${mailErr.message})`);
-        console.log(`[DEV] 🔗 Enlace reset para ${usuario_correo}:`);
-        console.log(`[DEV] ${resetURL}`);
+        console.error(`[forgotPassword] ❌ Error enviando correo:`, mailErr);
+        console.log(`[forgotPassword] 🔗 URL de reset para debug: ${resetURL}`);
       }
 
-      console.log('[forgotPassword] Retornando respuesta exitosa');
+      console.log('[forgotPassword] ✅ Retornando respuesta exitosa');
       return res.json(genericResponse);
     } catch (error) {
-      console.error("[forgotPassword] ❌ ERROR:", error.message);
-      console.error(error.stack);
+      console.error("[forgotPassword] ❌ ERROR:", error);
       res.status(500).json({ message: "Error al iniciar restablecimiento de contraseña." });
     }
   }
@@ -494,33 +500,35 @@ class AuthController {
     }
 
     try {
+      console.log(`[resendVerificationEmail] 🔄 Reenviando para: ${usuario_correo}`);
+      
       const result = await Auth.resendVerificationToken(usuario_correo);
 
       if (!result.success) {
         return res.status(400).json({ message: result.message });
       }
 
-      // Enviar correo
-      const appBase = process.env.APP_BASE_URL || "http://localhost:5173";
-      // Codificar el token para la URL
-      const encodedToken = encodeURIComponent(result.emailVerificationToken);
-      const verificationURL = `${appBase}/verificar-email/${encodedToken}`;
+      // Construir URL de verificación
+      const appBase = process.env.FRONTEND_URL || "http://localhost:5173";
+      const verificationURL = `${appBase}/verificar-email/${result.emailVerificationToken}`;
 
+      // Obtener nombre del usuario
+      const user = await Auth.findUserByEmail(usuario_correo);
+      const userName = user ? user.usuario_nombre : 'Usuario';
+
+      // Enviar correo usando Brevo
       try {
-        const user = await Auth.findUserByEmail(usuario_correo);
-        await sendVerificationEmail(
-          usuario_correo,
-          verificationURL,
-          user.usuario_nombre
-        );
+        console.log('[resendVerificationEmail] 📧 Enviando correo con Brevo...');
+        await sendVerificationEmail(usuario_correo, verificationURL, userName);
+        console.log('[resendVerificationEmail] ✅ Correo reenviado exitosamente');
       } catch (mailErr) {
-        console.log(`[DEV] ⚠️ No se pudo enviar correo (${mailErr.message})`);
-        console.log(`[DEV] 🔗 Enlace de verificación: ${verificationURL}`);
+        console.error(`[resendVerificationEmail] ❌ Error enviando correo:`, mailErr);
+        console.log(`[resendVerificationEmail] 🔗 URL para debug: ${verificationURL}`);
       }
 
       res.json({ message: "Token de verificación reenviado. Por favor revisa tu correo." });
     } catch (error) {
-      console.error("Error al reenviar token:", error.message);
+      console.error("[resendVerificationEmail] ❌ Error:", error);
       res.status(500).json({ message: "Error al reenviar token de verificación." });
     }
   }

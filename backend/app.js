@@ -100,29 +100,24 @@ app.get("/", (req, res) => {
   res.send("Backend funcionando ✔️");
 });
 
-// Test email verification 
-app.get("/test-smtp", async (req, res) => {
+
+
+// Test Brevo
+app.get("/test-brevo", async (req, res) => {
   try {
-    const nodemailer = require("nodemailer");
-
-    const t = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: 2525,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
-    await t.verify();
-
-    res.send("SMTP OK ✔");
+    const { sendVerificationEmail } = await import('./utils/emailService.js');
+    
+    await sendVerificationEmail(
+      'test@example.com',
+      'https://example.com/verify/test123',
+      'Usuario Test'
+    );
+    
+    res.send("✅ Brevo email enviado correctamente");
   } catch (e) {
-    res.send("ERROR: " + e.message);
+    res.status(500).send(`❌ Error Brevo: ${e.message}`);
   }
 });
-
 
 // Rutas
 app.use("/api/usuarios", userRoutes);
