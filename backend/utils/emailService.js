@@ -1,17 +1,16 @@
 import nodemailer from 'nodemailer';
 
 // Configurar el transporte de nodemailer - MEJORADO
-const getTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT), // 2525
-    secure: false, // obligatorio para 2525
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-};
+const getTransporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: 2525,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 
 
 

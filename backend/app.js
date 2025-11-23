@@ -100,6 +100,30 @@ app.get("/", (req, res) => {
   res.send("Backend funcionando ✔️");
 });
 
+// Test email verification 
+app.get("/test-smtp", async (req, res) => {
+  try {
+    const nodemailer = require("nodemailer");
+
+    const t = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: 2525,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await t.verify();
+
+    res.send("SMTP OK ✔");
+  } catch (e) {
+    res.send("ERROR: " + e.message);
+  }
+});
+
+
 // Rutas
 app.use("/api/usuarios", userRoutes);
 app.use("/api/auth", authRoutes);
