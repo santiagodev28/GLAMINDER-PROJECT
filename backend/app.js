@@ -44,13 +44,24 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false, // Permitir recursos externos si es necesario
 }));
 
-// Configuración de CORS
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-    credentials: true, // Necesario para CSRF
-  })
-);
+// Permitir múltiples orígenes
+const allowedOrigins = [
+  'http://localhost:5173', // desarrollo local
+  'https://glaminder-project-production.up.railway.app/' // frontend en Railway
+];
+
+app.use(cors({
+  origin: function(origin, callback){
+    // permitir requests sin origen (postman, curl)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = 'El CORS no permite este origen';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
 
 // Middleware para parsear JSON
 app.use(express.json());
