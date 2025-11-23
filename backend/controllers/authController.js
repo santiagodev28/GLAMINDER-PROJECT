@@ -151,119 +151,103 @@ class AuthController {
   }
 
   static async userRegister(req, res) {
-    try {
-      const {
-        usuario_nombre,
-        usuario_apellido,
-        usuario_correo,
-        usuario_contrasena,
-        usuario_telefono,
-        rol_id,
-        tienda_id,
-        empleado_especialidad,
-        acepta_terminos,
-      } = req.body;
+  try {
+    const {
+      usuario_nombre,
+      usuario_apellido,
+      usuario_correo,
+      usuario_contrasena,
+      usuario_telefono,
+      rol_id,
+      tienda_id,
+      empleado_especialidad,
+      acepta_terminos,
+    } = req.body;
 
-      const ip_address = req.ip || req.connection.remoteAddress;
-      const user_agent = req.get('user-agent');
+    const ip_address = req.ip || req.connection.remoteAddress;
+    const user_agent = req.get('user-agent');
 
-      // Validar campos obligatorios
-      if (
-        !usuario_nombre ||
-        !usuario_apellido ||
-        !usuario_correo ||
-        !usuario_contrasena ||
-        !usuario_telefono
-      ) {
-        return res.status(400).json({
-          message: "Por favor completa todos los campos.",
-        });
-      }
+    // Validar campos obligatorios
+    if (!usuario_nombre || !usuario_apellido || !usuario_correo || !usuario_contrasena || !usuario_telefono) {
+      return res.status(400).json({ message: "Por favor completa todos los campos." });
+    }
 
-      // Validar aceptación de términos
-      if (!acepta_terminos) {
-        return res.status(400).json({
-          message: "Debes aceptar los términos y condiciones para registrarte.",
-        });
-      }
+    // Validar aceptación de términos
+    if (!acepta_terminos) {
+      return res.status(400).json({ message: "Debes aceptar los términos y condiciones para registrarte." });
+    }
 
-      // Crear el usuario
-      const result = await Auth.createUser({
-        usuario_nombre,
-        usuario_apellido,
-        usuario_correo,
-        usuario_contrasena,
-        usuario_telefono,
-        rol_id,
-        tienda_id,
-        empleado_especialidad,
-        acepta_terminos,
-        ip_address,
-        user_agent,
-      });
+    // Crear usuario
+    const result = await Auth.createUser({
+      usuario_nombre,
+      usuario_apellido,
+      usuario_correo,
+      usuario_contrasena,
+      usuario_telefono,
+      rol_id,
+      tienda_id,
+      empleado_especialidad,
+      acepta_terminos,
+      ip_address,
+      user_agent,
+    });
 
-      // Enviar correo de verificación
-      const appBase = process.env.APP_BASE_URL || "http://localhost:5173";
-      // El token ya viene sin hashear desde Auth.createUser
-      const rawToken = result.data.emailVerificationToken;
-      console.log(`[userRegister] Token sin hashear (primeros 8 chars): ${rawToken ? rawToken.substring(0, 8) : 'null'}...`);
-      
-      // Codificar el token para la URL
-      const encodedToken = encodeURIComponent(rawToken);
-      const verificationURL = `${appBase}/verificar-email/${encodedToken}`;
-      
-      console.log(`[userRegister] URL de verificación generada: ${verificationURL.substring(0, 80)}...`);
+    // ⚡ Protección contra token undefined
+    const rawToken = result?.data?.emailVerificationToken || null;
+    const userId = result?.data?.userId || null;
 
+    const appBase = process.env.FRONTEND_URL || "http://localhost:5173";
+    const encodedToken = rawToken ? encodeURIComponent(rawToken) : null;
+    const verificationURL = encodedToken ? `${appBase}/verificar-email/${encodedToken}` : null;
+
+    console.log(`[userRegister] Token generado: ${rawToken ? rawToken.substring(0,8) : 'null'}`);
+    console.log(`[userRegister] URL de verificación: ${verificationURL || 'null'}`);
+
+    // Enviar correo (no rompe si falla)
+    if (rawToken) {
       try {
-        await sendVerificationEmail(
-          result.data.usuario_correo,
-          verificationURL,
-          result.data.usuario_nombre
-        );
-        console.log(`[userRegister] ✅ Correo de verificación enviado a ${result.data.usuario_correo}`);
+        await sendVerificationEmail(result.data.usuario_correo, verificationURL, result.data.usuario_nombre);
+        console.log(`[userRegister] Correo de verificación enviado a ${result.data.usuario_correo}`);
       } catch (mailErr) {
-        console.log(`[DEV] ⚠️ No se pudo enviar correo de verificación (${mailErr.message})`);
-        console.log(`[DEV] 🔗 Enlace de verificación para ${result.data.usuario_correo}:`);
-        console.log(`[DEV] ${verificationURL}`);
+        console.warn(`[userRegister] ⚠️ No se pudo enviar correo: ${mailErr.message}`);
+        console.log(`[userRegister] Link de verificación: ${verificationURL}`);
       }
+    }
 
-      // Registrar creación de usuario en auditoría
+    // Auditoría segura
+    if (userId) {
       try {
         await Audit.logAction({
-          usuario_id: result.data.userId,
+          usuario_id: userId,
           accion: 'CREATE',
           tabla_afectada: 'usuarios',
-          registro_id: result.data.userId,
-          datos_nuevos: {
-            usuario_nombre,
-            usuario_apellido,
-            usuario_correo,
-            rol_id: rol_id || 4,
-          },
-          ip_address: req.ip || req.connection.remoteAddress,
-          user_agent: req.get('user-agent'),
+          registro_id: userId,
+          datos_nuevos: { usuario_nombre, usuario_apellido, usuario_correo, rol_id: rol_id || 4 },
+          ip_address,
+          user_agent,
         });
       } catch (auditError) {
-        console.error('Error al registrar auditoría:', auditError);
+        console.warn('Error al registrar auditoría:', auditError);
       }
-
-      res.status(201).json({
-        message: "Usuario registrado exitosamente. Por favor verifica tu correo electrónico.",
-        data: {
-          ...result.data,
-          emailVerificationToken: undefined, // No enviar el token en la respuesta
-        },
-      });
-    } catch (error) {
-      if (error.message.includes("registrado")) {
-        return res.status(400).json({ message: error.message });
-      }
-      console.error("Error al registrar el usuario:", error.message);
-      return res
-        .status(500)
-        .json({ message: "Error al registrar el usuario." });
     }
+
+    res.status(201).json({
+      message: "Usuario registrado exitosamente. Por favor verifica tu correo electrónico.",
+      data: {
+        ...result.data,
+        emailVerificationToken: undefined,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error al registrar el usuario:", error);
+    if (error.message.includes("registrado")) {
+      return res.status(400).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Error al registrar el usuario." });
   }
+}
+
 
   static async changePassword(req, res) {
     try {
