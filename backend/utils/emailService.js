@@ -1,41 +1,45 @@
 import nodemailer from 'nodemailer';
 
-/* Configurar transporter con Gmail */
+/* Configurar transporter con puertos alternativos */
 const getTransporter = () => {
-  console.log('📧 Configurando transporter Gmail...');
+  console.log('📧 Configurando transporter Gmail con puertos alternativos...');
   
   return nodemailer.createTransport({
-    service: 'gmail',
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true para 465, false para otros puertos
+    port: 465, // ✅ Puerto seguro SSL/TLS
+    secure: true, // ✅ true para puerto 465
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
     },
     tls: {
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      ciphers: 'SSLv3'
     },
-    connectionTimeout: 60000, // 60 segundos
-    greetingTimeout: 30000, // 30 segundos  
-    socketTimeout: 60000 // 60 segundos
+    connectionTimeout: 10000, // Reducir timeout
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
+    // ✅ Configuraciones adicionales para Railway
+    pool: true,
+    maxConnections: 1,
+    rateDelta: 20000,
+    rateLimit: 5
   });
 };
 
 export { getTransporter };
 
-/* Helper general de envío */
+/* Helper con manejo de errores mejorado */
 async function sendEmail({ to, subject, html }) {
+  let transporter;
+  
   try {
-    console.log(`📧 [Gmail] Iniciando envío a: ${to}`);
-    console.log(`📧 [Gmail] Asunto: ${subject}`);
+    console.log(`📧 [Gmail-465] Iniciando envío a: ${to}`);
     
-    const transporter = getTransporter();
+    transporter = getTransporter();
     
-    // Verificar conexión antes de enviar
-    console.log('🔍 [Gmail] Verificando conexión SMTP...');
-    await transporter.verify();
-    console.log('✅ [Gmail] Conexión SMTP verificada correctamente');
+    // ✅ NO verificar conexión primero (puede causar timeout)
+    console.log('📤 [Gmail-465] Enviando directamente...');
     
     const mailOptions = {
       from: {
@@ -44,22 +48,14 @@ async function sendEmail({ to, subject, html }) {
       },
       to: to,
       subject: subject,
-      html: html,
-      // Headers adicionales para mejor deliverability
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high'
-      }
+      html: html
     };
 
-    console.log('📤 [Gmail] Enviando email...');
     const result = await transporter.sendMail(mailOptions);
     
-    console.log('✅ [Gmail] Email enviado exitosamente:', {
+    console.log('✅ [Gmail-465] Email enviado:', {
       messageId: result.messageId,
-      accepted: result.accepted,
-      rejected: result.rejected
+      accepted: result.accepted
     });
     
     return { 
@@ -69,12 +65,61 @@ async function sendEmail({ to, subject, html }) {
     };
     
   } catch (error) {
-    console.error('❌ [Gmail] Error enviando email:', {
+    console.error('❌ [Gmail-465] Error:', {
       message: error.message,
-      code: error.code,
-      command: error.command
+      code: error.code
     });
+    
+    // ✅ Intentar con configuración alternativa
+    if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED') {
+      return await tryAlternativeConfig(to, subject, html);
+    }
+    
     throw error;
+  } finally {
+    if (transporter) {
+      transporter.close();
+    }
+  }
+}
+
+/* Configuración alternativa para Railway */
+async function tryAlternativeConfig(to, subject, html) {
+  try {
+    console.log('🔄 [Gmail-Alt] Intentando configuración alternativa...');
+    
+    const altTransporter = nodemailer.createTransporter({
+      service: 'gmail', // ✅ Usar servicio predefinido
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: html
+    };
+
+    const result = await altTransporter.sendMail(mailOptions);
+    
+    console.log('✅ [Gmail-Alt] Email enviado con config alternativa');
+    altTransporter.close();
+    
+    return { 
+      success: true, 
+      messageId: result.messageId,
+      method: 'alternative'
+    };
+    
+  } catch (altError) {
+    console.error('❌ [Gmail-Alt] También falló:', altError.message);
+    throw altError;
   }
 }
 
