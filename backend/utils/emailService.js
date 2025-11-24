@@ -1,4 +1,5 @@
-import { MailerSend, EmailParams, Sender, Recipient } from '@mailersend/mailersend';
+import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
+
 
 /* Inicializar MailerSend */
 const mailerSend = new MailerSend({
