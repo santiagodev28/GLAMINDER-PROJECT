@@ -4,6 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import csrf from "csurf";
 import { apiLimiter } from "./middlewares/rateLimiter.js";
+import Brevo from "@getbrevo/brevo";
+
 
 // Importar rutas
 import userRoutes from "./routes/usersRoute.js";
@@ -107,7 +109,6 @@ app.get("/test-email", async (req, res) => {
   try {
     console.log("➡️ Enviando correo de prueba...");
 
-    const Brevo = require("@getbrevo/brevo");
     const apiInstance = new Brevo.TransactionalEmailsApi();
 
     apiInstance.setApiKey(
