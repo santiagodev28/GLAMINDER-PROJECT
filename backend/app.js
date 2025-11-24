@@ -106,29 +106,22 @@ app.get("/", (req, res) => {
 // Test email 
 app.get("/test-email", async (req, res) => {
   try {
-    const { getTransporter } = await import('./utils/emailService.js');
-    const transporter = getTransporter();
-
-    await transporter.verify();
-    console.log("💚 Gmail listo para enviar");
-
-    const result = await transporter.sendMail({
-      from: `"Glaminder" <${process.env.EMAIL_USER}>`,
-      to: "shurtado308@gmail.com",
-      subject: "TEST Gmail ✔️",
-      html: "<h1>Funciona 🔥</h1>"
+    const { testMailerSendConnection } = await import('./utils/emailService.js');
+    const result = await testMailerSendConnection();
+    
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(500).json(result);
+    }
+    
+  } catch (e) {
+    res.status(500).json({ 
+      success: false, 
+      error: e.message 
     });
-
-    console.log(result);
-
-    res.json({ ok: true, id: result.messageId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message, full: err });
   }
 });
-
-
 
 // Rutas
 app.use("/api/usuarios", userRoutes);
