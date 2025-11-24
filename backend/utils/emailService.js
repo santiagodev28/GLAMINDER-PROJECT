@@ -188,3 +188,116 @@ export const sendPasswordChangeEmail = async (email, nombre, ipAddress) => {
     `
   });
 };
+
+/* Eliminación de cuenta - FUNCIÓN FALTANTE */
+export const sendAccountDeletionEmail = async (email, nombre) => {
+  console.log(`📧 [sendAccountDeletionEmail] Notificando eliminación a: ${email}`);
+  
+  return sendEmail({
+    to: email,
+    subject: "⚠️ Cuenta eliminada - Glaminder",
+    html: `
+      <!DOCTYPE html>
+      <html lang="es">
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); padding: 35px 20px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 28px;">⚠️ Glaminder</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.9;">Cuenta eliminada</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #333; margin: 0 0 20px 0;">Hola ${nombre},</h2>
+            
+            <p style="color: #555; line-height: 1.6; margin: 0 0 20px 0;">
+              Tu cuenta de Glaminder ha sido <strong>eliminada exitosamente</strong> según tu solicitud.
+            </p>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+              <p style="margin: 0; color: #666;"><strong>📅 Fecha de eliminación:</strong> ${new Date().toLocaleString("es-CO")}</p>
+              <p style="margin: 10px 0 0 0; color: #666;"><strong>📧 Email:</strong> ${email}</p>
+            </div>
+            
+            <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+              <p style="color: #721c24; margin: 0; font-weight: bold;">
+                <strong>⚠️ Importante:</strong> Si NO solicitaste la eliminación de tu cuenta, contacta nuestro soporte inmediatamente.
+              </p>
+            </div>
+
+            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 20px 0 0 0;">
+              Todos tus datos personales han sido eliminados de nuestros sistemas de acuerdo con nuestras políticas de privacidad.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color: #f8f9fa; padding: 25px; text-align: center; border-top: 1px solid #eee;">
+            <p style="color: #888; font-size: 12px; margin: 0;">
+              Si tienes alguna consulta, puedes contactarnos.<br>
+              © 2025 Glaminder - Todos los derechos reservados
+            </p>
+          </div>
+          
+        </div>
+      </body>
+      </html>
+    `
+  });
+};
+
+/* Cambio de email - FUNCIÓN ADICIONAL */
+export const sendEmailChangeEmail = async (oldEmail, newEmail, nombre) => {
+  console.log(`📧 [sendEmailChangeEmail] Notificando cambio: ${oldEmail} -> ${newEmail}`);
+  
+  return sendEmail({
+    to: oldEmail,
+    subject: "📧 Correo electrónico actualizado - Glaminder",
+    html: `
+      <!DOCTYPE html>
+      <html lang="es">
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f8f9fa;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); padding: 35px 20px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 28px;">📧 Glaminder</h1>
+            <p style="margin: 8px 0 0 0; opacity: 0.9;">Email actualizado</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <h2 style="color: #333; margin: 0 0 20px 0;">Hola ${nombre},</h2>
+            
+            <p style="color: #555; line-height: 1.6; margin: 0 0 25px 0;">
+              Tu dirección de correo electrónico ha sido <strong>actualizada exitosamente</strong> en tu cuenta de Glaminder.
+            </p>
+
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #17a2b8;">
+              <p style="margin: 0; color: #666;"><strong>📧 Email anterior:</strong> ${oldEmail}</p>
+              <p style="margin: 10px 0; color: #666;"><strong>📧 Nuevo email:</strong> ${newEmail}</p>
+              <p style="margin: 10px 0 0 0; color: #666;"><strong>📅 Fecha:</strong> ${new Date().toLocaleString("es-CO")}</p>
+            </div>
+
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px;">
+              <p style="color: #856404; margin: 0; font-weight: bold;">
+                <strong>🔒 Nota de seguridad:</strong> Si NO realizaste este cambio, contacta nuestro soporte inmediatamente para proteger tu cuenta.
+              </p>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="background-color: #f8f9fa; padding: 25px; text-align: center; border-top: 1px solid #eee;">
+            <p style="color: #888; font-size: 12px; margin: 0;">
+              A partir de ahora, todas las comunicaciones se enviarán a tu nueva dirección.<br>
+              © 2025 Glaminder - Todos los derechos reservados
+            </p>
+          </div>
+          
+        </div>
+      </body>
+      </html>
+    `
+  });
+};
