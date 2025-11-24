@@ -224,7 +224,7 @@ const RegisterForm = () => {
       if (res?.ok) {
         toast.success(
           res.message || 
-          "Usuario registrado exitosamente. Por favor verifica tu correo electrónico antes de iniciar sesión.",
+          "Usuario registrado exitosamente.",
           {
             position: "top-right",
             autoClose: 6000,

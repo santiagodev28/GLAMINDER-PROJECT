@@ -29,7 +29,7 @@ const LoginForm = () => {
     const registerSuccess = localStorage.getItem("registroExitoso");
     if (registerSuccess === "true") {
       toast.success(
-        "¡Registro exitoso! Por favor verifica tu correo electrónico.",
+        "¡Registro exitoso!",
         {
           position: "top-right",
           autoClose: 5000,
