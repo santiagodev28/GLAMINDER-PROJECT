@@ -106,20 +106,22 @@ app.get("/", (req, res) => {
 // Test email 
 app.get("/test-email", async (req, res) => {
   try {
-    const { testMailerSendConnection } = await import('./utils/emailService.js');
-    const result = await testMailerSendConnection();
+    const { sendTestEmail } = await import('./utils/emailService.js');
     
-    if (result.success) {
-      res.json(result);
-    } else {
-      res.status(500).json(result);
-    }
+    const result = await sendTestEmail(
+      'shurtado308@gmail.com',
+      'Test desde Glaminder 🚀',
+      '<h1>¡Hola!</h1><p>Este es un email de prueba desde <strong>Glaminder</strong></p>'
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Email enviado con función directa',
+      result: result 
+    });
     
   } catch (e) {
-    res.status(500).json({ 
-      success: false, 
-      error: e.message 
-    });
+    res.status(500).json({ error: e.message });
   }
 });
 
