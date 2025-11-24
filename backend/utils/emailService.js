@@ -13,7 +13,7 @@ async function sendEmail({ to, subject, html }) {
     const email = new Brevo.SendSmtpEmail();
     email.sender = {
       name: "Glaminder",
-      email: "no-reply@glaminder.com"
+      email: "no-reply@brevo.com"
     };
 
     email.to = [{ email: to }];
