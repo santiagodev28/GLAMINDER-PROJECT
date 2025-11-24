@@ -4,7 +4,6 @@ import cors from "cors";
 import helmet from "helmet";
 import csrf from "csurf";
 import { apiLimiter } from "./middlewares/rateLimiter.js";
-import * as Brevo from "@getbrevo/brevo";
 
 
 
@@ -107,6 +106,7 @@ app.get("/", (req, res) => {
 // Test email 
 app.get("/test-email", async (req, res) => {
   try {
+    const { getTransporter } = await import('./utils/emailService.js');
     const transporter = getTransporter();
 
     await transporter.verify();

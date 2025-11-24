@@ -22,6 +22,8 @@ const getTransporter = () => {
   });
 };
 
+export { getTransporter };
+
 /* Helper general de envío */
 async function sendEmail({ to, subject, html }) {
   try {
