@@ -4,7 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import csrf from "csurf";
 import { apiLimiter } from "./middlewares/rateLimiter.js";
-import Brevo from "@getbrevo/brevo";
+import * as Brevo from "@getbrevo/brevo";
+
 
 
 // Importar rutas
@@ -105,7 +106,7 @@ app.get("/", (req, res) => {
 
 
 // Test Brevo
-app.get("/test-email", async (req, res) => {
+aapp.get("/test-email", async (req, res) => {
   try {
     console.log("➡️ Enviando correo de prueba...");
 
@@ -113,7 +114,7 @@ app.get("/test-email", async (req, res) => {
 
     apiInstance.setApiKey(
       Brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.EMAIL_API_KEY
+      process.env.BREVO_API_KEY
     );
 
     const emailData = {
