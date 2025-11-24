@@ -104,36 +104,30 @@ app.get("/", (req, res) => {
 });
 
 
-
-// Test Brevo
+// Test email 
 app.get("/test-email", async (req, res) => {
   try {
-    console.log("➡️ Enviando correo de prueba...");
+    const transporter = getTransporter();
 
-    const apiInstance = new Brevo.TransactionalEmailsApi();
+    await transporter.verify();
+    console.log("💚 Gmail listo para enviar");
 
-    apiInstance.setApiKey(
-      Brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY
-    );
+    const result = await transporter.sendMail({
+      from: `"Glaminder" <${process.env.EMAIL_USER}>`,
+      to: "shurtado308@gmail.com",
+      subject: "TEST Gmail ✔️",
+      html: "<h1>Funciona 🔥</h1>"
+    });
 
-    const emailData = {
-      sender: { name: "Glaminder Test", email: "no-reply@brevosend.com" },
-      to: [{ email: "shurtado308@gmail.com" }],
-      subject: "TEST DE ENVÍO DESDE EL BACKEND",
-      htmlContent: "<h2>Si ves este correo, TODO funciona 🔥</h2>",
-    };
+    console.log(result);
 
-    const response = await apiInstance.sendTransacEmail(emailData);
-
-    console.log("📨 RESPUESTA BREVO:", response);
-
-    res.json({ ok: true, brevo: response });
-  } catch (error) {
-    console.error("❌ Error enviando:", error.response?.data || error);
-    res.status(500).json({ error: error.response?.data || error.message });
+    res.json({ ok: true, id: result.messageId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message, full: err });
   }
 });
+
 
 
 // Rutas
