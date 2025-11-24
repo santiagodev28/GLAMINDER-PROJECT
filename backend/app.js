@@ -103,21 +103,36 @@ app.get("/", (req, res) => {
 
 
 // Test Brevo
-app.get("/test-brevo", async (req, res) => {
+app.get("/test-email", async (req, res) => {
   try {
-    const { sendVerificationEmail } = await import('./utils/emailService.js');
-    
-    await sendVerificationEmail(
-      'test@example.com',
-      'https://example.com/verify/test123',
-      'Usuario Test'
+    console.log("➡️ Enviando correo de prueba...");
+
+    const Brevo = require("@getbrevo/brevo");
+    const apiInstance = new Brevo.TransactionalEmailsApi();
+
+    apiInstance.setApiKey(
+      Brevo.TransactionalEmailsApiApiKeys.apiKey,
+      process.env.EMAIL_API_KEY
     );
-    
-    res.send("✅ Brevo email enviado correctamente");
-  } catch (e) {
-    res.status(500).send(`❌ Error Brevo: ${e.message}`);
+
+    const emailData = {
+      sender: { name: "Glaminder Test", email: "no-reply@brevo.com" },
+      to: [{ email: "shurtado308@gmail.com" }],
+      subject: "TEST DE ENVÍO DESDE EL BACKEND",
+      htmlContent: "<h2>Si ves este correo, TODO funciona 🔥</h2>",
+    };
+
+    const response = await apiInstance.sendTransacEmail(emailData);
+
+    console.log("📨 RESPUESTA BREVO:", response);
+
+    res.json({ ok: true, brevo: response });
+  } catch (error) {
+    console.error("❌ Error enviando:", error.response?.data || error);
+    res.status(500).json({ error: error.response?.data || error.message });
   }
 });
+
 
 // Rutas
 app.use("/api/usuarios", userRoutes);
