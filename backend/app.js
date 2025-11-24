@@ -118,7 +118,7 @@ app.get("/test-email", async (req, res) => {
     );
 
     const emailData = {
-      sender: { name: "Glaminder Test", email: "no-reply@brevo.com" },
+      sender: { name: "Glaminder Test", email: "no-reply@brevosend.com" },
       to: [{ email: "shurtado308@gmail.com" }],
       subject: "TEST DE ENVÍO DESDE EL BACKEND",
       htmlContent: "<h2>Si ves este correo, TODO funciona 🔥</h2>",
