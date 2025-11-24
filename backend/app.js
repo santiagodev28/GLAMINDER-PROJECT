@@ -106,7 +106,7 @@ app.get("/", (req, res) => {
 
 
 // Test Brevo
-aapp.get("/test-email", async (req, res) => {
+app.get("/test-email", async (req, res) => {
   try {
     console.log("➡️ Enviando correo de prueba...");
 
