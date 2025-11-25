@@ -12,12 +12,15 @@ import {
   AtSymbolIcon,
   LockClosedIcon,
   EnvelopeIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
 // Componente para el formulario de login
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendEmail, setResendEmail] = useState("");
@@ -25,7 +28,7 @@ const LoginForm = () => {
   const [attemptsRemaining, setAttemptsRemaining] = useState(3);
   const navigate = useNavigate();
 
-  useEffect(() => {
+ /* useEffect(() => {
     const registerSuccess = localStorage.getItem("registroExitoso");
     if (registerSuccess === "true") {
       toast.success(
@@ -39,7 +42,7 @@ const LoginForm = () => {
     }
     // Resetear intentos cuando el componente se monta
     setAttemptsRemaining(3);
-  }, []);
+  }, []); */
 
   // Resetear intentos cuando cambia el email (nuevo intento con diferente usuario)
   useEffect(() => {
@@ -194,7 +197,7 @@ const LoginForm = () => {
                   required
                   autoFocus
                   className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
-                  placeholder="@gmail.com"
+                  placeholder="ejemplo@gmail.com"
                 />
               </div>
             </div>
@@ -212,14 +215,25 @@ const LoginForm = () => {
                   <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
+                  className="block w-full pl-10 pr-12 py-3 border border-[#31343A] rounded-xl bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#B0B3B8] hover:text-[#D1A04D] transition-colors duration-200"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
               </div>
               <div className="mt-2 text-center">
                 {/* Enlace de olvido de contraseña */}

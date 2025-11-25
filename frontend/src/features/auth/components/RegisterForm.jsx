@@ -14,6 +14,8 @@ import {
   ExclamationCircleIcon,
   CheckCircleIcon,
   ArrowPathIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
 // Componente para el formulario de registro
@@ -31,6 +33,8 @@ const RegisterForm = () => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -38,8 +42,6 @@ const RegisterForm = () => {
     name: /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]{3,40}$/,
     email: /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/,
     phone: /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/,
-    password:
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/,
   };
 
   // Validar un campo específico
@@ -51,7 +53,7 @@ const RegisterForm = () => {
         if (!value.trim()) {
           errorMsg = "El nombre es requerido";
         } else if (!regex.name.test(value)) {
-          errorMsg = "Nombre inválido (Mínimo 3 letras, solo letras)";
+          errorMsg = "Mínimo 3 letras, solo letras";
         }
         break;
 
@@ -59,7 +61,7 @@ const RegisterForm = () => {
         if (!value.trim()) {
           errorMsg = "El apellido es requerido";
         } else if (!regex.name.test(value)) {
-          errorMsg = "Apellido inválido (Mínimo 3 letras, solo letras)";
+          errorMsg = "Mínimo 3 letras, solo letras";
         }
         break;
 
@@ -67,7 +69,7 @@ const RegisterForm = () => {
         if (!value.trim()) {
           errorMsg = "El correo es requerido";
         } else if (!regex.email.test(value)) {
-          errorMsg = "Correo inválido (ejemplo: usuario@dominio.com)";
+          errorMsg = "Formato inválido";
         }
         break;
 
@@ -75,7 +77,7 @@ const RegisterForm = () => {
         if (!value.trim()) {
           errorMsg = "El teléfono es requerido";
         } else if (!regex.phone.test(value)) {
-          errorMsg = "Teléfono inválido (Formato: 300-000-0000)";
+          errorMsg = "Formato: 300-000-0000";
         }
         break;
 
@@ -83,10 +85,7 @@ const RegisterForm = () => {
         if (!value.trim()) {
           errorMsg = "La contraseña es requerida";
         } else if (value.length < 8) {
-          errorMsg = "La contraseña debe tener al menos 8 caracteres";
-        } else if (!regex.password.test(value)) {
-          errorMsg =
-            "Debe incluir mayúscula, minúscula, número y símbolo (@$!%*?&)";
+          errorMsg = "Mínimo 8 caracteres";
         }
         break;
 
@@ -100,7 +99,7 @@ const RegisterForm = () => {
 
       case "aceptaTerminos":
         if (!value) {
-          errorMsg = "Debes aceptar los términos y condiciones";
+          errorMsg = "Debes aceptar los términos";
         }
         break;
 
@@ -255,28 +254,9 @@ const RegisterForm = () => {
       return "border-[#31343A]";
     }
     if (errors[fieldName]) {
-      return "border-red-500 focus:border-red-500 focus:ring-red-500";
+      return "border-red-500/80 focus:border-red-500 focus:ring-red-500/20";
     }
-    return "border-green-500 focus:border-green-500 focus:ring-green-500";
-  };
-
-  // Función para mostrar el icono de estado
-  const getStatusIcon = (fieldName) => {
-    if (!touched[fieldName]) return null;
-
-    if (errors[fieldName]) {
-      return (
-        <ExclamationCircleIcon className="h-5 w-5 text-red-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
-      );
-    }
-
-    if (formData[fieldName] && !errors[fieldName]) {
-      return (
-        <CheckCircleIcon className="h-5 w-5 text-green-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
-      );
-    }
-
-    return null;
+    return "border-green-500/80 focus:border-green-500 focus:ring-green-500/20";
   };
 
   return (
@@ -336,19 +316,22 @@ const RegisterForm = () => {
                     onFocus={handleFocus}
                     required
                     autoFocus
-                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-4 py-3 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] transition-all duration-200 ${getInputBorderClass(
                       "name"
                     )}`}
                     placeholder="Ingresa tu nombre"
                   />
-                  {getStatusIcon("name")}
-                  {errors.name && touched.name && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
-                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                      {errors.name}
-                    </p>
-                  )}
                 </div>
+                {errors.name && touched.name && (
+                  <p className="text-red-400 text-xs mt-2 ml-1">
+                    {errors.name}
+                  </p>
+                )}
+                {!errors.name && touched.name && formData.name && (
+                  <p className="text-green-400 text-xs mt-2 ml-1">
+                    ✓ Correcto
+                  </p>
+                )}
               </div>
 
               <div>
@@ -370,19 +353,22 @@ const RegisterForm = () => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-4 py-3 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] transition-all duration-200 ${getInputBorderClass(
                       "lastName"
                     )}`}
                     placeholder="Ingresa tu apellido"
                   />
-                  {getStatusIcon("lastName")}
-                  {errors.lastName && touched.lastName && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
-                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                      {errors.lastName}
-                    </p>
-                  )}
                 </div>
+                {errors.lastName && touched.lastName && (
+                  <p className="text-red-400 text-xs mt-2 ml-1">
+                    {errors.lastName}
+                  </p>
+                )}
+                {!errors.lastName && touched.lastName && formData.lastName && (
+                  <p className="text-green-400 text-xs mt-2 ml-1">
+                    ✓ Correcto
+                  </p>
+                )}
               </div>
             </div>
 
@@ -406,19 +392,22 @@ const RegisterForm = () => {
                   onBlur={handleBlur}
                   onFocus={handleFocus}
                   required
-                  className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                  className={`block w-full pl-10 pr-4 py-3 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] transition-all duration-200 ${getInputBorderClass(
                     "email"
                   )}`}
                   placeholder="usuario@dominio.com"
                 />
-                {getStatusIcon("email")}
-                {errors.email && touched.email && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center">
-                    <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                    {errors.email}
-                  </p>
-                )}
               </div>
+              {errors.email && touched.email && (
+                <p className="text-red-400 text-xs mt-2 ml-1">
+                  {errors.email}
+                </p>
+              )}
+              {!errors.email && touched.email && formData.email && (
+                <p className="text-green-400 text-xs mt-2 ml-1">
+                  ✓ Correcto
+                </p>
+              )}
             </div>
 
             {/* Campo de teléfono */}
@@ -442,19 +431,22 @@ const RegisterForm = () => {
                   onFocus={handleFocus}
                   required
                   maxLength={12}
-                  className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                  className={`block w-full pl-10 pr-4 py-3 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] transition-all duration-200 ${getInputBorderClass(
                     "phone"
                   )}`}
                   placeholder="300-000-0000"
                 />
-                {getStatusIcon("phone")}
-                {errors.phone && touched.phone && (
-                  <p className="text-red-500 text-sm mt-1 flex items-center">
-                    <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                    {errors.phone}
-                  </p>
-                )}
               </div>
+              {errors.phone && touched.phone && (
+                <p className="text-red-400 text-xs mt-2 ml-1">
+                  {errors.phone}
+                </p>
+              )}
+              {!errors.phone && touched.phone && formData.phone && (
+                <p className="text-green-400 text-xs mt-2 ml-1">
+                  ✓ Correcto
+                </p>
+              )}
             </div>
 
             {/* Campos de contraseña en fila */}
@@ -471,26 +463,41 @@ const RegisterForm = () => {
                     <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-12 py-3 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] transition-all duration-200 ${getInputBorderClass(
                       "password"
                     )}`}
                     placeholder="Mínimo 8 caracteres"
                   />
-                  {getStatusIcon("password")}
-                  {errors.password && touched.password && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
-                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                      {errors.password}
-                    </p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#B0B3B8] hover:text-[#D1A04D] transition-colors duration-200"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
+                {errors.password && touched.password && (
+                  <p className="text-red-400 text-xs mt-2 ml-1">
+                    {errors.password}
+                  </p>
+                )}
+                {!errors.password && touched.password && formData.password && (
+                  <p className="text-green-400 text-xs mt-2 ml-1">
+                    ✓ Correcto
+                  </p>
+                )}
               </div>
 
               <div>
@@ -505,33 +512,48 @@ const RegisterForm = () => {
                     <LockClosedIcon className="h-5 w-5 text-[#B0B3B8]" />
                   </div>
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     required
-                    className={`block w-full pl-10 pr-10 py-2.5 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] focus:border-transparent transition-all duration-200 ${getInputBorderClass(
+                    className={`block w-full pl-10 pr-12 py-3 text-base border rounded-lg bg-transparent text-[#F5F5F5] placeholder-[#B0B3B8] focus:outline-none focus:ring-2 focus:ring-[#D1A04D] transition-all duration-200 ${getInputBorderClass(
                       "confirmPassword"
                     )}`}
                     placeholder="Repite tu contraseña"
                   />
-                  {getStatusIcon("confirmPassword")}
-                  {errors.confirmPassword && touched.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
-                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                      {errors.confirmPassword}
-                    </p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#B0B3B8] hover:text-[#D1A04D] transition-colors duration-200"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
+                {errors.confirmPassword && touched.confirmPassword && (
+                  <p className="text-red-400 text-xs mt-2 ml-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+                {!errors.confirmPassword && touched.confirmPassword && formData.confirmPassword && (
+                  <p className="text-green-400 text-xs mt-2 ml-1">
+                    ✓ Correcto
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Checkbox de términos y condiciones */}
             <div>
-              <div className="flex items-start">
-                <div className="flex items-center h-5 mt-0.5">
+              <div className="flex items-start gap-3">
+                <div className="flex items-center h-6 mt-0.5">
                   <input
                     id="aceptaTerminos"
                     type="checkbox"
@@ -539,10 +561,14 @@ const RegisterForm = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     required
-                    className="w-4 h-4 text-[#D1A04D] bg-transparent border-[#31343A] rounded focus:ring-[#D1A04D] focus:ring-2"
+                    className={`w-5 h-5 rounded border-2 transition-all duration-200 cursor-pointer ${
+                      formData.aceptaTerminos
+                        ? "bg-green-500/80 border-green-500"
+                        : "bg-transparent border-[#31343A] hover:border-[#D1A04D]"
+                    }`}
                   />
                 </div>
-                <div className="ml-3 text-sm">
+                <div className="text-sm flex-1">
                   <label
                     htmlFor="aceptaTerminos"
                     className="text-[#B0B3B8] cursor-pointer leading-relaxed"
@@ -567,8 +593,7 @@ const RegisterForm = () => {
                     </Link>
                   </label>
                   {errors.aceptaTerminos && touched.aceptaTerminos && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center">
-                      <ExclamationCircleIcon className="h-4 w-4 mr-1" />
+                    <p className="text-red-400 text-xs mt-1">
                       {errors.aceptaTerminos}
                     </p>
                   )}

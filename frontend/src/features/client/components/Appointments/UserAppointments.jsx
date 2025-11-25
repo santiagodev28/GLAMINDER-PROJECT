@@ -95,17 +95,17 @@ const UserAppointments = () => {
 
   if (error) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-8 sm:py-12 px-4 sm:px-0">
         <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
           <ExclamationTriangleIcon className="w-10 h-10 text-red-400" />
         </div>
-        <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
+        <h3 className="text-base sm:text-lg font-medium text-[#F5F5F5] mb-2">
           Error al cargar las citas
         </h3>
-        <p className="text-[#B0B3B8] mb-6">{error}</p>
+        <p className="text-[#B0B3B8] text-xs sm:text-sm mb-6">{error}</p>
         <button
           onClick={loadAppointments}
-          className="px-6 py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 text-xs sm:text-base"
         >
           Reintentar
         </button>
@@ -115,14 +115,16 @@ const UserAppointments = () => {
 
   if (appointments.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-8 sm:py-12 px-4 sm:px-0">
         <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
           <CalendarIcon className="w-10 h-10 text-white" />
         </div>
-        <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
+        <h3 className="text-base sm:text-lg font-medium text-[#F5F5F5] mb-2">
           No tienes citas programadas
         </h3>
-        <p className="text-[#B0B3B8]">Agenda tu primera cita para comenzar</p>
+        <p className="text-[#B0B3B8] text-xs sm:text-sm">
+          Agenda tu primera cita para comenzar
+        </p>
       </div>
     );
   }
@@ -136,140 +138,213 @@ const UserAppointments = () => {
     : appointments;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8 px-4 sm:px-0">
       {/* Header */}
-      <div className=" backdrop-blur-md rounded-2xl p-8 border border-white/10 shadow-2xl">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center justify-center mb-4 md:mb-0">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg mr-4">
-              <CalendarIcon className="w-8 h-8 text-white" />
+      <div className="backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-white/10 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          {/* Título y descripción */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <CalendarIcon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#F5F5F5]">
                 Mis Citas
               </h1>
-              <p className="text-[#B0B3B8] text-lg">
+              <p className="text-[#B0B3B8] text-xs sm:text-base mt-1">
                 Gestiona todas tus citas programadas
               </p>
             </div>
           </div>
+
           {/* Filtro de fecha */}
-          <div className="flex flex-col items-end gap-2">
-            <label className="text-[#B0B3B8] text-sm">Filtrar por fecha:</label>
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="p-2 rounded-lg bg-black/70 border border-white/20 text-[#F5F5F5] focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D]"
-            />
-            {filterDate && (
-              <button
-                onClick={() => setFilterDate("")}
-                className="text-xs text-[#D1A04D] hover:underline mt-1"
-              >
-                Limpiar filtro
-              </button>
-            )}
+          <div className="flex flex-col gap-2 sm:items-end">
+            <label className="text-[#B0B3B8] text-xs sm:text-sm font-medium">
+              Filtrar por fecha:
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="p-2 sm:p-3 rounded-lg bg-black/70 border border-white/20 text-[#F5F5F5] text-xs sm:text-sm focus:ring-2 focus:ring-[#D1A04D]/50 focus:border-[#D1A04D] transition-all duration-300"
+              />
+              {filterDate && (
+                <button
+                  onClick={() => setFilterDate("")}
+                  className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-[#D1A04D] hover:text-[#F5F5F5] bg-[#D1A04D]/10 hover:bg-[#D1A04D]/20 rounded-lg border border-[#D1A04D]/30 hover:border-[#D1A04D]/50 transition-all duration-300 font-medium"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Estadísticas rápidas */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-black/80 backdrop-blur-sm border border-white/10 rounded-xl p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold text-[#D1A04D]">
+            {appointments.length}
+          </p>
+          <p className="text-xs sm:text-sm text-[#B0B3B8] mt-1">Total de citas</p>
+        </div>
+        <div className="bg-black/80 backdrop-blur-sm border border-white/10 rounded-xl p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold text-blue-400">
+            {appointments.filter((a) => a.cita_estado === "confirmada").length}
+          </p>
+          <p className="text-xs sm:text-sm text-[#B0B3B8] mt-1">Confirmadas</p>
+        </div>
+        <div className="bg-black/80 backdrop-blur-sm border border-white/10 rounded-xl p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold text-yellow-400">
+            {appointments.filter((a) => a.cita_estado === "pendiente").length}
+          </p>
+          <p className="text-xs sm:text-sm text-[#B0B3B8] mt-1">Pendientes</p>
+        </div>
+        <div className="bg-black/80 backdrop-blur-sm border border-white/10 rounded-xl p-3 sm:p-4 text-center">
+          <p className="text-2xl sm:text-3xl font-bold text-green-400">
+            {appointments.filter((a) => a.cita_estado === "completada").length}
+          </p>
+          <p className="text-xs sm:text-sm text-[#B0B3B8] mt-1">Completadas</p>
+        </div>
+      </div>
+
       {/* Lista de citas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAppointments.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <CalendarIcon className="w-10 h-10 text-white" />
-            </div>
-            <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
-              No tienes citas para esta fecha
-            </h3>
-            <p className="text-[#B0B3B8]">
-              Selecciona otra fecha o agenda una nueva cita
-            </p>
+      {filteredAppointments.length === 0 ? (
+        <div className="col-span-full text-center py-8 sm:py-12">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <CalendarIcon className="w-10 h-10 text-white" />
           </div>
-        ) : (
-          filteredAppointments.map((appointment) => (
+          <h3 className="text-base sm:text-lg font-medium text-[#F5F5F5] mb-2">
+            No tienes citas para esta fecha
+          </h3>
+          <p className="text-[#B0B3B8] text-xs sm:text-sm">
+            Selecciona otra fecha o agenda una nueva cita
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredAppointments.map((appointment) => (
             <div
               key={appointment.cita_id}
-              className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-500 flex flex-col gap-2 hover:bg-black/90"
+              className="bg-black/80 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-300 hover:shadow-lg flex flex-col"
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow">
-                    <CalendarIcon className="w-5 h-5 text-white" />
+              {/* Header de la tarjeta */}
+              <div className="bg-gradient-to-r from-[#D1A04D]/10 to-[#B47B1C]/10 p-4 sm:p-6 border-b border-white/10">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                      <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-[#F5F5F5] text-sm sm:text-base truncate">
+                        {appointment.servicio_nombre}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-[#B0B3B8] mt-1 flex items-center gap-1">
+                        <BuildingStorefrontIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="truncate">{appointment.tienda_nombre}</span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-[#F5F5F5] text-base">
-                      {appointment.servicio_nombre}
-                    </h3>
-                    <p className="text-xs text-[#B0B3B8]">
-                      {appointment.tienda_nombre}
-                    </p>
+                  <div
+                    className={`px-2 sm:px-3 py-1 rounded-full border text-xs font-medium flex items-center gap-1 flex-shrink-0 ${getStatusColor(
+                      appointment.cita_estado
+                    )}`}
+                  >
+                    {getStatusIcon(appointment.cita_estado)}
+                    <span className="capitalize hidden sm:inline">
+                      {appointment.cita_estado}
+                    </span>
                   </div>
                 </div>
-                <div
-                  className={`px-3 py-1 rounded-full border text-xs font-medium flex items-center ${getStatusColor(
-                    appointment.cita_estado
-                  )}`}
-                >
-                  {getStatusIcon(appointment.cita_estado)}
-                  <span className="ml-1 capitalize">
-                    {appointment.cita_estado}
+              </div>
+
+              {/* Detalles de la cita */}
+              <div className="p-4 sm:p-6 space-y-3 flex-1">
+                {/* Fecha y Hora */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-[#B0B3B8]">
+                    <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D1A04D] flex-shrink-0" />
+                    <span>
+                      {new Date(appointment.cita_fecha).toLocaleDateString(
+                        "es-ES",
+                        {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-[#B0B3B8]">
+                    <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D1A04D] flex-shrink-0" />
+                    <span>{appointment.franja_hora_inicio}</span>
+                  </div>
+                </div>
+
+                {/* Empleado */}
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-[#B0B3B8] pt-2 border-t border-white/10">
+                  <UserIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#D1A04D] flex-shrink-0" />
+                  <span>
+                    {appointment.empleado_nombre} {appointment.empleado_apellido}
                   </span>
                 </div>
+
+                {/* Precio */}
+                <div className="pt-2 border-t border-white/10">
+                  <p className="text-[#D1A04D] font-bold text-lg sm:text-xl">
+                    ${appointment.servicio_precio}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between gap-2 text-xs text-[#B0B3B8] mt-1">
-                <span>
-                  <ClockIcon className="w-4 h-4 inline mr-1 text-[#D1A04D]" />
-                  {appointment.franja_hora_inicio}
-                </span>
-                <span>
-                  <CalendarIcon className="w-4 h-4 inline mr-1 text-[#D1A04D]" />
-                  {new Date(appointment.cita_fecha).toLocaleDateString()}
-                </span>
-                <span>
-                  <UserIcon className="w-4 h-4 inline mr-1 text-[#D1A04D]" />
-                  {appointment.empleado_nombre} {appointment.empleado_apellido}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2 mt-2">
-                <span className="text-[#D1A04D] font-bold text-base">
-                  ${appointment.servicio_precio}
-                </span>
+
+              {/* Footer con acciones */}
+              <div className="p-4 sm:p-6 border-t border-white/10 bg-black/50">
                 {appointment.cita_estado === "pendiente" && (
                   <button
                     onClick={() => handleCancelAppointment(appointment.cita_id)}
                     disabled={cancellingId === appointment.cita_id}
-                    className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow hover:shadow-lg transition-all duration-500"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold shadow hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
                   >
                     {cancellingId === appointment.cita_id ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"></div>
-                        Cancelando...
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Cancelando...</span>
                       </>
                     ) : (
                       <>
-                        <XCircleIcon className="w-4 h-4 mr-1 inline" />
-                        Cancelar
+                        <XCircleIcon className="w-4 h-4" />
+                        <span>Cancelar Cita</span>
                       </>
                     )}
                   </button>
                 )}
+                {appointment.cita_estado === "confirmada" && (
+                  <p className="text-xs sm:text-sm text-green-400 text-center font-medium">
+                    ✓ Cita Confirmada
+                  </p>
+                )}
+                {appointment.cita_estado === "completada" && (
+                  <p className="text-xs sm:text-sm text-green-400 text-center font-medium">
+                    ✓ Cita Completada
+                  </p>
+                )}
                 {appointment.cita_estado === "cancelada" && (
-                  <span className="text-xs text-[#B0B3B8]">
+                  <p className="text-xs sm:text-sm text-red-400 text-center">
                     Cancelada el{" "}
                     {new Date(
                       appointment.fecha_cancelacion ||
                         appointment.fecha_modificacion
-                    ).toLocaleDateString()}
-                  </span>
+                    ).toLocaleDateString("es-ES")}
+                  </p>
                 )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -104,24 +104,24 @@ const DashboardClient = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8 px-4 sm:px-0">
       {/* Header del Dashboard */}
-      <div className=" backdrop-blur-md rounded-3xl p-10 border border-white/10 shadow-2xl">
+      <div className="backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-white/10 shadow-2xl">
         <div className="flex items-center justify-between">
           <div>
             {/* Saludo con tipografía especial */}
             <div className="mb-4">
-              <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F5C76A] via-[#D1A04D] to-[#B47B1C] mb-3 font-serif tracking-wide">
+              <h1 className="text-3xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#F5C76A] via-[#D1A04D] to-[#B47B1C] mb-3 font-serif tracking-wide">
                 ¡Hola, {user?.usuario_nombre || "hermosa"}!
               </h1>
               <div className="w-24 h-1 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] rounded-full mb-4"></div>
             </div>
 
             {/* Mensaje cálido */}
-            <p className="text-[#F5F5F5] text-xl font-medium mb-2">
+            <p className="text-[#F5F5F5] text-base sm:text-xl font-medium mb-2">
               Tu belleza merece lo mejor
             </p>
-            <p className="text-[#B0B3B8] text-lg">
+            <p className="text-[#B0B3B8] text-sm sm:text-lg">
               Descubre servicios increíbles y agenda tu próxima cita
             </p>
           </div>
@@ -129,34 +129,34 @@ const DashboardClient = () => {
       </div>
 
       {/* Acciones rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
         {/* Nueva Cita - Card principal */}
         <Link
-          to="/cliente/nueva-cita"
-          className="group relative bg-gradient-to-br from-[#D1A04D] via-[#B47B1C] to-[#9A6B15] rounded-2xl p-8 text-white hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 transform  hover:-translate-y-2 shadow-2xl hover:shadow-3xl overflow-hidden"
+          to="/cliente/negocios"
+          className="group relative bg-gradient-to-br from-[#D1A04D] via-[#B47B1C] to-[#9A6B15] rounded-2xl p-6 sm:p-8 text-white hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 transform hover:-translate-y-2 shadow-2xl hover:shadow-3xl overflow-hidden"
         >
           {/* Efecto de brillo de fondo */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center transition-all duration-500">
-                <PlusIcon className="w-8 h-8 text-white" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center transition-all duration-500">
+                <PlusIcon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold mb-3 group- transition-transform duration-500">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 transition-transform duration-500">
               Nueva Cita
             </h3>
-            <p className="text-white/90 text-lg mb-4">
+            <p className="text-white/90 text-sm sm:text-lg mb-3 sm:mb-4">
               Reserva tu próxima experiencia de belleza
             </p>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
+              <span className="text-xs sm:text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
                 ¡Es gratis!
               </span>
-              <ArrowRightIcon className="w-6 h-6  transition-transform duration-500" />
+              <ArrowRightIcon className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-500" />
             </div>
           </div>
         </Link>
@@ -164,63 +164,56 @@ const DashboardClient = () => {
         {/* Explorar Negocios */}
         <Link
           to="/cliente/negocios"
-          className="group relative bg-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transition-all duration-500 transform  hover:-translate-y-2 overflow-hidden"
+          className="group relative bg-black/90 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden"
         >
           {/* Efecto de partículas */}
           <div className="absolute top-4 right-4 w-2 h-2 bg-[#D1A04D] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="absolute top-8 right-8 w-1 h-1 bg-[#F5C76A] rounded-full opacity-40 group-hover:opacity-80 transition-opacity duration-500"></div>
 
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center  transition-all duration-500">
-                <BuildingStorefrontIcon className="w-8 h-8 text-white" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center transition-all duration-500">
+                <BuildingStorefrontIcon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold mb-3 text-[#F5F5F5] group- transition-transform duration-500">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-[#F5F5F5] transition-transform duration-500">
               Explorar Negocios
             </h3>
-            <p className="text-[#B0B3B8] text-lg mb-4">
+            <p className="text-[#B0B3B8] text-sm sm:text-lg mb-3 sm:mb-4">
               Descubre salones y spas increíbles cerca de ti
             </p>
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium bg-[#D1A04D]/20 text-[#D1A04D] px-3 py-1 rounded-full">
-                +50 opciones
-              </span>
-              <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8]   transition-all duration-500" />
-            </div>
           </div>
         </Link>
 
         {/* Mis Citas */}
         <Link
           to="/cliente/mis-citas"
-          className="group relative bg-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transition-all duration-500 transform  hover:-translate-y-2 overflow-hidden"
+          className="group relative bg-black/90 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden"
         >
           {/* Efecto de partículas */}
           <div className="absolute top-4 right-4 w-2 h-2 bg-[#D1A04D] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="absolute top-8 right-8 w-1 h-1 bg-[#F5C76A] rounded-full opacity-40 group-hover:opacity-80 transition-opacity duration-500"></div>
 
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center  transition-all duration-500">
-                <CalendarIcon className="w-8 h-8 text-white" />
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center transition-all duration-500">
+                <CalendarIcon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold mb-3 text-[#F5F5F5] group- transition-transform duration-500">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-[#F5F5F5] transition-transform duration-500">
               Mis Citas
             </h3>
-            <p className="text-[#B0B3B8] text-lg mb-4">
+            <p className="text-[#B0B3B8] text-sm sm:text-lg mb-3 sm:mb-4">
               Gestiona y revisa todas tus reservas
             </p>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium bg-[#D1A04D]/20 text-[#D1A04D] px-3 py-1 rounded-full">
+              <span className="text-xs sm:text-sm font-medium bg-[#D1A04D]/20 text-[#D1A04D] px-3 py-1 rounded-full">
                 {stats.pending} pendientes
               </span>
-              <ArrowRightIcon className="w-6 h-6 text-[#B0B3B8]   transition-all duration-500" />
+              <ArrowRightIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#B0B3B8] transition-all duration-500" />
             </div>
           </div>
         </Link>
@@ -228,68 +221,68 @@ const DashboardClient = () => {
 
       {/* Próximas citas */}
       <div className="bg-black/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 hover:shadow-3xl transition-all duration-500">
-        <div className="p-8 border-b border-white/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg">
-                <CalendarIcon className="w-6 h-6 text-white" />
+        <div className="p-6 sm:p-8 border-b border-white/20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-[#F5F5F5] bg-gradient-to-r from-white to-[#F5C76A] bg-clip-text text-transparent">
+                <h2 className="text-xl sm:text-3xl font-bold text-[#F5F5F5] bg-gradient-to-r from-white to-[#F5C76A] bg-clip-text text-transparent">
                   Próximas Citas
                 </h2>
-                <p className="text-[#B0B3B8] text-lg">Tu agenda de belleza</p>
+                <p className="text-[#B0B3B8] text-sm sm:text-lg">Tu agenda de belleza</p>
               </div>
             </div>
             <Link
               to="/cliente/mis-citas"
-              className="text-[#D1A04D] hover:text-[#F5C76A] font-semibold text-lg flex items-center gap-3 transition-all duration-500  bg-[#D1A04D]/10 px-4 py-2 rounded-xl hover:bg-[#D1A04D]/20"
+              className="text-[#D1A04D] hover:text-[#F5C76A] font-semibold text-sm sm:text-lg flex items-center gap-2 sm:gap-3 transition-all duration-500 bg-[#D1A04D]/10 px-3 sm:px-4 py-2 rounded-xl hover:bg-[#D1A04D]/20 whitespace-nowrap"
             >
               Ver todas
-              <ArrowRightIcon className="w-5 h-5" />
+              <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-5 sm:p-8">
           {appointments.filter((apt) => apt.cita_estado === "pendiente")
             .length === 0 ? (
-            <div className="text-center py-16">
-              <div className="relative mb-8">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto shadow-2xl hover:shadow-3xl transition-all duration-500  hover:rotate-6">
-                  <CalendarIcon className="w-16 h-16 text-white" />
+            <div className="text-center py-12 sm:py-16">
+              <div className="relative mb-6 sm:mb-8">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto shadow-2xl hover:shadow-3xl transition-all duration-500 hover:rotate-6">
+                  <CalendarIcon className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
                 </div>
                 {/* Efecto de brillo */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
               </div>
 
-              <h3 className="text-3xl font-bold text-[#F5F5F5] mb-4 bg-gradient-to-r from-white to-[#F5C76A] bg-clip-text text-transparent">
+              <h3 className="text-2xl sm:text-3xl font-bold text-[#F5F5F5] mb-3 sm:mb-4 bg-gradient-to-r from-white to-[#F5C76A] bg-clip-text text-transparent">
                 ¡Tu agenda está vacía!
               </h3>
-              <p className="text-[#B0B3B8] mb-8 max-w-lg mx-auto text-xl">
+              <p className="text-[#B0B3B8] mb-6 sm:mb-8 max-w-lg mx-auto text-base sm:text-xl">
                 Es hora de consentirte. Descubre servicios increíbles y agenda
                 tu próxima experiencia de belleza.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <Link
-                  to="/cliente/nueva-cita"
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-2xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 shadow-2xl hover:shadow-3xl transform  hover:-translate-y-1 font-semibold text-lg"
+                  to="/cliente/negocios"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-2xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 font-semibold text-base sm:text-lg"
                 >
-                  <PlusIcon className="w-6 h-6 mr-3" />
+                  <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                   Agendar Cita
                 </Link>
                 <Link
                   to="/cliente/negocios"
-                  className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all duration-500 shadow-2xl hover:shadow-3xl transform  hover:-translate-y-1 font-semibold text-lg border border-white/20"
+                  className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all duration-500 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 font-semibold text-base sm:text-lg border border-white/20"
                 >
-                  <BuildingStorefrontIcon className="w-6 h-6 mr-3" />
+                  <BuildingStorefrontIcon className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                   Explorar Negocios
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {appointments
                 .filter((apt) => apt.cita_estado === "pendiente")
                 .slice(0, 3)
@@ -351,17 +344,17 @@ const DashboardClient = () => {
                   return (
                     <div
                       key={appointment.cita_id}
-                      className="group relative bg-black/80 backdrop-blur-sm rounded-2xl p-6 hover:bg-black/90 transition-all duration-500 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transform  hover:-translate-y-1"
+                      className="group relative bg-black/80 backdrop-blur-sm rounded-2xl p-5 sm:p-8 hover:bg-black/90 transition-all duration-500 border border-white/20 hover:border-[#D1A04D]/50 hover:shadow-2xl transform hover:-translate-y-1 overflow-hidden"
                     >
                       {/* Efecto de brillo */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
 
                       <div className="relative z-10">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-center space-x-4 sm:space-x-6 w-full sm:flex-1">
                             {/* Icono del servicio */}
-                            <div className="relative">
-                              <div className="w-16 h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500">
+                            <div className="relative flex-shrink-0">
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500">
                                 {getServiceIcon(appointment.servicio_nombre)}
                               </div>
                               {/* Efecto de brillo en el icono */}
@@ -369,31 +362,31 @@ const DashboardClient = () => {
                             </div>
 
                             <div className="flex-1">
-                              <h4 className="font-bold text-[#F5F5F5] text-xl mb-2 transition-transform duration-500">
+                              <h4 className="font-bold text-[#F5F5F5] text-lg sm:text-xl mb-1 sm:mb-2 transition-transform duration-500">
                                 {appointment.servicio_nombre}
                               </h4>
-                              <p className="text-[#B0B3B8] text-lg mb-3">
+                              <p className="text-[#B0B3B8] text-sm sm:text-lg mb-2 sm:mb-3">
                                 {appointment.tienda_nombre}
                               </p>
 
                               {/* Información de fecha y hora */}
-                              <div className="flex items-center space-x-6">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
                                 <div className="flex items-center space-x-2">
                                   <CalendarIcon className="w-4 h-4 text-[#B0B3B8]" />
-                                  <span className="text-sm text-[#F5F5F5] font-medium">
+                                  <span className="text-xs sm:text-sm text-[#F5F5F5] font-medium">
                                     {new Date(
                                       appointment.cita_fecha
                                     ).toLocaleDateString("es-ES", {
-                                      weekday: "long",
+                                      weekday: "short",
                                       year: "numeric",
-                                      month: "long",
+                                      month: "short",
                                       day: "numeric",
                                     })}
                                   </span>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <ClockIcon className="w-4 h-4 text-[#B0B3B8]" />
-                                  <span className="text-sm text-[#F5F5F5] font-medium">
+                                  <span className="text-xs sm:text-sm text-[#F5F5F5] font-medium">
                                     {appointment.horario_hora_inicio}
                                   </span>
                                 </div>
@@ -401,17 +394,17 @@ const DashboardClient = () => {
                             </div>
                           </div>
 
-                          <div className="flex items-center space-x-4">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
                             {/* Indicador de tiempo */}
                             <span
-                              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-500 ${timeIndicator.color}`}
+                              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-500 text-center sm:text-left ${timeIndicator.color}`}
                             >
                               {timeIndicator.text}
                             </span>
 
                             {/* Estado de la cita */}
                             <span
-                              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-500  ${getStatusColor(
+                              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-500 text-center sm:text-left ${getStatusColor(
                                 appointment.cita_estado
                               )}`}
                             >
@@ -419,9 +412,9 @@ const DashboardClient = () => {
                             </span>
 
                             {/* Botón de opciones */}
-                            <button className="text-[#B0B3B8] hover:text-[#F5F5F5] transition-all duration-500 p-3 rounded-xl hover:bg-white/10 ">
+                            <button className="text-[#B0B3B8] hover:text-[#F5F5F5] transition-all duration-500 p-2 sm:p-3 rounded-xl hover:bg-white/10 flex-shrink-0">
                               <svg
-                                className="w-6 h-6"
+                                className="w-5 h-5 sm:w-6 sm:h-6"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -446,23 +439,23 @@ const DashboardClient = () => {
       </div>
 
       {/* Recomendaciones */}
-      <div className="bg-black/90 rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
+      <div className="bg-black/90 rounded-2xl p-6 sm:p-8 border border-[#31343A]/50 shadow-2xl">
         <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <HeartIcon className="w-10 h-10 text-white" />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
+            <HeartIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-[#F5F5F5] mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#F5F5F5] mb-3 sm:mb-4">
             ¿Te gustó nuestro servicio?
           </h2>
-          <p className="text-[#B0B3B8] mb-8 max-w-2xl mx-auto text-lg">
+          <p className="text-[#B0B3B8] mb-6 sm:mb-8 max-w-2xl mx-auto text-sm sm:text-lg">
             Comparte tu experiencia y ayuda a otros clientes a encontrar los
             mejores negocios de belleza
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 font-medium shadow-lg hover:shadow-xl transform ">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+            <button className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white rounded-lg hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-500 font-medium shadow-lg hover:shadow-xl transform text-sm sm:text-base">
               Dejar Reseña
             </button>
-            <button className="px-8 py-4 bg-black/80 backdrop-blur-md text-[#D1A04D] rounded-lg hover:bg-black/90 transition-all duration-500 font-medium border border-[#D1A04D]/30 hover:border-[#D1A04D]/50 shadow-lg hover:shadow-xl transform ">
+            <button className="px-6 sm:px-8 py-3 sm:py-4 bg-black/80 backdrop-blur-md text-[#D1A04D] rounded-lg hover:bg-black/90 transition-all duration-500 font-medium border border-[#D1A04D]/30 hover:border-[#D1A04D]/50 shadow-lg hover:shadow-xl transform text-sm sm:text-base">
               Compartir Experiencia
             </button>
           </div>
@@ -470,7 +463,7 @@ const DashboardClient = () => {
       </div>
 
       {/* Footer */}
-      <footer className="mt-12 py-8 text-center text-[#B0B3B8] text-sm border-t border-[#31343A]/50">
+      <footer className="mt-8 sm:mt-12 py-6 sm:py-8 text-center text-[#B0B3B8] text-xs sm:text-sm border-t border-[#31343A]/50">
         <div className="flex flex-col items-center gap-2">
           <span>
             © {new Date().getFullYear()} Glaminder. Todos los derechos

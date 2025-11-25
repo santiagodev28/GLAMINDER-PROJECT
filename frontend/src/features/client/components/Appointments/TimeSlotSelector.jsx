@@ -34,14 +34,14 @@ const TimeSlotSelector = ({
   // Si no hay schedules, mostrar mensaje
   if (!schedules || schedules.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-20 h-20 bg-gradient-to-br from-[#D1A04D]/20 to-[#B47B1C]/20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-          <ClockIcon className="w-10 h-10 text-[#D1A04D]" />
+      <div className="text-center py-8 sm:py-12">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#D1A04D]/20 to-[#B47B1C]/20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
+          <ClockIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[#D1A04D]" />
         </div>
-        <h3 className="text-lg font-medium text-[#F5F5F5] mb-2">
+        <h3 className="text-base sm:text-lg font-medium text-[#F5F5F5] mb-2">
           No hay horarios disponibles
         </h3>
-        <p className="text-[#B0B3B8]">
+        <p className="text-[#B0B3B8] text-xs sm:text-sm px-4">
           No hay horarios disponibles para {employeeName} en esta fecha
         </p>
       </div>
@@ -138,43 +138,43 @@ const TimeSlotSelector = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="text-center">
-        <h3 className="text-xl font-semibold text-[#F5F5F5] mb-3">
+      <div className="text-center px-4 sm:px-0">
+        <h3 className="text-lg sm:text-xl font-semibold text-[#F5F5F5] mb-2 sm:mb-3">
           Horarios Disponibles
         </h3>
-        <p className="text-[#B0B3B8] text-lg">
+        <p className="text-[#B0B3B8] text-xs sm:text-lg">
           {employeeName} •{" "}
           {selectedDate ? formatDateForDisplay(selectedDate) : ""}
         </p>
       </div>
 
       {/* Horarios agrupados por categoría */}
-      <div className="space-y-6">
+      <div className="space-y-6 sm:space-y-8">
         {["morning", "afternoon", "evening", "night"].map((category) => {
           const categorySlots = groupedSlots[category];
 
           if (categorySlots.length === 0) return null;
 
           return (
-            <div key={category} className="space-y-4">
-              <div className="flex items-center">
+            <div key={category} className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-4 sm:px-0">
                 <div
-                  className={`px-4 py-2 rounded-full text-sm font-medium border ${getTimeCategoryColor(
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium border w-fit ${getTimeCategoryColor(
                     category
                   )}`}
                 >
                   {getTimeCategoryLabel(category)}
                 </div>
-                <div className="ml-3 text-sm text-[#B0B3B8]">
+                <div className="text-xs sm:text-sm text-[#B0B3B8]">
                   {categorySlots.length} horario
                   {categorySlots.length > 1 ? "s" : ""} disponible
                   {categorySlots.length > 1 ? "s" : ""}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 px-4 sm:px-0">
                 {categorySlots.map((slot, index) => {
                   const isSelected = selectedSlotId === slot.slot_id;
                   const isAvailable = slot.franja_disponible !== false; // Por defecto disponible
@@ -200,7 +200,7 @@ const TimeSlotSelector = ({
                       onClick={() => handleTimeSelect(slot)}
                       disabled={!isAvailable}
                       className={`
-                        relative p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-lg
+                        relative p-2 sm:p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-lg
                         ${
                           isSelected
                             ? "border-[#D1A04D] bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg transform scale-105"
@@ -211,14 +211,14 @@ const TimeSlotSelector = ({
                       `}
                     >
                       <div className="text-center">
-                        <div className="text-lg font-semibold">
+                        <div className="text-base sm:text-lg font-semibold">
                           {formatTime(horaInicio)}
                         </div>
-                        <div className="text-xs mt-1 opacity-75">
+                        <div className="text-xs mt-0.5 sm:mt-1 opacity-75">
                           {formatTime(horaFin)}
                         </div>
                         {isAvailable && (
-                          <div className="text-xs mt-1 opacity-75">
+                          <div className="text-xs mt-0.5 sm:mt-1 opacity-75">
                             {slot.franja_duracion_minutos || 30} min
                           </div>
                         )}
@@ -226,7 +226,7 @@ const TimeSlotSelector = ({
 
                       {isSelected && (
                         <div className="absolute -top-2 -right-2 bg-[#D1A04D] text-white rounded-full p-1 shadow-lg">
-                          <CheckIcon className="w-4 h-4" />
+                          <CheckIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                         </div>
                       )}
                     </button>
@@ -240,14 +240,14 @@ const TimeSlotSelector = ({
 
       {/* Información adicional */}
       {selectedSlotId && (
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6">
-          <div className="flex items-center">
-            <ClockIcon className="w-6 h-6 text-blue-400 mr-3" />
-            <div>
-              <p className="font-medium text-[#F5F5F5] text-lg">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 sm:p-6 mx-4 sm:mx-0">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+            <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 flex-shrink-0 mt-0.5 sm:mt-0" />
+            <div className="min-w-0">
+              <p className="font-medium text-[#F5F5F5] text-base sm:text-lg">
                 Horario seleccionado: {selectedSlotId}
               </p>
-              <p className="text-sm text-[#B0B3B8]">
+              <p className="text-xs sm:text-sm text-[#B0B3B8] mt-1">
                 {employeeName} estará disponible en este horario
               </p>
             </div>
@@ -256,7 +256,7 @@ const TimeSlotSelector = ({
       )}
 
       {/* Notas */}
-      <div className="text-sm text-[#B0B3B8] text-center">
+      <div className="text-xs sm:text-sm text-[#B0B3B8] text-center px-4 sm:px-0 space-y-1 sm:space-y-2">
         <p>
           Los horarios mostrados están basados en la disponibilidad del empleado
         </p>

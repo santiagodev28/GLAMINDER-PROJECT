@@ -253,3 +253,4 @@ El proyecto **Glaminder** ha alcanzado un **nivel de cumplimiento del 89%**, cum
 **Recomendación:** El proyecto puede ser presentado con confianza, ya que cumple con todos los requisitos críticos y la mayoría de los aspectos opcionales.
 
 
+
