@@ -96,17 +96,17 @@ const ReportsAndStats = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-6 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
-        <div className="flex justify-between items-center">
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
               Reportes y Estadísticas
             </h1>
             <p className="text-[#B0B3B8]">Análisis detallado de tu negocio</p>
           </div>
-          <div className="flex space-x-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <input
               type="date"
               value={dateRange.start}
@@ -129,7 +129,7 @@ const ReportsAndStats = () => {
 
       {/* Selector de negocio */}
       <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="text-sm font-medium text-[#F5F5F5]">
             Seleccionar negocio:
           </label>
@@ -149,10 +149,10 @@ const ReportsAndStats = () => {
 
       {/* Estadísticas generales del propietario */}
       {ownerStats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -167,7 +167,7 @@ const ReportsAndStats = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div>
                 <p className="text-sm font-medium text-[#B0B3B8]">
                   Total Negocios
                 </p>
@@ -179,8 +179,8 @@ const ReportsAndStats = () => {
           </div>
 
           <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -195,7 +195,7 @@ const ReportsAndStats = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div>
                 <p className="text-sm font-medium text-[#B0B3B8]">
                   Total Empleados
                 </p>
@@ -207,8 +207,8 @@ const ReportsAndStats = () => {
           </div>
 
           <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -223,7 +223,7 @@ const ReportsAndStats = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div>
                 <p className="text-sm font-medium text-[#B0B3B8]">
                   Total Citas
                 </p>
@@ -235,8 +235,8 @@ const ReportsAndStats = () => {
           </div>
 
           <div className="bg-[#23262B]/80 backdrop-blur-md rounded-2xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] shadow-lg flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-white"
                   fill="none"
@@ -251,7 +251,7 @@ const ReportsAndStats = () => {
                   />
                 </svg>
               </div>
-              <div className="ml-4">
+              <div>
                 <p className="text-sm font-medium text-[#B0B3B8]">
                   Ingresos Totales
                 </p>
@@ -270,7 +270,7 @@ const ReportsAndStats = () => {
           <h2 className="text-xl font-semibold text-[#F5F5F5] mb-4">
             Estadísticas del Negocio
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center p-4 bg-[#1F1F1F]/30 rounded-xl border border-[#31343A]/30">
               <div className="text-3xl font-bold text-[#D1A04D] mb-2">
                 {businessStats.totalEmployees || 0}
@@ -317,16 +317,16 @@ const ReportsAndStats = () => {
           <h2 className="text-xl font-semibold text-[#F5F5F5] mb-4">
             Análisis de Citas
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <h3 className="text-lg font-medium text-[#F5F5F5] mb-3">
                 Estado de Citas
               </h3>
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-wrap items-center gap-3 justify-between">
                   <span className="text-sm text-[#B0B3B8]">Pendientes</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-[#1F1F1F]/50 rounded-full h-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-[#1F1F1F]/50 rounded-full h-2">
                       <div
                         className="bg-[#D1A04D] h-2 rounded-full"
                         style={{
@@ -343,10 +343,10 @@ const ReportsAndStats = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-wrap items-center gap-3 justify-between">
                   <span className="text-sm text-[#B0B3B8]">Confirmadas</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-[#1F1F1F]/50 rounded-full h-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-[#1F1F1F]/50 rounded-full h-2">
                       <div
                         className="bg-[#D1A04D] h-2 rounded-full"
                         style={{
@@ -363,10 +363,10 @@ const ReportsAndStats = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-wrap items-center gap-3 justify-between">
                   <span className="text-sm text-[#B0B3B8]">Completadas</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-[#1F1F1F]/50 rounded-full h-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-[#1F1F1F]/50 rounded-full h-2">
                       <div
                         className="bg-[#D1A04D] h-2 rounded-full"
                         style={{
@@ -383,10 +383,10 @@ const ReportsAndStats = () => {
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-wrap items-center gap-3 justify-between">
                   <span className="text-sm text-[#B0B3B8]">Canceladas</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-[#1F1F1F]/50 rounded-full h-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 bg-[#1F1F1F]/50 rounded-full h-2">
                       <div
                         className="bg-[#D1A04D] h-2 rounded-full"
                         style={{
@@ -457,7 +457,7 @@ const ReportsAndStats = () => {
         <h2 className="text-xl font-semibold text-[#F5F5F5] mb-4">
           Resumen de Rendimiento
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="text-center p-4 bg-[#1F1F1F]/30 rounded-xl border border-[#31343A]/30">
             <div className="text-2xl font-bold text-[#D1A04D] mb-2">
               {ownerStats?.totalBusinesses || 0}

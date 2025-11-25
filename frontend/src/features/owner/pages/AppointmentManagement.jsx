@@ -164,10 +164,10 @@ const AppointmentManagement = () => {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 px-4 py-6 sm:p-6">
       {/* Header del Dashboard */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
-        <div className="flex items-center justify-between">
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
               Gestión de Citas
@@ -225,13 +225,13 @@ const AppointmentManagement = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex-shrink-0">
               <ExclamationTriangleIcon className="w-6 h-6" />
             </div>
-            <div className="ml-4">
+            <div>
               <p className="text-sm font-medium text-[#B0B3B8]">Pendientes</p>
               <p className="text-2xl font-semibold text-[#F5F5F5]">
                 {
@@ -244,11 +244,11 @@ const AppointmentManagement = () => {
         </div>
 
         <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex-shrink-0">
               <CheckCircleIcon className="w-6 h-6" />
             </div>
-            <div className="ml-4">
+            <div>
               <p className="text-sm font-medium text-[#B0B3B8]">Confirmadas</p>
               <p className="text-2xl font-semibold text-[#F5F5F5]">
                 {
@@ -261,11 +261,11 @@ const AppointmentManagement = () => {
         </div>
 
         <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 flex-shrink-0">
               <CheckCircleIcon className="w-6 h-6" />
             </div>
-            <div className="ml-4">
+            <div>
               <p className="text-sm font-medium text-[#B0B3B8]">Completadas</p>
               <p className="text-2xl font-semibold text-[#F5F5F5]">
                 {
@@ -278,11 +278,11 @@ const AppointmentManagement = () => {
         </div>
 
         <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 flex-shrink-0">
               <XCircleIcon className="w-6 h-6" />
             </div>
-            <div className="ml-4">
+            <div>
               <p className="text-sm font-medium text-[#B0B3B8]">Canceladas</p>
               <p className="text-2xl font-semibold text-[#F5F5F5]">
                 {

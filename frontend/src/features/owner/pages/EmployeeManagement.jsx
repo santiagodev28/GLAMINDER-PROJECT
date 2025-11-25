@@ -106,10 +106,10 @@ const EmployeeManagement = () => {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 px-4 py-6 sm:p-6">
       {/* Header del Dashboard */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
-        <div className="flex items-center justify-between">
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
               Gestión de Empleados
@@ -123,7 +123,7 @@ const EmployeeManagement = () => {
 
       {/* Filtros */}
       <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 shadow-lg">
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <label className="text-sm font-medium text-[#B0B3B8]">
             Filtrar por negocio:
           </label>
@@ -239,7 +239,7 @@ const EmployeeCard = ({ employee, onEdit, onUpdate, onChangeState }) => {
       {/* Contenido de la tarjeta */}
       <div className="p-6 flex flex-col justify-between h-full">
         <div>
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
             <div>
               <h3 className="text-xl font-bold text-[#F5F5F5] mb-2 group-hover:text-[#D1A04D] transition-colors duration-300">
                 {employee.usuario?.usuario_nombre || "Sin nombre"}
@@ -307,7 +307,7 @@ const EmployeeCard = ({ employee, onEdit, onUpdate, onChangeState }) => {
         </div>
 
         {/* Botones de acción - Siempre en la parte inferior */}
-        <div className="flex space-x-2 mt-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:space-x-2 mt-6">
           <button
             onClick={() => onEdit(employee)}
             className="flex-1 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-4 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
@@ -388,7 +388,7 @@ const EmployeeForm = ({ employee, businesses, onSubmit, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 w-full max-w-2xl mx-4 border border-[#31343A]/50 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <h2 className="text-2xl font-bold text-[#F5F5F5]">
             {employee ? "Editar Empleado" : "Nuevo Empleado"}
           </h2>
@@ -574,7 +574,7 @@ const EmployeeForm = ({ employee, businesses, onSubmit, onClose }) => {
             </div>
           </div>
 
-          <div className="flex space-x-4 pt-6">
+          <div className="flex flex-col gap-4 pt-6 sm:flex-row sm:gap-4">
             <button
               type="button"
               onClick={onClose}

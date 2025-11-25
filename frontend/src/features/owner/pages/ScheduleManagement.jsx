@@ -168,9 +168,9 @@ const ScheduleManagement = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-6 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
             Gestión de Horarios
@@ -181,7 +181,7 @@ const ScheduleManagement = () => {
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center space-x-2"
+          className="w-full md:w-auto bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
         >
           <PlusIcon className="w-5 h-5" />
           <span>Nuevo Horario</span>
@@ -189,49 +189,49 @@ const ScheduleManagement = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-[#1F1F1F]/50 backdrop-blur-sm border border-[#31343A]/50 rounded-xl p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[#B0B3B8] text-sm">Total Horarios</p>
               <p className="text-2xl font-bold text-[#F5F5F5]">
                 {schedules.length}
               </p>
             </div>
-            <CalendarIcon className="w-8 h-8 text-[#D1A04D]" />
+            <CalendarIcon className="w-8 h-8 text-[#D1A04D] flex-shrink-0" />
           </div>
         </div>
         <div className="bg-[#1F1F1F]/50 backdrop-blur-sm border border-[#31343A]/50 rounded-xl p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[#B0B3B8] text-sm">Empleados Activos</p>
               <p className="text-2xl font-bold text-[#F5F5F5]">
                 {employees.length}
               </p>
             </div>
-            <UserIcon className="w-8 h-8 text-[#D1A04D]" />
+            <UserIcon className="w-8 h-8 text-[#D1A04D] flex-shrink-0" />
           </div>
         </div>
         <div className="bg-[#1F1F1F]/50 backdrop-blur-sm border border-[#31343A]/50 rounded-xl p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[#B0B3B8] text-sm">Tiendas</p>
               <p className="text-2xl font-bold text-[#F5F5F5]">
                 {stores.length}
               </p>
             </div>
-            <BuildingStorefrontIcon className="w-8 h-8 text-[#D1A04D]" />
+            <BuildingStorefrontIcon className="w-8 h-8 text-[#D1A04D] flex-shrink-0" />
           </div>
         </div>
         <div className="bg-[#1F1F1F]/50 backdrop-blur-sm border border-[#31343A]/50 rounded-xl p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[#B0B3B8] text-sm">Horarios Activos</p>
               <p className="text-2xl font-bold text-[#F5F5F5]">
                 {schedules.filter((s) => s.horario_activo).length}
               </p>
             </div>
-            <CheckCircleIcon className="w-8 h-8 text-[#D1A04D]" />
+            <CheckCircleIcon className="w-8 h-8 text-[#D1A04D] flex-shrink-0" />
           </div>
         </div>
       </div>
@@ -255,7 +255,7 @@ const ScheduleManagement = () => {
             </p>
             <button
               onClick={() => setShowCreateForm(true)}
-              className="bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center space-x-2 mx-auto"
+              className="bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 mx-auto"
             >
               <PlusIcon className="w-5 h-5" />
               <span>Crear Primer Horario</span>
@@ -328,9 +328,9 @@ const ScheduleCard = ({ schedule, onEdit, onDelete, getDayColor }) => {
 
   return (
     <div className="bg-[#1F1F1F]/50 backdrop-blur-sm border border-[#31343A]/50 rounded-xl p-6 hover:border-[#D1A04D]/30 transition-all duration-300">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex-1">
-          <div className="flex items-center space-x-4 mb-3">
+          <div className="flex flex-wrap items-center gap-3 mb-3">
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium border ${
                 schedule.horario_tipo_semanal === "semanal"
@@ -356,15 +356,15 @@ const ScheduleCard = ({ schedule, onEdit, onDelete, getDayColor }) => {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center space-x-6 text-[#B0B3B8]">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-4 text-[#B0B3B8]">
+              <div className="flex items-center gap-2">
                 <ClockIcon className="w-4 h-4 text-[#D1A04D]" />
                 <span>
                   {formatTime(schedule.horario_inicio)} -{" "}
                   {formatTime(schedule.horario_fin)}
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
                     schedule.horario_activo
@@ -378,25 +378,25 @@ const ScheduleCard = ({ schedule, onEdit, onDelete, getDayColor }) => {
             </div>
 
             {schedule.horario_tipo_semanal === "semanal" ? (
-              <div className="flex items-center space-x-4 text-sm text-[#B0B3B8]">
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-[#B0B3B8]">
+                <div className="flex items-center gap-2">
                   <span className="text-[#D1A04D]">Días:</span>
                   <span>{formatDays(schedule.dias_trabajo)}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <span className="text-[#D1A04D]">Desde:</span>
                   <span>{formatDate(schedule.fecha_inicio)}</span>
                 </div>
                 {schedule.fecha_fin && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <span className="text-[#D1A04D]">Hasta:</span>
                     <span>{formatDate(schedule.fecha_fin)}</span>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-4 text-sm text-[#B0B3B8]">
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-[#B0B3B8]">
+                <div className="flex items-center gap-2">
                   <span className="text-[#D1A04D]">Fecha:</span>
                   <span>{formatDate(schedule.horario_dia)}</span>
                 </div>
@@ -405,7 +405,7 @@ const ScheduleCard = ({ schedule, onEdit, onDelete, getDayColor }) => {
           </div>
         </div>
 
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           <button
             onClick={() => onEdit(schedule)}
             className="p-2 bg-[#D1A04D]/10 text-[#D1A04D] rounded-lg hover:bg-[#D1A04D]/20 transition-colors"
@@ -490,7 +490,7 @@ const ScheduleForm = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-[#1F1F1F] border border-[#31343A] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-[#31343A]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-6 border-b border-[#31343A]">
           <h2 className="text-xl font-semibold text-[#F5F5F5]">
             {schedule ? "Editar Horario" : "Nuevo Horario"}
           </h2>
@@ -508,7 +508,7 @@ const ScheduleForm = ({
             <label className="block text-sm font-medium text-[#B0B3B8] mb-4">
               Tipo de Horario *
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label
                 className={`relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                   formData.horario_tipo_semanal === "semanal"
@@ -827,17 +827,17 @@ const ScheduleForm = ({
             </div>
           </div>
 
-          <div className="flex space-x-4 pt-6">
+          <div className="flex flex-col gap-4 pt-6 sm:flex-row">
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+              className="w-full bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-6 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
             >
               {schedule ? "Actualizar Horario" : "Crear Horario"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 border border-[#31343A] text-[#B0B3B8] rounded-xl hover:bg-[#31343A] transition-colors"
+              className="w-full px-6 py-3 border border-[#31343A] text-[#B0B3B8] rounded-xl hover:bg-[#31343A] transition-colors"
             >
               Cancelar
             </button>

@@ -103,10 +103,10 @@ const OwnerDashboard = () => {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 px-4 py-6 sm:p-6">
       {/* Header del Dashboard */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
-        <div className="flex items-center justify-between">
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
               ¡Bienvenido, {owner?.usuario?.nombre || "Propietario"}!
@@ -124,7 +124,7 @@ const OwnerDashboard = () => {
       </div>
 
       {/* Estadísticas generales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 
         <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
           <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ const OwnerDashboard = () => {
       </div>
 
       {/* Acciones rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Link
           to="/propietario/tiendas"
           className="group bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-xl p-6 text-white hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
@@ -243,7 +243,7 @@ const OwnerDashboard = () => {
       {/* Tiendas recientes */}
       <div className="bg-[#23262B]/80 backdrop-blur-md rounded-xl shadow-lg border border-[#31343A]/50">
         <div className="p-6 border-b border-[#31343A]/50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-xl font-semibold text-[#F5F5F5]">
               Mis Tiendas
             </h2>
@@ -283,9 +283,9 @@ const OwnerDashboard = () => {
               {stores.slice(0, 3).map((store) => (
                 <div
                   key={store.tienda_id}
-                  className="flex items-center justify-between p-4 bg-[#1F1F1F]/50 backdrop-blur-sm rounded-lg hover:bg-[#1F1F1F]/70 transition-all duration-300 border border-[#31343A]/30 hover:border-[#D1A04D]/30"
+                  className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 bg-[#1F1F1F]/50 backdrop-blur-sm rounded-lg hover:bg-[#1F1F1F]/70 transition-all duration-300 border border-[#31343A]/30 hover:border-[#D1A04D]/30"
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center gap-4 w-full">
                     <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow-md">
                       <BuildingStorefrontIcon className="w-6 h-6 text-white" />
                     </div>
@@ -296,7 +296,7 @@ const OwnerDashboard = () => {
                       <p className="text-sm text-[#B0B3B8]">
                         {store.tienda_direccion || "Sin dirección"}
                       </p>
-                      <div className="flex items-center space-x-4 mt-1">
+                      <div className="flex flex-wrap items-center gap-3 mt-1">
                         <span className="text-xs text-[#B0B3B8]">
                           Estado:{" "}
                           {store.tienda_estado === 1 ? "Activa" : "Inactiva"}
@@ -308,7 +308,7 @@ const OwnerDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center gap-3 md:self-end w-full md:w-auto justify-between md:justify-end">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-300 ${
                         store.tienda_estado === 1
@@ -333,12 +333,12 @@ const OwnerDashboard = () => {
       </div>
 
       {/* Acciones adicionales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Link
           to="/propietario/servicios"
           className="group bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:border-[#D1A04D]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow-lg">
               <ChartBarIcon className="w-6 h-6 text-white" />
             </div>
@@ -358,7 +358,7 @@ const OwnerDashboard = () => {
           to="/propietario/reportes"
           className="group bg-[#23262B]/80 backdrop-blur-md rounded-xl p-6 border border-[#31343A]/50 hover:border-[#D1A04D]/50 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-[#D1A04D] to-[#B47B1C] rounded-lg flex items-center justify-center shadow-lg">
               <ChartBarIcon className="w-6 h-6 text-white" />
             </div>

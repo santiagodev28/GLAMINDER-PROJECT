@@ -6,6 +6,8 @@ import {
   CogIcon,
   ArrowRightOnRectangleIcon,
   UserIcon,
+  Bars3Icon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import RoleChangeModal from "../components/modals/RoleChangeModal";
 import EditProfileModal from "../components/modals/EditProfileModal";
@@ -16,6 +18,7 @@ import { messageChangeRole } from "../services/clientService";
 const EmployeeLayout = ({ children }) => {
   const [showModal, setShowModal] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState(() => {
     const usuario = localStorage.getItem("usuario");
     return usuario ? JSON.parse(usuario) : null;
@@ -53,6 +56,10 @@ const EmployeeLayout = ({ children }) => {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
   const handleCloseModal = async () => {
     try {
       await messageChangeRole(token, user.usuario_id, 0);
@@ -70,6 +77,9 @@ const EmployeeLayout = ({ children }) => {
     setUser(updatedUser);
     setShowEditProfile(false);
   };
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   if (!user) {
     return (
@@ -90,8 +100,19 @@ const EmployeeLayout = ({ children }) => {
         </RoleChangeModal>
       )}
 
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={closeSidebar}
+        ></div>
+      )}
+
       {/* Sidebar fijo */}
-      <aside className="fixed left-0 top-0 h-screen w-64 bg-black shadow-2xl p-6 flex flex-col justify-between border-r border-[#31343A]/30 z-40">
+      <aside
+        className={`fixed left-0 top-0 h-screen w-64 bg-black shadow-2xl p-6 flex flex-col justify-between border-r border-[#31343A]/30 z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div>
           {/* Logo */}
           <div className="mb-8">
@@ -119,7 +140,10 @@ const EmployeeLayout = ({ children }) => {
               </div>
             </div>
             <button
-              onClick={() => setShowEditProfile(true)}
+              onClick={() => {
+                setShowEditProfile(true);
+                closeSidebar();
+              }}
               className="w-full flex items-center justify-center space-x-2 text-xs text-[#D1A04D] hover:text-[#F5F5F5] transition-colors py-2 px-3 rounded-lg hover:bg-[#31343A]/30"
             >
               <UserIcon className="h-4 w-4" />
@@ -131,6 +155,7 @@ const EmployeeLayout = ({ children }) => {
           <nav className="space-y-2">
             <Link
               to="/empleado/dashboard"
+              onClick={closeSidebar}
               className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
                 isActive("/empleado/dashboard")
                   ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
@@ -143,6 +168,7 @@ const EmployeeLayout = ({ children }) => {
 
             <Link
               to="/empleado/citas"
+              onClick={closeSidebar}
               className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
                 isActive("/empleado/citas")
                   ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
@@ -155,6 +181,7 @@ const EmployeeLayout = ({ children }) => {
 
             <Link
               to="/empleado/servicios"
+              onClick={closeSidebar}
               className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
                 isActive("/empleado/servicios")
                   ? "bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white shadow-lg"
@@ -169,7 +196,7 @@ const EmployeeLayout = ({ children }) => {
 
         {/* Botón de cerrar sesión */}
         <div className="mt-auto">
-          <Link to="/">
+          <Link to="/" onClick={closeSidebar}>
             <button className="w-full flex items-center justify-center space-x-3 p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
               <ArrowRightOnRectangleIcon className="w-5 h-5" />
               <span className="font-medium">Cerrar Sesión</span>
@@ -179,8 +206,26 @@ const EmployeeLayout = ({ children }) => {
       </aside>
 
       {/* Contenido principal */}
-      <main className="flex-1 ml-64 overflow-y-auto">
-        <Outlet />
+      <main className="flex-1 w-full min-h-screen lg:ml-64 overflow-x-hidden">
+        <div className="lg:hidden sticky top-0 z-20 bg-black/70 backdrop-blur-sm px-4 py-3 flex items-center justify-between border-b border-[#31343A]/30">
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-lg bg-[#1F1F1F]/60 border border-[#31343A]/50 text-[#F5F5F5] hover:bg-[#31343A]/70 transition-colors"
+            aria-label="Alternar menú"
+          >
+            {isSidebarOpen ? (
+              <XMarkIcon className="w-6 h-6" />
+            ) : (
+              <Bars3Icon className="w-6 h-6" />
+            )}
+          </button>
+          <div className="text-sm text-[#F5F5F5] font-medium">
+            {ProfileService.getFullName(user)}
+          </div>
+        </div>
+        <div className="p-4 sm:p-6">
+          <Outlet />
+        </div>
       </main>
 
       {/* Edit Profile Modal */}

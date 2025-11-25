@@ -94,10 +94,10 @@ const ServiceManagement = () => {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 px-4 py-6 sm:p-6">
       {/* Header del Dashboard */}
-      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-8 border border-[#31343A]/50 shadow-2xl">
-        <div className="flex items-center justify-between">
+      <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#31343A]/50 shadow-2xl">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#F5F5F5] mb-2">
               Gestión de Servicios
@@ -108,7 +108,7 @@ const ServiceManagement = () => {
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white px-6 py-3 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+            className="w-full md:w-auto bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white px-6 py-3 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
           >
             <PlusIcon className="w-5 h-5" />
             <span>Nuevo Servicio</span>
@@ -117,7 +117,7 @@ const ServiceManagement = () => {
       </div>
 
       {/* Lista de servicios */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {services.map((service) => (
           <ServiceCard
             key={service.servicio_id}
@@ -185,7 +185,7 @@ const ServiceCard = ({ service, onEdit, onUpdate }) => {
       {/* Contenido de la tarjeta */}
       <div className="p-6 flex flex-col justify-between h-full">
         <div>
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
             <div>
               <h3 className="text-xl font-bold text-[#F5F5F5] mb-2 group-hover:text-[#D1A04D] transition-colors duration-300">
                 {service.servicio_nombre}
@@ -232,7 +232,7 @@ const ServiceCard = ({ service, onEdit, onUpdate }) => {
         </div>
 
         {/* Botones de acción - Siempre en la parte inferior */}
-        <div className="flex space-x-2 mt-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:space-x-2 mt-6">
           <button
             onClick={() => onEdit(service)}
             className="flex-1 bg-gradient-to-r from-[#D1A04D] to-[#B47B1C] text-white font-semibold py-3 px-4 rounded-xl hover:from-[#B47B1C] hover:to-[#D1A04D] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
@@ -321,7 +321,7 @@ const ServiceForm = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-[#23262B]/95 backdrop-blur-md rounded-2xl p-6 w-full max-w-2xl mx-4 border border-[#31343A]/50 shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <h2 className="text-2xl font-bold text-[#F5F5F5]">
             {service ? "Editar Servicio" : "Nuevo Servicio"}
           </h2>
@@ -511,7 +511,7 @@ const ServiceForm = ({
             </div>
           </div>
 
-          <div className="flex space-x-4 pt-6">
+          <div className="flex flex-col gap-4 pt-6 sm:flex-row sm:gap-4">
             <button
               type="button"
               onClick={onClose}

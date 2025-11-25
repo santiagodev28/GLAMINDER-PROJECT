@@ -5,7 +5,7 @@ DROP DATABASE IF EXISTS `glaminderdb`;
 CREATE DATABASE `glaminderdb`;
 USE `glaminderdb`;
 
-DROP TABLE IF EXISTS `roles`, `usuarios`, `empleados`, `propietarios`, `negocios`, `tiendas`, `servicios`, `servicio_categoria`, `tienda_categoria_servicio`, `calificaciones`, `calificaciones_negocios`, `calificaciones_empleados`, `horarios`, `franjas_horarias`, `citas`, `solicitudes_propietario`;
+DROP TABLE IF EXISTS `roles`, `usuarios`, `empleados`, `propietarios`, `negocios`, `tiendas`, `servicios`, `servicio_categoria`, `tienda_categoria_servicio`, `calificaciones`, `calificaciones_negocios`, `calificaciones_empleados`, `horarios`, `franjas_horarias`, `citas`, `solicitudes_propietario`, `consentimientos`, `token_blacklist`, `refresh_tokens`, `auditoria`;
 
 -- Tabla roles
 CREATE TABLE `roles` (
