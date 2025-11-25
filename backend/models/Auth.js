@@ -48,7 +48,7 @@ class Auth {
     }
 
     const hashedPassword = await bcrypt.hash(usuario_contrasena, 10);
-    const rolDefault = rol_id || 4;
+    const rolDefault = rol_id || 1;
 
     const queries = [];
 
