@@ -567,37 +567,37 @@ class Schedule {
 
             // Buscar horarios semanales que apliquen para este día
             const query = `
-                SELECT 
-                    h.*,
-                    t.tienda_nombre,
-                    e.empleado_especialidad,
-                    u.usuario_nombre,
-                    u.usuario_apellido
-                FROM horarios h
-                LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
-                LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
-                LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
-                WHERE h.empleado_id = ? 
-                    AND h.horario_estado = 1 
-                    AND h.horario_activo = 1
-                    AND (
-                    (
-                        h.horario_tipo_semanal = 'semanal'
-                        AND (h.dias_trabajo LIKE ? OR h.dias_trabajo LIKE ?)
-                        AND (h.fecha_inicio IS NULL OR h.fecha_inicio <= ?)
+                    SELECT 
+                        h.*,
+                        t.tienda_nombre,
+                        e.empleado_especialidad,
+                        u.usuario_nombre,
+                        u.usuario_apellido
+                    FROM horarios h
+                    LEFT JOIN empleados e ON h.empleado_id = e.empleado_id
+                    LEFT JOIN usuarios u ON e.usuario_id = u.usuario_id
+                    LEFT JOIN tiendas t ON h.tienda_id = t.tienda_id
+                    WHERE h.empleado_id = ? 
+                        AND h.horario_estado = 1 
+                        AND h.horario_activo = 1
                         AND (
-                        h.fecha_fin IS NULL
-                        OR h.fecha_fin = '0000-00-00'
-                        OR h.fecha_fin >= ?
+                        (
+                            h.horario_tipo_semanal = 'semanal'
+                            AND (h.dias_trabajo LIKE ? OR h.dias_trabajo LIKE ?)
+                            AND (h.fecha_inicio IS NULL OR h.fecha_inicio <= ?)
+                            AND (
+                            h.fecha_fin IS NULL 
+                            OR h.fecha_fin >= ?
+                            )
                         )
-                    )
-                    OR (
-                        h.horario_tipo_semanal = 'especifico'
-                        AND h.horario_dia = ?
-                    )
-                    )
-                ORDER BY h.horario_inicio
+                        OR (
+                            h.horario_tipo_semanal = 'especifico'
+                            AND h.horario_dia = ?
+                        )
+                        )
+                    ORDER BY h.horario_inicio
 `;
+
 
 
 
